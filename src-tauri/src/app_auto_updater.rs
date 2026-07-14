@@ -1,7 +1,7 @@
 /*!
 # App Auto Updater
 
-This module provides comprehensive self-update functionality for the Donut Browser application
+This module provides comprehensive self-update functionality for the NeoDonut Browser application
 across multiple operating systems and installation methods.
 
 ## Supported Platforms
@@ -192,10 +192,10 @@ impl AppAutoUpdater {
       log::info!("Found {} nightly releases", nightly_releases.len());
       nightly_releases
     } else {
-      // For stable builds, look for stable releases (semver format)
+      // For stable builds, accept only NeoDonut fork release tags.
       let stable_releases: Vec<&AppRelease> = releases
         .iter()
-        .filter(|release| release.tag_name.starts_with('v'))
+        .filter(|release| Self::parse_neo_version(&release.tag_name).is_some())
         .collect();
       log::info!("Found {} stable releases", stable_releases.len());
       stable_releases
@@ -220,7 +220,7 @@ impl AppAutoUpdater {
 
       // Build the release page URL
       let release_page_url = format!(
-        "https://github.com/zhom/donutbrowser/releases/tag/{}",
+        "https://github.com/paracosm17/donutbrowser-neo/releases/tag/{}",
         latest_release.tag_name
       );
 
@@ -324,7 +324,7 @@ impl AppAutoUpdater {
   async fn fetch_app_releases(
     &self,
   ) -> Result<Vec<AppRelease>, Box<dyn std::error::Error + Send + Sync>> {
-    let url = "https://api.github.com/repos/zhom/donutbrowser/releases?per_page=100";
+    let url = "https://api.github.com/repos/paracosm17/donutbrowser-neo/releases?per_page=100";
     let response = self
       .client
       .get(url)
@@ -378,23 +378,31 @@ impl AppAutoUpdater {
     false
   }
 
-  /// Compare semantic versions (returns true if version1 > version2)
+  /// Compare NeoDonut release versions (returns true if version1 > version2).
+  /// Stable fork tags use `v<upstream-version>-neo.<revision>`.
   fn is_version_newer(&self, version1: &str, version2: &str) -> bool {
-    let v1 = self.parse_semver(version1);
-    let v2 = self.parse_semver(version2);
-    v1 > v2
+    match (
+      Self::parse_neo_version(version1),
+      Self::parse_neo_version(version2),
+    ) {
+      (Some(v1), Some(v2)) => v1 > v2,
+      _ => false,
+    }
   }
 
-  /// Parse semantic version string into comparable tuple
-  fn parse_semver(&self, version: &str) -> (u32, u32, u32) {
+  /// Parse `v0.28.2-neo.3` into an ordered tuple.
+  fn parse_neo_version(version: &str) -> Option<(u32, u32, u32, u32)> {
     let clean_version = version.trim_start_matches('v');
-    let parts: Vec<&str> = clean_version.split('.').collect();
-
-    let major = parts.first().and_then(|s| s.parse().ok()).unwrap_or(0);
-    let minor = parts.get(1).and_then(|s| s.parse().ok()).unwrap_or(0);
-    let patch = parts.get(2).and_then(|s| s.parse().ok()).unwrap_or(0);
-
-    (major, minor, patch)
+    let (base, revision) = clean_version.split_once("-neo.")?;
+    let mut parts = base.split('.');
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    let patch = parts.next()?.parse().ok()?;
+    if parts.next().is_some() {
+      return None;
+    }
+    let revision = revision.parse().ok()?;
+    Some((major, minor, patch, revision))
   }
 
   /// Detect if we're running from an AppImage
@@ -510,14 +518,14 @@ impl AppAutoUpdater {
   /// Check if the APT repository is configured
   #[cfg(target_os = "linux")]
   fn is_deb_repo_configured() -> bool {
-    Path::new("/etc/apt/sources.list.d/donutbrowser.list").exists()
+    Path::new("/etc/apt/sources.list.d/neodonutbrowser.list").exists()
   }
 
   /// Check if an RPM repository is configured (yum/dnf or zypper)
   #[cfg(target_os = "linux")]
   fn is_rpm_repo_configured() -> bool {
-    Path::new("/etc/yum.repos.d/donutbrowser.repo").exists()
-      || Path::new("/etc/zypp/repos.d/donutbrowser.repo").exists()
+    Path::new("/etc/yum.repos.d/neodonutbrowser.repo").exists()
+      || Path::new("/etc/zypp/repos.d/neodonutbrowser.repo").exists()
   }
 
   /// Check if a system package manager repo is configured for this installation.
@@ -953,7 +961,7 @@ impl AppAutoUpdater {
   ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     log::info!("Starting background update download and install");
 
-    let temp_dir = std::env::temp_dir().join("donut_app_update");
+    let temp_dir = std::env::temp_dir().join("neodonut_app_update");
     fs::create_dir_all(&temp_dir)?;
 
     let filename = update_info
@@ -1179,22 +1187,6 @@ impl AppAutoUpdater {
 
       // Clean up backup after successful installation
       let _ = fs::remove_dir_all(&backup_path);
-
-      // Clean up old "Donut Browser.app" if it exists (from before the project rename)
-      if let Some(parent_dir) = current_app_path.parent() {
-        let old_app_path = parent_dir.join("Donut Browser.app");
-        if old_app_path.exists() && old_app_path != current_app_path {
-          log::info!(
-            "Removing old 'Donut Browser.app' from: {}",
-            old_app_path.display()
-          );
-          if let Err(e) = fs::remove_dir_all(&old_app_path) {
-            log::warn!("Warning: Failed to remove old 'Donut Browser.app': {e}");
-          } else {
-            log::info!("Successfully removed old 'Donut Browser.app'");
-          }
-        }
-      }
 
       Ok(())
     }
@@ -1707,7 +1699,7 @@ impl AppAutoUpdater {
 
       // Create a temporary restart script
       let temp_dir = std::env::temp_dir();
-      let script_path = temp_dir.join("donut_restart.sh");
+      let script_path = temp_dir.join("neodonut_restart.sh");
 
       // Create the restart script content
       let script_content = format!(
@@ -1851,7 +1843,7 @@ rm "{}"
         let app_path = self.get_current_app_path()?;
         let current_pid = std::process::id();
         let temp_dir = std::env::temp_dir();
-        let script_path = temp_dir.join("donut_restart.bat");
+        let script_path = temp_dir.join("neodonut_restart.bat");
 
         let script_content = format!(
           "@echo off\n\
@@ -1883,7 +1875,7 @@ rm "{}"
 
       // Create a temporary restart script
       let temp_dir = std::env::temp_dir();
-      let script_path = temp_dir.join("donut_restart.sh");
+      let script_path = temp_dir.join("neodonut_restart.sh");
 
       // Create the restart script content
       let script_content = format!(
@@ -2024,21 +2016,19 @@ mod tests {
     let updater = AppAutoUpdater::instance();
 
     // Test semantic version comparison
-    assert!(updater.is_version_newer("v1.1.0", "v1.0.0"));
-    assert!(updater.is_version_newer("v2.0.0", "v1.9.9"));
-    assert!(updater.is_version_newer("v1.0.1", "v1.0.0"));
-    assert!(!updater.is_version_newer("v1.0.0", "v1.0.0"));
-    assert!(!updater.is_version_newer("v1.0.0", "v1.0.1"));
+    assert!(updater.is_version_newer("v1.1.0-neo.1", "v1.0.0-neo.1"));
+    assert!(updater.is_version_newer("v2.0.0-neo.1", "v1.9.9-neo.9"));
+    assert!(updater.is_version_newer("v1.0.1-neo.1", "v1.0.0-neo.9"));
+    assert!(!updater.is_version_newer("v1.0.0-neo.1", "v1.0.0-neo.1"));
+    assert!(!updater.is_version_newer("v1.0.0-neo.9", "v1.0.1-neo.1"));
   }
 
   #[test]
-  fn test_parse_semver() {
-    let updater = AppAutoUpdater::instance();
-
-    assert_eq!(updater.parse_semver("v1.2.3"), (1, 2, 3));
-    assert_eq!(updater.parse_semver("1.2.3"), (1, 2, 3));
-    assert_eq!(updater.parse_semver("v2.0.0"), (2, 0, 0));
-    assert_eq!(updater.parse_semver("0.1.0"), (0, 1, 0));
+  fn test_parse_neo_version() {
+    assert_eq!(AppAutoUpdater::parse_neo_version("v1.2.3-neo.4"), Some((1, 2, 3, 4)));
+    assert_eq!(AppAutoUpdater::parse_neo_version("1.2.3-neo.4"), Some((1, 2, 3, 4)));
+    assert_eq!(AppAutoUpdater::parse_neo_version("v2.0.0-neo.1"), Some((2, 0, 0, 1)));
+    assert_eq!(AppAutoUpdater::parse_neo_version("0.1.0"), None);
   }
 
   #[test]
@@ -2046,10 +2036,10 @@ mod tests {
     let updater = AppAutoUpdater::instance();
 
     // Stable version updates
-    assert!(updater.should_update("v1.0.0", "v1.1.0", false));
-    assert!(updater.should_update("v1.0.0", "v2.0.0", false));
-    assert!(!updater.should_update("v1.1.0", "v1.0.0", false));
-    assert!(!updater.should_update("v1.0.0", "v1.0.0", false));
+    assert!(updater.should_update("v1.0.0-neo.1", "v1.1.0-neo.1", false));
+    assert!(updater.should_update("v1.0.0-neo.1", "v2.0.0-neo.1", false));
+    assert!(!updater.should_update("v1.1.0-neo.1", "v1.0.0-neo.1", false));
+    assert!(!updater.should_update("v1.0.0-neo.1", "v1.0.0-neo.1", false));
   }
 
   #[test]
@@ -2078,13 +2068,13 @@ mod tests {
     assert!(!updater.should_update("nightly-abc123", "nightly-abc123", true));
 
     // Test stable version edge cases
-    assert!(updater.should_update("v0.9.9", "v1.0.0", false));
-    assert!(!updater.should_update("v1.0.0", "v0.9.9", false));
-    assert!(!updater.should_update("v1.0.0", "v1.0.0", false));
+    assert!(updater.should_update("v0.9.9-neo.9", "v1.0.0-neo.1", false));
+    assert!(!updater.should_update("v1.0.0-neo.1", "v0.9.9-neo.9", false));
+    assert!(!updater.should_update("v1.0.0-neo.1", "v1.0.0-neo.1", false));
 
     // Test version without 'v' prefix
-    assert!(updater.should_update("0.9.9", "v1.0.0", false));
-    assert!(updater.should_update("v0.9.9", "1.0.0", false));
+    assert!(updater.should_update("0.9.9-neo.9", "v1.0.0-neo.1", false));
+    assert!(updater.should_update("v0.9.9-neo.9", "1.0.0-neo.1", false));
   }
 
   #[test]
@@ -2119,29 +2109,29 @@ mod tests {
   #[test]
   fn test_find_checksum_for_file() {
     let sums = "\
-0e5a4601745092b7d1c93c1e7e1c30d923be3d1e916b661bd53d1c0c9c7f0a11  Donut_0.29.0_aarch64.dmg
-ABCDEF01745092B7D1C93C1E7E1C30D923BE3D1E916B661BD53D1C0C9C7F0A22 *Donut_0.29.0_x64.dmg
-not-a-hash  Donut_0.29.0_amd64.deb
+0e5a4601745092b7d1c93c1e7e1c30d923be3d1e916b661bd53d1c0c9c7f0a11  NeoDonut_Browser_0.29.0_aarch64.dmg
+ABCDEF01745092B7D1C93C1E7E1C30D923BE3D1E916B661BD53D1C0C9C7F0A22 *NeoDonut_Browser_0.29.0_x64.dmg
+not-a-hash  NeoDonut_Browser_0.29.0_amd64.deb
 ";
 
     // Plain entry.
     assert_eq!(
-      AppAutoUpdater::find_checksum_for_file(sums, "Donut_0.29.0_aarch64.dmg").as_deref(),
+      AppAutoUpdater::find_checksum_for_file(sums, "NeoDonut_Browser_0.29.0_aarch64.dmg").as_deref(),
       Some("0e5a4601745092b7d1c93c1e7e1c30d923be3d1e916b661bd53d1c0c9c7f0a11")
     );
     // Binary-mode marker is stripped; hash is normalized to lowercase.
     assert_eq!(
-      AppAutoUpdater::find_checksum_for_file(sums, "Donut_0.29.0_x64.dmg").as_deref(),
+      AppAutoUpdater::find_checksum_for_file(sums, "NeoDonut_Browser_0.29.0_x64.dmg").as_deref(),
       Some("abcdef01745092b7d1c93c1e7e1c30d923be3d1e916b661bd53d1c0c9c7f0a22")
     );
     // Entries with malformed hashes are rejected rather than trusted.
     assert_eq!(
-      AppAutoUpdater::find_checksum_for_file(sums, "Donut_0.29.0_amd64.deb"),
+      AppAutoUpdater::find_checksum_for_file(sums, "NeoDonut_Browser_0.29.0_amd64.deb"),
       None
     );
     // Missing file.
     assert_eq!(
-      AppAutoUpdater::find_checksum_for_file(sums, "Donut_0.29.0_arm64.deb"),
+      AppAutoUpdater::find_checksum_for_file(sums, "NeoDonut_Browser_0.29.0_arm64.deb"),
       None
     );
   }
@@ -2162,7 +2152,7 @@ not-a-hash  Donut_0.29.0_amd64.deb
   fn test_find_checksums_url() {
     let assets = vec![
       AppReleaseAsset {
-        name: "Donut_0.29.0_x64.dmg".to_string(),
+        name: "NeoDonut_Browser_0.29.0_x64.dmg".to_string(),
         browser_download_url: "https://example.com/x64.dmg".to_string(),
         size: 1,
         digest: None,
@@ -2205,39 +2195,39 @@ not-a-hash  Donut_0.29.0_amd64.deb
     let all_assets = vec![
       // macOS assets
       AppReleaseAsset {
-        name: "Donut.Browser_0.1.0_aarch64.dmg".to_string(),
+        name: "NeoDonut.Browser_0.1.0_aarch64.dmg".to_string(),
         browser_download_url: "https://example.com/aarch64.dmg".to_string(),
         size: 12345,
         digest: None,
       },
       AppReleaseAsset {
-        name: "Donut.Browser_0.1.0_x64.dmg".to_string(),
+        name: "NeoDonut.Browser_0.1.0_x64.dmg".to_string(),
         browser_download_url: "https://example.com/x64.dmg".to_string(),
         size: 12345,
         digest: None,
       },
       // Windows assets (NSIS naming: _ARCH-setup.exe)
       AppReleaseAsset {
-        name: "Donut_0.1.0_x64-setup.exe".to_string(),
+        name: "NeoDonut_Browser_0.1.0_x64-setup.exe".to_string(),
         browser_download_url: "https://example.com/x64-setup.exe".to_string(),
         size: 12345,
         digest: None,
       },
       // Linux assets
       AppReleaseAsset {
-        name: "donutbrowser_0.1.0_amd64.deb".to_string(),
+        name: "neodonutbrowser_0.1.0_amd64.deb".to_string(),
         browser_download_url: "https://example.com/amd64.deb".to_string(),
         size: 12345,
         digest: None,
       },
       AppReleaseAsset {
-        name: "donutbrowser-0.1.0-1.x86_64.rpm".to_string(),
+        name: "neodonutbrowser-0.1.0-1.x86_64.rpm".to_string(),
         browser_download_url: "https://example.com/x86_64.rpm".to_string(),
         size: 12345,
         digest: None,
       },
       AppReleaseAsset {
-        name: "Donut.Browser-0.1.0-x86_64.AppImage".to_string(),
+        name: "NeoDonut.Browser-0.1.0-x86_64.AppImage".to_string(),
         browser_download_url: "https://example.com/x86_64.AppImage".to_string(),
         size: 12345,
         digest: None,
@@ -2340,13 +2330,13 @@ not-a-hash  Donut_0.29.0_amd64.deb
     // Create mock assets including AppImage
     let assets = vec![
       AppReleaseAsset {
-        name: "donutbrowser_0.1.0_amd64.deb".to_string(),
+        name: "neodonutbrowser_0.1.0_amd64.deb".to_string(),
         browser_download_url: "https://example.com/amd64.deb".to_string(),
         size: 12345,
         digest: None,
       },
       AppReleaseAsset {
-        name: "Donut.Browser-0.1.0-x86_64.AppImage".to_string(),
+        name: "NeoDonut.Browser-0.1.0-x86_64.AppImage".to_string(),
         browser_download_url: "https://example.com/x86_64.AppImage".to_string(),
         size: 12345,
         digest: None,
@@ -2387,27 +2377,27 @@ not-a-hash  Donut_0.29.0_amd64.deb
     let all_assets = vec![
       // macOS assets
       AppReleaseAsset {
-        name: "Donut.Browser_0.1.0_aarch64.dmg".to_string(),
+        name: "NeoDonut.Browser_0.1.0_aarch64.dmg".to_string(),
         browser_download_url: "https://example.com/aarch64.dmg".to_string(),
         size: 12345,
         digest: None,
       },
       // Windows assets
       AppReleaseAsset {
-        name: "Donut.Browser_0.1.0_x64.msi".to_string(),
+        name: "NeoDonut.Browser_0.1.0_x64.msi".to_string(),
         browser_download_url: "https://example.com/x64.msi".to_string(),
         size: 12345,
         digest: None,
       },
       // Linux assets
       AppReleaseAsset {
-        name: "donutbrowser_0.1.0_amd64.deb".to_string(),
+        name: "neodonutbrowser_0.1.0_amd64.deb".to_string(),
         browser_download_url: "https://example.com/amd64.deb".to_string(),
         size: 12345,
         digest: None,
       },
       AppReleaseAsset {
-        name: "Donut.Browser-0.1.0-x86_64.AppImage".to_string(),
+        name: "NeoDonut.Browser-0.1.0-x86_64.AppImage".to_string(),
         browser_download_url: "https://example.com/x86_64.AppImage".to_string(),
         size: 12345,
         digest: None,

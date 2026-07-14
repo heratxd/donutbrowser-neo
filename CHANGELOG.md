@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.28.2-neo.2 (2026-07-14)
+
+### Fork identity and releases
+
+- Rebrand the desktop application as NeoDonut Browser.
+- Isolate bundle identifiers, local data directories, default-browser registrations, and updater channels from upstream Donut Browser.
+- Point application updates and repository documentation to `paracosm17/donutbrowser-neo`.
+- Add fork-specific PR checks, unsigned multi-platform release builds, checksums, and safe upstream-main synchronization.
+- Add fork workflow documentation and a PowerShell remote-configuration helper.
+
+
 
 ## Unreleased
 

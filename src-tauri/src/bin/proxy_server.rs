@@ -1,9 +1,9 @@
 use clap::{Arg, Command};
-use donutbrowser_lib::proxy_runner::{
+use neodonutbrowser_lib::proxy_runner::{
   start_proxy_process_with_profile, stop_all_proxy_processes, stop_proxy_process,
 };
-use donutbrowser_lib::proxy_server::run_proxy_server;
-use donutbrowser_lib::proxy_storage::get_proxy_config;
+use neodonutbrowser_lib::proxy_server::run_proxy_server;
+use neodonutbrowser_lib::proxy_storage::get_proxy_config;
 use std::process;
 
 fn set_high_priority() {
@@ -302,7 +302,7 @@ async fn main() {
         }
       } else if let Some(upstream) = stop_matches.get_one::<String>("upstream") {
         // Find proxies with this upstream URL
-        let configs = donutbrowser_lib::proxy_storage::list_proxy_configs();
+        let configs = neodonutbrowser_lib::proxy_storage::list_proxy_configs();
         let matching_configs: Vec<_> = configs
           .iter()
           .filter(|config| config.upstream_url == *upstream)
@@ -335,7 +335,7 @@ async fn main() {
         }
       }
     } else if proxy_matches.subcommand_matches("list").is_some() {
-      let configs = donutbrowser_lib::proxy_storage::list_proxy_configs();
+      let configs = neodonutbrowser_lib::proxy_storage::list_proxy_configs();
       // Use println! here because this needs to go to stdout for parsing
       println!("{}", serde_json::to_string(&configs).unwrap());
       process::exit(0);
@@ -423,7 +423,7 @@ async fn main() {
         log::info!("Loading VPN worker config from: {}", path);
         match std::fs::read_to_string(path) {
           Ok(content) => match serde_json::from_str::<
-            donutbrowser_lib::vpn_worker_storage::VpnWorkerConfig,
+            neodonutbrowser_lib::vpn_worker_storage::VpnWorkerConfig,
           >(&content)
           {
             Ok(config) => {
@@ -447,11 +447,11 @@ async fn main() {
         }
       } else {
         // Fallback: discover config by ID with retries
-        let storage_dir = donutbrowser_lib::proxy_storage::get_storage_dir();
+        let storage_dir = neodonutbrowser_lib::proxy_storage::get_storage_dir();
         log::info!("Looking for VPN worker config in: {:?}", storage_dir);
         let mut attempts = 0;
         loop {
-          if let Some(config) = donutbrowser_lib::vpn_worker_storage::get_vpn_worker_config(id) {
+          if let Some(config) = neodonutbrowser_lib::vpn_worker_storage::get_vpn_worker_config(id) {
             log::info!(
               "Found VPN worker config: id={}, vpn_type={}, vpn_id={}",
               config.id,
@@ -494,7 +494,7 @@ async fn main() {
 
       match config.vpn_type.as_str() {
         "wireguard" => {
-          let wg_config = match donutbrowser_lib::vpn::parse_wireguard_config(&vpn_config_data) {
+          let wg_config = match neodonutbrowser_lib::vpn::parse_wireguard_config(&vpn_config_data) {
             Ok(c) => c,
             Err(e) => {
               log::error!("Failed to parse WireGuard config: {}", e);
@@ -503,7 +503,7 @@ async fn main() {
           };
 
           let server =
-            donutbrowser_lib::vpn::socks5_server::WireGuardSocks5Server::new(wg_config, port);
+            neodonutbrowser_lib::vpn::socks5_server::WireGuardSocks5Server::new(wg_config, port);
           if let Err(e) = server
             .run(id.clone(), config_path.map(std::path::PathBuf::from))
             .await

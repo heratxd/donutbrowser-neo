@@ -1,5 +1,5 @@
 {
-  description = "Donut Browser development environment and quick-start commands";
+  description = "NeoDonut Browser development environment and quick-start commands";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -96,94 +96,17 @@
         pkgConfigPath = lib.makeSearchPath "lib/pkgconfig" (
           pkgConfigLibs ++ map lib.getDev pkgConfigLibs
         );
-        releaseVersion = "0.28.2";
-        releaseAppImage =
-          if system == "x86_64-linux" then
-            pkgs.fetchurl {
-              url = "https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_amd64.AppImage";
-              hash = "sha256-+CqHiPMg4oczNiPg+MC6jvp0CUcK4kb5yeyk+QDbAWY=";
-            }
-          else if system == "aarch64-linux" then
-            pkgs.fetchurl {
-              url = "https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_aarch64.AppImage";
-              hash = "sha256-HodokW2ySIpdpW7Hyqpwsm8whQ0hHldlSg11Sl1UW3k=";
-            }
-          else
-            null;
-        releaseUnpacked =
-          if releaseAppImage != null then
-            pkgs.stdenvNoCC.mkDerivation {
-              pname = "donut-release-unpacked";
-              version = releaseVersion;
-              src = releaseAppImage;
-              dontUnpack = true;
-              nativeBuildInputs = [ pkgs.xz ];
-              installPhase = ''
-                runHook preInstall
-
-                cp "$src" ./donut.AppImage
-                chmod +x ./donut.AppImage
-                ./donut.AppImage --appimage-extract >/dev/null
-
-                mkdir -p "$out"
-                cp -a ./squashfs-root "$out/"
-
-                runHook postInstall
-              '';
-            }
-          else
-            null;
-        releaseWrapped =
-          if releaseAppImage != null then
-            pkgs.appimageTools.wrapType2 {
-              pname = "donut";
-              version = releaseVersion;
-              src = releaseAppImage;
-              extraPkgs = _: commonLibs;
-              extraInstallCommands = ''
-                for bin in "$out"/bin/*; do
-                  if [ -f "$bin" ]; then
-                    mv "$bin" "$out/bin/donut-release"
-                    break
-                  fi
-                done
-              '';
-            }
-          else
-            null;
-        releaseLauncher =
-          if releaseUnpacked != null then
-            pkgs.writeShellApplication {
-              name = "donut-release-start";
-              runtimeInputs = with pkgs; [
-                coreutils
-                xdg-utils
-              ];
-              text = ''
-                set -euo pipefail
-
-                if [ -x "${releaseWrapped}/bin/donut-release" ]; then
-                  if "${releaseWrapped}/bin/donut-release" "$@"; then
-                    exit 0
-                  fi
-                  echo "Wrapped AppImage failed, retrying with direct AppRun..." >&2
-                fi
-
-                export LD_LIBRARY_PATH="${releaseUnpacked}/squashfs-root/usr/lib:${releaseUnpacked}/squashfs-root/usr/lib64:${runtimeLibPath}:''${LD_LIBRARY_PATH:-}"
-                export NIX_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-                export LIBRARY_PATH="$LD_LIBRARY_PATH"
-                export XDG_DATA_DIRS="${releaseUnpacked}/squashfs-root/usr/share:''${XDG_DATA_DIRS:-}"
-                exec "${releaseUnpacked}/squashfs-root/AppRun" "$@"
-              '';
-            }
-          else
-            pkgs.writeShellApplication {
-              name = "donut-release-start";
-              text = ''
-                echo "Release launcher is supported only on Linux (x86_64/aarch64)."
-                exit 1
-              '';
-            };
+        # Binary release fetching is intentionally disabled in the fork flake.
+        # Use the GitHub Releases page so a stale hash can never start an
+        # upstream Donut Browser binary under the NeoDonut project name.
+        releaseLauncher = pkgs.writeShellApplication {
+          name = "neodonut-release-start";
+          text = ''
+            echo "Download a NeoDonut Browser build from:"
+            echo "https://github.com/paracosm17/donutbrowser-neo/releases"
+            exit 1
+          '';
+        };
 
         mkApp = name: text:
           let
@@ -258,7 +181,7 @@
             export RUST_SRC_PATH="${pkgs.rustPlatform.rustLibSrc}"
             export XDG_DATA_DIRS="${pkgs.gsettings-desktop-schemas}/share:${pkgs.gtk3}/share:''${XDG_DATA_DIRS:-}"
 
-            echo "Donut Browser dev shell ready."
+            echo "NeoDonut Browser dev shell ready."
             echo "Quick start:"
             echo "  nix run .#setup"
             echo "  nix run .#tauri-dev"
@@ -319,7 +242,7 @@
           set -euo pipefail
 
           if [ ! -f "package.json" ]; then
-            echo "package.json not found. Run this from the donutbrowser repo root."
+            echo "package.json not found. Run this from the donutbrowser-neo repo root."
             exit 1
           fi
 
@@ -335,7 +258,7 @@
 
         apps."release-start" = {
           type = "app";
-          program = "${releaseLauncher}/bin/donut-release-start";
+          program = "${releaseLauncher}/bin/neodonut-release-start";
         };
 
         apps.default = self.apps.${system}.setup;

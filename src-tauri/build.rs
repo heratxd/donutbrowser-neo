@@ -35,13 +35,12 @@ fn main() {
     println!("cargo:rustc-env=BUILD_VERSION=dev-{version}");
   }
 
-  // Inject vault password at build time
-  if let Ok(vault_password) = std::env::var("DONUT_BROWSER_VAULT_PASSWORD") {
-    println!("cargo:rustc-env=DONUT_BROWSER_VAULT_PASSWORD={vault_password}");
-  } else {
-    // Use default password if environment variable is not set
-    println!("cargo:rustc-env=DONUT_BROWSER_VAULT_PASSWORD=donutbrowser-api-vault-password");
-  }
+  // Inject vault password at build time. The NeoDonut variable takes
+  // precedence; the upstream variable remains supported for compatibility.
+  let vault_password = std::env::var("NEODONUT_BROWSER_VAULT_PASSWORD")
+    .or_else(|_| std::env::var("DONUT_BROWSER_VAULT_PASSWORD"))
+    .unwrap_or_else(|_| "neodonutbrowser-api-vault-password-v1".to_string());
+  println!("cargo:rustc-env=DONUT_BROWSER_VAULT_PASSWORD={vault_password}");
 
   // Tell Cargo to rebuild if the proxy binary source changes
   println!("cargo:rerun-if-changed=src/bin/proxy_server.rs");

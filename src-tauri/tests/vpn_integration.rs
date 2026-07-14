@@ -7,7 +7,7 @@ mod common;
 mod test_harness;
 
 use common::TestUtils;
-use donutbrowser_lib::vpn::{
+use neodonutbrowser_lib::vpn::{
   detect_vpn_type, parse_wireguard_config, VpnConfig, VpnStorage, VpnType, WireGuardConfig,
 };
 use serde_json::Value;
@@ -303,7 +303,7 @@ async fn test_wireguard_tunnel_init() {
     preshared_key: None,
   };
 
-  use donutbrowser_lib::vpn::{VpnTunnel, WireGuardTunnel};
+  use neodonutbrowser_lib::vpn::{VpnTunnel, WireGuardTunnel};
 
   let tunnel = WireGuardTunnel::new("test-wg".to_string(), config);
   assert_eq!(tunnel.vpn_id(), "test-wg");
@@ -315,7 +315,7 @@ async fn test_wireguard_tunnel_init() {
 #[tokio::test]
 #[serial]
 async fn test_tunnel_manager() {
-  use donutbrowser_lib::vpn::{TunnelManager, VpnStatus, VpnTunnel};
+  use neodonutbrowser_lib::vpn::{TunnelManager, VpnStatus, VpnTunnel};
 
   // Create a mock tunnel for testing the manager
   struct MockTunnel {
@@ -325,12 +325,12 @@ async fn test_tunnel_manager() {
 
   #[async_trait::async_trait]
   impl VpnTunnel for MockTunnel {
-    async fn connect(&mut self) -> Result<(), donutbrowser_lib::vpn::VpnError> {
+    async fn connect(&mut self) -> Result<(), neodonutbrowser_lib::vpn::VpnError> {
       self.connected = true;
       Ok(())
     }
 
-    async fn disconnect(&mut self) -> Result<(), donutbrowser_lib::vpn::VpnError> {
+    async fn disconnect(&mut self) -> Result<(), neodonutbrowser_lib::vpn::VpnError> {
       self.connected = false;
       Ok(())
     }
@@ -392,7 +392,7 @@ impl TestEnvGuard {
 
     let root = TEST_RUNTIME_ROOT
       .get_or_init(|| {
-        std::env::temp_dir().join(format!("donutbrowser-vpn-e2e-{}", std::process::id()))
+        std::env::temp_dir().join(format!("neodonutbrowser-vpn-e2e-{}", std::process::id()))
       })
       .clone();
     let data_dir = root.join("data");
@@ -405,11 +405,11 @@ impl TestEnvGuard {
     std::fs::create_dir_all(&data_dir)?;
     std::fs::create_dir_all(&cache_dir)?;
 
-    let previous_data_dir = std::env::var("DONUTBROWSER_DATA_DIR").ok();
-    let previous_cache_dir = std::env::var("DONUTBROWSER_CACHE_DIR").ok();
+    let previous_data_dir = std::env::var("NEODONUT_DATA_DIR").ok();
+    let previous_cache_dir = std::env::var("NEODONUT_CACHE_DIR").ok();
 
-    std::env::set_var("DONUTBROWSER_DATA_DIR", &data_dir);
-    std::env::set_var("DONUTBROWSER_CACHE_DIR", &cache_dir);
+    std::env::set_var("NEODONUT_DATA_DIR", &data_dir);
+    std::env::set_var("NEODONUT_CACHE_DIR", &cache_dir);
 
     Ok(Self {
       _root: root,
@@ -422,15 +422,15 @@ impl TestEnvGuard {
 impl Drop for TestEnvGuard {
   fn drop(&mut self) {
     if let Some(value) = &self.previous_data_dir {
-      std::env::set_var("DONUTBROWSER_DATA_DIR", value);
+      std::env::set_var("NEODONUT_DATA_DIR", value);
     } else {
-      std::env::remove_var("DONUTBROWSER_DATA_DIR");
+      std::env::remove_var("NEODONUT_DATA_DIR");
     }
 
     if let Some(value) = &self.previous_cache_dir {
-      std::env::set_var("DONUTBROWSER_CACHE_DIR", value);
+      std::env::set_var("NEODONUT_CACHE_DIR", value);
     } else {
-      std::env::remove_var("DONUTBROWSER_CACHE_DIR");
+      std::env::remove_var("NEODONUT_CACHE_DIR");
     }
   }
 }
@@ -622,8 +622,8 @@ async fn raw_http_request_via_proxy(
 }
 
 async fn cleanup_runtime() {
-  let _ = donutbrowser_lib::proxy_runner::stop_all_proxy_processes().await;
-  let _ = donutbrowser_lib::vpn_worker_runner::stop_all_vpn_workers().await;
+  let _ = neodonutbrowser_lib::proxy_runner::stop_all_proxy_processes().await;
+  let _ = neodonutbrowser_lib::vpn_worker_runner::stop_all_vpn_workers().await;
   test_harness::stop_vpn_servers().await;
 }
 
@@ -649,7 +649,7 @@ async fn run_proxy_feature_suite(
   vpn_id: &str,
   server_tunnel_ip: &str,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  let vpn_worker = donutbrowser_lib::vpn_worker_runner::start_vpn_worker(vpn_id)
+  let vpn_worker = neodonutbrowser_lib::vpn_worker_runner::start_vpn_worker(vpn_id)
     .await
     .map_err(|error| error.to_string())?;
   let vpn_upstream = vpn_worker
@@ -673,7 +673,7 @@ async fn run_proxy_feature_suite(
     &http_response[..http_response.len().min(300)]
   );
 
-  let stats_file = donutbrowser_lib::app_dirs::cache_dir()
+  let stats_file = neodonutbrowser_lib::app_dirs::cache_dir()
     .join("traffic_stats")
     .join(format!("{}.json", profile_id));
   wait_for_file(&stats_file, Duration::from_secs(8)).await?;
@@ -761,7 +761,7 @@ async fn run_proxy_feature_suite(
   stop_proxy(binary_path, &bypass_proxy.id).await?;
   bypass_server.abort();
 
-  donutbrowser_lib::vpn_worker_runner::stop_vpn_worker(&vpn_worker.id)
+  neodonutbrowser_lib::vpn_worker_runner::stop_vpn_worker(&vpn_worker.id)
     .await
     .map_err(|error| error.to_string())?;
   Ok(())
@@ -794,7 +794,7 @@ async fn test_wireguard_traffic_flows_through_donut_proxy(
     build_wireguard_config(&wg_config),
   );
   {
-    let storage = donutbrowser_lib::vpn::VPN_STORAGE.lock().unwrap();
+    let storage = neodonutbrowser_lib::vpn::VPN_STORAGE.lock().unwrap();
     storage.save_config(&vpn_config)?;
   }
 

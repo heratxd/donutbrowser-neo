@@ -1,10 +1,10 @@
 [package]
-name = "donutbrowser"
-version = "0.28.2"
-description = "Simple Yet Powerful Anti-Detect Browser"
-authors = ["zhom@github"]
+name = "neodonutbrowser"
+version = "0.28.2-neo.2"
+description = "Open source anti-detect browser with community-unlocked local privacy features"
+authors = ["paracosm17@github", "Donut Browser contributors"]
 edition = "2021"
-default-run = "donutbrowser"
+default-run = "neodonutbrowser"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -12,12 +12,12 @@ default-run = "donutbrowser"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "donutbrowser_lib"
+name = "neodonutbrowser_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 doctest = false
 
 [[bin]]
-name = "donutbrowser"
+name = "neodonutbrowser"
 path = "src/main.rs"
 
 [[bin]]

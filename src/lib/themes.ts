@@ -36,7 +36,7 @@ export interface Theme {
 export const THEMES: Theme[] = [
   {
     id: "donut-mono",
-    name: "Donut Mono",
+    name: "NeoDonut Mono",
     colors: {
       "--background": "#070707",
       "--foreground": "#ffffff",

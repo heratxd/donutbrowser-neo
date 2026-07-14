@@ -9,6 +9,7 @@ on:
       - main
     tags:
       - "v*"
+      - "!v*-neo.*"
   pull_request:
     paths-ignore:
       - "src/**"

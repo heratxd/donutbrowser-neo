@@ -133,12 +133,12 @@
       "title": "Navigateur par défaut",
       "setAsDefault": "Définir comme navigateur par défaut",
       "alreadyDefault": "Déjà le navigateur par défaut",
-      "description": "Lorsqu'il est défini par défaut, Donut Browser gérera les liens web et vous permettra de choisir quel profil utiliser."
+      "description": "Lorsqu'il est défini par défaut, NeoDonut Browser gérera les liens web et vous permettra de choisir quel profil utiliser."
     },
     "permissions": {
       "title": "Permissions système",
       "loading": "Chargement des permissions...",
-      "description": "Ces permissions permettent aux navigateurs lancés depuis Donut Browser d'accéder aux ressources système. Chaque site web demandera toujours votre permission individuellement.",
+      "description": "Ces permissions permettent aux navigateurs lancés depuis NeoDonut Browser d'accéder aux ressources système. Chaque site web demandera toujours votre permission individuellement.",
       "microphone": "Microphone",
       "microphoneDescription": "Accès au microphone pour les applications du navigateur",
       "camera": "Caméra",
@@ -182,7 +182,7 @@
       "trialExpired": "Essai expiré",
       "trialExpiredDescription": "L'utilisation personnelle reste gratuite. L'utilisation commerciale nécessite une licence.",
       "subscriptionActive": "Abonné — formule {{plan}}",
-      "subscriptionActiveDescription": "Votre abonnement Donut Browser est actif. L'usage commercial est licencié pendant toute la durée de votre formule."
+      "subscriptionActiveDescription": "Votre abonnement NeoDonut Browser est actif. L'usage commercial est licencié pendant toute la durée de votre formule."
     },
     "advanced": {
       "title": "Avancé",
@@ -195,7 +195,7 @@
       "copyLogsDescription": "Regroupe les derniers fichiers de journal (jusqu’à 5 Mo) dans votre presse-papiers pour les rapports de bug."
     },
     "disableAutoUpdates": "Désactiver les mises à jour automatiques de l'app",
-    "disableAutoUpdatesDescription": "Empêche l'application de vérifier et d'installer automatiquement les mises à jour de Donut Browser. Les mises à jour des navigateurs ne sont pas affectées.",
+    "disableAutoUpdatesDescription": "Empêche l'application de vérifier et d'installer automatiquement les mises à jour de NeoDonut Browser. Les mises à jour des navigateurs ne sont pas affectées.",
     "keepDecryptedProfilesInRam": "Conserver les profils déchiffrés en RAM",
     "keepDecryptedProfilesInRamDescription": "Conserver en RAM la copie déchiffrée des profils protégés par mot de passe entre les lancements pour un démarrage plus rapide. La copie sur disque reste chiffrée dans tous les cas."
   },
@@ -214,7 +214,7 @@
       "extensions": "Extensions"
     },
     "newProfile": "Nouveau",
-    "donutLogo": "Logo de Donut Browser",
+    "donutLogo": "Logo de NeoDonut Browser",
     "scrollGroupsLeft": "Faire défiler les groupes vers la gauche",
     "scrollGroupsRight": "Faire défiler les groupes vers la droite"
   },
@@ -1135,7 +1135,7 @@
     "launchHook": {
       "title": "URL du hook de lancement",
       "label": "URL du hook de lancement",
-      "description": "Donut Browser enverra une requête GET à cette URL à chaque lancement du profil.",
+      "description": "NeoDonut Browser enverra une requête GET à cette URL à chaque lancement du profil.",
       "placeholder": "https://example.com/hooks/profile-launch",
       "invalidUrlHint": "Saisissez une URL valide http:// ou https://."
     },
@@ -1522,7 +1522,7 @@
   },
   "wayfernTerms": {
     "title": "Conditions générales de Wayfern",
-    "description": "Avant d'utiliser Donut Browser, vous devez lire et accepter les Conditions Générales de Wayfern.",
+    "description": "Avant d'utiliser NeoDonut Browser, vous devez lire et accepter les Conditions Générales de Wayfern.",
     "reviewLabel": "Veuillez consulter les Conditions Générales sur :",
     "agreeNotice": "En cliquant sur « J'accepte », vous acceptez ces conditions.",
     "acceptButton": "J'accepte",
@@ -1533,7 +1533,7 @@
   "commercialTrial": {
     "title": "Période d'essai commerciale expirée",
     "description": "Votre période d'essai commercial de 2 semaines est terminée.",
-    "body": "Si vous utilisez Donut Browser à des fins professionnelles, vous devez acheter une licence commerciale pour continuer. Vous pouvez toujours l'utiliser gratuitement à des fins personnelles.",
+    "body": "Si vous utilisez NeoDonut Browser à des fins professionnelles, vous devez acheter une licence commerciale pour continuer. Vous pouvez toujours l'utiliser gratuitement à des fins personnelles.",
     "understandButton": "J'ai compris",
     "failed": "Échec de l'enregistrement de la confirmation",
     "tryAgain": "Veuillez réessayer"
@@ -1541,10 +1541,10 @@
   "permissionDialog": {
     "titleMicrophone": "Accès au microphone requis",
     "titleCamera": "Accès à la caméra requis",
-    "descMicrophone": "Donut Browser a besoin d'accéder à votre microphone pour activer la fonctionnalité microphone dans les navigateurs. Chaque site web qui voudra utiliser votre microphone vous demandera quand même votre permission individuellement.",
-    "descCamera": "Donut Browser a besoin d'accéder à votre caméra pour activer la fonctionnalité caméra dans les navigateurs. Chaque site web qui voudra utiliser votre caméra vous demandera quand même votre permission individuellement.",
-    "grantedMicrophone": "Permission accordée ! Les navigateurs lancés depuis Donut Browser peuvent maintenant accéder à votre microphone.",
-    "grantedCamera": "Permission accordée ! Les navigateurs lancés depuis Donut Browser peuvent maintenant accéder à votre caméra.",
+    "descMicrophone": "NeoDonut Browser a besoin d'accéder à votre microphone pour activer la fonctionnalité microphone dans les navigateurs. Chaque site web qui voudra utiliser votre microphone vous demandera quand même votre permission individuellement.",
+    "descCamera": "NeoDonut Browser a besoin d'accéder à votre caméra pour activer la fonctionnalité caméra dans les navigateurs. Chaque site web qui voudra utiliser votre caméra vous demandera quand même votre permission individuellement.",
+    "grantedMicrophone": "Permission accordée ! Les navigateurs lancés depuis NeoDonut Browser peuvent maintenant accéder à votre microphone.",
+    "grantedCamera": "Permission accordée ! Les navigateurs lancés depuis NeoDonut Browser peuvent maintenant accéder à votre caméra.",
     "notGrantedMicrophone": "Permission non accordée. Cliquez sur le bouton pour demander l'accès à votre microphone.",
     "notGrantedCamera": "Permission non accordée. Cliquez sur le bouton pour demander l'accès à votre caméra.",
     "doneButton": "Terminé",
@@ -1640,7 +1640,7 @@
   },
   "appUpdate": {
     "toast": {
-      "updateFailed": "Échec de la mise à jour de Donut Browser",
+      "updateFailed": "Échec de la mise à jour de NeoDonut Browser",
       "restartFailed": "Échec du redémarrage",
       "updateReady": "Mise à jour prête, redémarrer pour appliquer",
       "manualDownloadRequired": "Téléchargement manuel requis",
@@ -1733,7 +1733,7 @@
     },
     "warnings": {
       "forgetWarningTitle": "Important : ce mot de passe ne peut pas être récupéré",
-      "forgetWarningBody": "Donut Browser ne peut ni réinitialiser, ni récupérer, ni contourner ce mot de passe. Si vous l'oubliez, vous perdrez définitivement l'accès aux données de ce profil."
+      "forgetWarningBody": "NeoDonut Browser ne peut ni réinitialiser, ni récupérer, ni contourner ce mot de passe. Si vous l'oubliez, vous perdrez définitivement l'accès aux données de ce profil."
     },
     "modes": {
       "set": "Définir",
@@ -1902,13 +1902,13 @@
     "goSettings": "Aller à Paramètres"
   },
   "closeConfirm": {
-    "title": "Fermer Donut Browser ?",
+    "title": "Fermer NeoDonut Browser ?",
     "description": "Voulez-vous envoyer l'application dans la zone de notification ou quitter ?",
     "minimize": "Réduire dans la barre d'état",
     "quit": "Quitter"
   },
   "tray": {
-    "show": "Afficher Donut Browser",
+    "show": "Afficher NeoDonut Browser",
     "quit": "Quitter"
   },
   "onboarding": {
@@ -1929,13 +1929,13 @@
       "finish": "Terminer"
     },
     "thankYou": {
-      "title": "Merci d'avoir choisi Donut Browser",
+      "title": "Merci d'avoir choisi NeoDonut Browser",
       "body": "Avec un peu de chance, il rendra votre navigation plus privée : chaque identité séparée et rien ne quittant votre machine. Bonne navigation !",
       "cta": "Commencer à naviguer"
     }
   },
   "welcome": {
-    "title": "Bienvenue dans Donut Browser",
+    "title": "Bienvenue dans NeoDonut Browser",
     "tagline": "Un navigateur anti-détection open source pour gérer de nombreuses identités à la fois.",
     "skip": "Passer",
     "next": "Suivant",
@@ -1979,7 +1979,7 @@
     },
     "license": {
       "title": "Licence",
-      "body": "Donut Browser est open source et gratuit.",
+      "body": "NeoDonut Browser est open source et gratuit.",
       "agree": "J'ai compris",
       "personalTitle": "Usage personnel",
       "personalDesc": "Gratuit à vie.",

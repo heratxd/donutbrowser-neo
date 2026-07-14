@@ -135,8 +135,16 @@ impl VpnStorage {
     key
   }
 
-  /// Migrate VPN configs from the old ProjectDirs location to the new app_dirs location.
+  /// Optionally import VPN configs from the upstream Donut Browser location.
+  ///
+  /// The import is disabled by default to preserve strict data separation. A
+  /// user who explicitly wants a one-time import can launch NeoDonut with
+  /// `NEODONUT_IMPORT_UPSTREAM_VPN=1`.
   fn migrate_from_old_location(new_dir: &std::path::Path) {
+    if std::env::var("NEODONUT_IMPORT_UPSTREAM_VPN").as_deref() != Ok("1") {
+      return;
+    }
+
     let old_dir = match directories::ProjectDirs::from("com", "donut", "donutbrowser") {
       Some(dirs) => dirs.data_local_dir().to_path_buf(),
       None => return,

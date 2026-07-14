@@ -1,0 +1,16 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=NeoDonut Browser
+Name[en]=NeoDonut Browser
+GenericName=Web Browser
+X-GNOME-FullName=NeoDonut Browser
+Comment=Open Source Anti-Detect Browser
+Exec=neodonutbrowser %u
+Icon=neodonutbrowser
+StartupNotify=true
+NoDisplay=false
+Categories=Network;WebBrowser;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;text/html;application/xhtml+xml;
+StartupWMClass=neodonutbrowser
+Keywords=browser;web;internet;privacy;profiles;automation;

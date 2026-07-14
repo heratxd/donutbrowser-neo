@@ -1,200 +1,85 @@
 <div align="center">
-  <img src="assets/logo.png" alt="Donut Browser Logo" width="150">
-  <h1>Donut Browser</h1>
-  <strong>Open Source Anti-Detect Browser</strong>
-  <br>
-  <a href="https://donutbrowser.com">donutbrowser.com</a>
+  <img src="assets/logo.png" alt="NeoDonut Browser Logo" width="150">
+  <h1>NeoDonut Browser</h1>
+  <strong>Community-focused open source anti-detect browser</strong>
 </div>
 <br>
 
 <p align="center">
-  <a style="text-decoration: none;" href="https://github.com/zhom/donutbrowser/releases/latest" target="_blank"><img alt="GitHub release" src="https://img.shields.io/github/v/release/zhom/donutbrowser">
-  </a>
-  <a style="text-decoration: none;" href="https://github.com/zhom/donutbrowser/issues" target="_blank">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs Welcome">
-  </a>
-  <a style="text-decoration: none;" href="https://github.com/zhom/donutbrowser/blob/main/LICENSE" target="_blank">
-    <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License">
-  </a>
-  <a style="text-decoration: none;" href="https://github.com/zhom/donutbrowser/network/members" target="_blank">
-    <img src="https://img.shields.io/github/forks/zhom/donutbrowser?style=social" alt="GitHub forks">
-  </a>
+  <a href="https://github.com/paracosm17/donutbrowser-neo/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/paracosm17/donutbrowser-neo"></a>
+  <a href="https://github.com/paracosm17/donutbrowser-neo/issues"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs Welcome"></a>
+  <a href="https://github.com/paracosm17/donutbrowser-neo/blob/community/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License"></a>
 </p>
 
-<img alt="Donut Browser Preview" src="assets/donut-preview.png" />
+> **Fork notice:** NeoDonut Browser is an independent community fork of
+> [zhom/donutbrowser](https://github.com/zhom/donutbrowser). It is not an
+> official Donut Browser release and is not endorsed or supported by the
+> upstream maintainers. Upstream copyright and contributor attribution are
+> preserved under AGPL-3.0.
+
+<img alt="NeoDonut Browser Preview" src="assets/donut-preview.png" />
+
+## What is different
+
+NeoDonut Browser keeps the local privacy and automation features available to
+all users. Manual fingerprint editing, cross-OS fingerprints, screen and device
+properties, local REST/MCP automation, bulk local profile actions, and
+self-hosted synchronization are not gated by a Pro subscription.
+
+Hosted Donut cloud services, team collaboration, paid proxy services, and
+other upstream-operated infrastructure remain separate services and may still
+require an upstream account or subscription.
 
 ## Features
 
-- **Unlimited browser profiles**: each fully isolated with its own fingerprint, cookies, extensions, and data
-- **Anti-detect Chromium engine**: powered by [Wayfern](https://wayfern.com), which is privacy-focused Chromium fork that comes with advanced fingerprint spoofing which naturally hides information in a way that is not detected by Cloudflare, reCaptcha v3, and other browser fingerprinting and anti-bot services.
-- **DNS AdBlocker** - block ads, trackers, and other unwanted content with per-profile DNS blocking
-- **Proxy support**: HTTP, HTTPS, SOCKS4, SOCKS5 per profile, with dynamic proxy URLs
-- **VPN support**: WireGuard configs per profile
-- **Local API & MCP**: REST API and [Model Context Protocol](https://modelcontextprotocol.io) server for integration with Claude, automation tools, and custom workflows
-- **Profile groups**: organize profiles and apply bulk settings
-- **Import profiles**: migrate from Chrome, Edge, Brave, or other Chromium browsers
-- **Cookie & extension management**: import/export cookies, manage extensions per profile
-- **Default browser**: set Donut as your default browser and choose which profile opens each link
-- **Cloud sync**: sync profiles, proxies, and groups across devices (self-hostable)
-- **E2E encryption**: optional end-to-end encrypted sync with a password only you know
-- **Zero telemetry**: no tracking or device fingerprinting
+- Unlimited isolated browser profiles
+- Manual and generated fingerprints for Windows, macOS, Linux, Android, and iOS
+- Screen, locale, timezone, audio, battery, hardware, WebGL, Canvas, and media configuration
+- HTTP, HTTPS, SOCKS4, SOCKS5, dynamic proxy, and WireGuard support
+- Local REST API and Model Context Protocol automation
+- Cookie and extension management
+- Self-hosted synchronization and optional E2E encryption
+- Separate application identity and data directory from upstream Donut Browser
 
 ## Install
 
-<!-- install-links-start -->
-### macOS
+Builds are published on the
+[NeoDonut Browser Releases](https://github.com/paracosm17/donutbrowser-neo/releases)
+page. Release tags use the format `v<upstream-version>-neo.<revision>`, for
+example `v0.28.2-neo.2`.
 
-| | Apple Silicon | Intel |
-|---|---|---|
-| **DMG** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_aarch64.dmg) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_x64.dmg) |
-
-Or install via Homebrew:
-
-```bash
-brew install --cask donut
-```
-
-### Windows
-
-[Download Windows Installer (x64)](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_x64-setup.exe) · [Portable (x64)](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_x64-portable.zip)
-
-### Linux
-
-| Format | x86_64 | ARM64 |
-|---|---|---|
-| **deb** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_amd64.deb) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_arm64.deb) |
-| **rpm** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut-0.28.2-1.x86_64.rpm) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut-0.28.2-1.aarch64.rpm) |
-| **AppImage** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_amd64.AppImage) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_aarch64.AppImage) |
-<!-- install-links-end -->
-
-Or install via package manager:
-
-```bash
-curl -fsSL https://donutbrowser.com/install.sh | sh
-```
-
-<details>
-<summary>Troubleshooting AppImage</summary>
-
-If the AppImage segfaults on launch, install **libfuse2** (`sudo apt install libfuse2` / `yay -S libfuse2` / `sudo dnf install fuse-libs`), or bypass FUSE entirely:
-
-```bash
-APPIMAGE_EXTRACT_AND_RUN=1 ./Donut.Browser_x.x.x_amd64.AppImage
-```
-
-If that gives an EGL display error, try adding `WEBKIT_DISABLE_DMABUF_RENDERER=1` or `GDK_BACKEND=x11` to the command above. If issues persist, the **.deb** / **.rpm** packages are a more reliable alternative.
-
-</details>
-
-### Nix
-
-```bash
-nix run github:zhom/donutbrowser#release-start
-```
-
-## Self-Hosting Sync
-
-Donut Browser supports syncing profiles, proxies, and groups across devices via a self-hosted sync server, which makes sync completely free. See the [Self-Hosting Donut Sync guide](https://donutbrowser.com/docs/self-hosting) for Docker-based setup instructions.
+Unsigned community builds can trigger Windows SmartScreen or macOS Gatekeeper
+warnings. Verify downloads against the accompanying `SHA256SUMS.txt` file.
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and quality checks. See
+[FORK.md](FORK.md) for the branch model, upstream synchronization, release
+process, and repository remote configuration.
+
+## Data isolation
+
+Release builds use `NeoDonutBrowser` and development builds use
+`NeoDonutBrowserDev` as their local data directories. NeoDonut Browser does not
+automatically read, move, or delete the upstream `DonutBrowser` data directory.
+Portable builds continue to store data next to the executable when a
+`.portable` marker is present.
+
+## Upstream services
+
+The Chromium-derived Wayfern engine and optional Donut-hosted account/cloud
+features are still obtained from upstream-operated endpoints. Those endpoints
+are intentionally not renamed because this fork does not operate replacement
+infrastructure for them.
 
 ## Community
 
-- **Issues**: [GitHub Issues](https://github.com/zhom/donutbrowser/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/zhom/donutbrowser/discussions)
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=zhom%2Fdonutbrowser&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=zhom/donutbrowser&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=zhom/donutbrowser&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=zhom/donutbrowser&type=date&legend=top-left" />
- </picture>
-</a>
-
-## Contributors
-
-<!-- readme: collaborators,contributors -start -->
-<table>
-	<tbody>
-		<tr>
-            <td align="center">
-                <a href="https://github.com/zhom">
-                    <img src="https://avatars.githubusercontent.com/u/2717306?v=4" width="100;" alt="zhom"/>
-                    <br />
-                    <sub><b>zhom</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/HassiyYT">
-                    <img src="https://avatars.githubusercontent.com/u/81773493?v=4" width="100;" alt="HassiyYT"/>
-                    <br />
-                    <sub><b>Hassiy</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/webees">
-                    <img src="https://avatars.githubusercontent.com/u/5155291?v=4" width="100;" alt="webees"/>
-                    <br />
-                    <sub><b>JockLee</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/yb403">
-                    <img src="https://avatars.githubusercontent.com/u/87396571?v=4" width="100;" alt="yb403"/>
-                    <br />
-                    <sub><b>yb403</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/huy97">
-                    <img src="https://avatars.githubusercontent.com/u/30153437?v=4" width="100;" alt="huy97"/>
-                    <br />
-                    <sub><b>Huy Le</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/drunkod">
-                    <img src="https://avatars.githubusercontent.com/u/9677471?v=4" width="100;" alt="drunkod"/>
-                    <br />
-                    <sub><b>drunkod</b></sub>
-                </a>
-            </td>
-		</tr>
-		<tr>
-            <td align="center">
-                <a href="https://github.com/JorySeverijnse">
-                    <img src="https://avatars.githubusercontent.com/u/117462355?v=4" width="100;" alt="JorySeverijnse"/>
-                    <br />
-                    <sub><b>Jory Severijnse</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/ThiagoMafra-Integrare">
-                    <img src="https://avatars.githubusercontent.com/u/222241596?v=4" width="100;" alt="ThiagoMafra-Integrare"/>
-                    <br />
-                    <sub><b>Thiago Mafra</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/liasica">
-                    <img src="https://avatars.githubusercontent.com/u/671431?v=4" width="100;" alt="liasica"/>
-                    <br />
-                    <sub><b>liasica</b></sub>
-                </a>
-            </td>
-		</tr>
-	<tbody>
-</table>
-<!-- readme: collaborators,contributors -end -->
-
-## Contact
-
-Have an urgent question or want to report a security vulnerability? Send an email to [contact@donutbrowser.com](mailto:contact@donutbrowser.com).
+- [Issues](https://github.com/paracosm17/donutbrowser-neo/issues)
+- [Discussions](https://github.com/paracosm17/donutbrowser-neo/discussions)
+- [Upstream project](https://github.com/zhom/donutbrowser)
 
 ## License
 
-This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+NeoDonut Browser is distributed under the GNU Affero General Public License
+version 3. See [LICENSE](LICENSE). The original project and contributor history
+remain attributed to their respective copyright holders.

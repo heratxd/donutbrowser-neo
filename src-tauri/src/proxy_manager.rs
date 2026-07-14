@@ -1173,7 +1173,7 @@ impl ProxyManager {
       version: "1.0".to_string(),
       proxies,
       exported_at: Utc::now().to_rfc3339(),
-      source: "DonutBrowser".to_string(),
+      source: "NeoDonutBrowser".to_string(),
     };
 
     serde_json::to_string_pretty(&export_data).map_err(|e| format!("Failed to serialize: {e}"))

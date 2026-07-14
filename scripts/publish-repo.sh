@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+if [[ "${GITHUB_REPOSITORY:-}" != "zhom/donutbrowser" && "${ALLOW_UPSTREAM_REPO_PUBLISH:-}" != "1" ]]; then
+  echo "This script publishes to upstream Donut Browser package infrastructure and is disabled in the NeoDonut Browser fork." >&2
+  echo "Use .github/workflows/community-release.yml for fork release assets." >&2
+  exit 1
+fi
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"

@@ -26,18 +26,18 @@ pub fn is_portable() -> bool {
   portable_dir().is_some()
 }
 
-/// Optional single-root override for all on-disk state. Set
-/// `DONUTBROWSER_DATA_ROOT=/path` (e.g. a tmpfs mount) to relocate
-/// data/cache/logs under `<root>/{data,cache,logs}` without touching the real
-/// dev/prod directories. The more specific `DONUTBROWSER_DATA_DIR` /
-/// `DONUTBROWSER_CACHE_DIR` overrides still take precedence over this.
+/// Optional single-root override for all on-disk state.
+///
+/// NeoDonut intentionally does not honor Donut Browser's legacy override
+/// variables so the fork cannot accidentally share profiles or caches with an
+/// upstream installation.
 fn data_root() -> Option<PathBuf> {
-  std::env::var_os("DONUTBROWSER_DATA_ROOT")
-    .filter(|v| !v.is_empty())
+  std::env::var_os("NEODONUT_DATA_ROOT")
+    .filter(|value| !value.is_empty())
     .map(PathBuf::from)
 }
 
-/// Log directory when `DONUTBROWSER_DATA_ROOT` is set (`<root>/logs`); `None`
+/// Log directory when a data-root override is set (`<root>/logs`); `None`
 /// otherwise, in which case the platform default app log dir is used.
 pub fn log_dir_override() -> Option<PathBuf> {
   data_root().map(|root| root.join("logs"))
@@ -45,9 +45,9 @@ pub fn log_dir_override() -> Option<PathBuf> {
 
 pub fn app_name() -> &'static str {
   if cfg!(debug_assertions) {
-    "DonutBrowserDev"
+    "NeoDonutBrowserDev"
   } else {
-    "DonutBrowser"
+    "NeoDonutBrowser"
   }
 }
 
@@ -59,7 +59,9 @@ pub fn data_dir() -> PathBuf {
     }
   }
 
-  if let Ok(dir) = std::env::var("DONUTBROWSER_DATA_DIR") {
+  if let Some(dir) = std::env::var_os("NEODONUT_DATA_DIR")
+    .filter(|value| !value.is_empty())
+  {
     return PathBuf::from(dir);
   }
 
@@ -82,7 +84,9 @@ pub fn cache_dir() -> PathBuf {
     }
   }
 
-  if let Ok(dir) = std::env::var("DONUTBROWSER_CACHE_DIR") {
+  if let Some(dir) = std::env::var_os("NEODONUT_CACHE_DIR")
+    .filter(|value| !value.is_empty())
+  {
     return PathBuf::from(dir);
   }
 
@@ -217,8 +221,8 @@ mod tests {
   fn test_app_name() {
     let name = app_name();
     assert!(
-      name == "DonutBrowser" || name == "DonutBrowserDev",
-      "app_name should be DonutBrowser or DonutBrowserDev, got: {name}"
+      name == "NeoDonutBrowser" || name == "NeoDonutBrowserDev",
+      "app_name should be NeoDonutBrowser or NeoDonutBrowserDev, got: {name}"
     );
   }
 

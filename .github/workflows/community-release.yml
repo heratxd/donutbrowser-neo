@@ -1,0 +1,308 @@
+name: NeoDonut Community Release
+
+on:
+  push:
+    tags:
+      - "v*-neo.*"
+
+concurrency:
+  group: community-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  security-events: write
+  packages: read
+  actions: read
+
+env:
+  STABLE_RELEASE: "true"
+
+jobs:
+  preflight:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: Validate release tag and branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag belongs to community
+        shell: bash
+        run: |
+          git fetch origin community
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/community; then
+            echo "Release tags must point to a commit contained in origin/community."
+            exit 1
+          fi
+
+      - name: Verify versions are synchronized
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          EXPECTED="${TAG#v}"
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAURI_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          CARGO_VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' src-tauri/Cargo.toml | head -n 1)
+
+          printf 'tag=%s\npackage=%s\ntauri=%s\ncargo=%s\n' \
+            "$EXPECTED" "$PACKAGE_VERSION" "$TAURI_VERSION" "$CARGO_VERSION"
+
+          if [[ "$PACKAGE_VERSION" != "$EXPECTED" || \
+                "$TAURI_VERSION" != "$EXPECTED" || \
+                "$CARGO_VERSION" != "$EXPECTED" ]]; then
+            echo "Release tag and project versions must match exactly."
+            exit 1
+          fi
+
+      - name: Verify fork updater identity
+        shell: bash
+        run: |
+          grep -q 'paracosm17/donutbrowser-neo' src-tauri/src/app_auto_updater.rs
+          grep -q 'io.github.paracosm17.neodonutbrowser' src-tauri/tauri.conf.json
+          grep -q 'NeoDonutBrowser' src-tauri/src/app_dirs.rs
+          if grep -q 'api.github.com/repos/zhom/donutbrowser/releases' src-tauri/src/app_auto_updater.rs; then
+            echo "Updater still references upstream releases."
+            exit 1
+          fi
+
+  security-scan:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: Security vulnerability scan
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@9a498708959aeaef5ef730655706c5a1df1edbc2" # v2.3.8
+    with:
+      scan-args: |-
+        -r
+        --skip-git
+        --lockfile=pnpm-lock.yaml
+        --lockfile=src-tauri/Cargo.lock
+        ./
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+
+  lint-js:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: Lint JavaScript/TypeScript
+    uses: ./.github/workflows/lint-js.yml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  lint-rust:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: Lint and test Rust
+    uses: ./.github/workflows/lint-rs.yml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  spellcheck:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: Spell check
+    uses: ./.github/workflows/spellcheck.yml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  codeql:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: CodeQL
+    uses: ./.github/workflows/codeql.yml
+    secrets: inherit
+    permissions:
+      security-events: write
+      contents: read
+      packages: read
+      actions: read
+
+  release:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: Build ${{ matrix.target }}
+    needs: [preflight, security-scan, lint-js, lint-rust, spellcheck, codeql]
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            args: "--target aarch64-apple-darwin --no-sign --verbose"
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            args: "--target x86_64-apple-darwin --no-sign --verbose"
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: "--target x86_64-unknown-linux-gnu --no-sign --verbose"
+          - platform: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            args: "--target aarch64-unknown-linux-gnu --no-sign --verbose"
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            args: "--target x86_64-pc-windows-msvc --no-sign --verbose"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Disable autocrlf on Windows
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # master
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux build dependencies
+        if: startsWith(matrix.platform, 'ubuntu-')
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libxdo-dev \
+            pkg-config \
+            xdg-utils
+
+      - name: Cache Rust dependencies
+        uses: swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          workdir: ./src-tauri
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        env:
+          NEXT_PUBLIC_TURNSTILE: ${{ secrets.NEXT_PUBLIC_TURNSTILE }}
+        run: pnpm exec next build
+
+      - name: Verify static frontend
+        shell: bash
+        run: test -f dist/index.html
+
+      - name: Build proxy sidecar
+        shell: bash
+        working-directory: src-tauri
+        run: cargo build --bin donut-proxy --target ${{ matrix.target }} --release
+
+      - name: Copy proxy sidecar for Tauri
+        shell: bash
+        run: |
+          mkdir -p src-tauri/binaries
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            cp "src-tauri/target/${{ matrix.target }}/release/donut-proxy.exe" \
+              "src-tauri/binaries/donut-proxy-${{ matrix.target }}.exe"
+          else
+            cp "src-tauri/target/${{ matrix.target }}/release/donut-proxy" \
+              "src-tauri/binaries/donut-proxy-${{ matrix.target }}"
+            chmod +x "src-tauri/binaries/donut-proxy-${{ matrix.target }}"
+          fi
+
+      - name: Build and upload Tauri bundles
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          NEXT_PUBLIC_TURNSTILE: ${{ secrets.NEXT_PUBLIC_TURNSTILE }}
+        with:
+          projectPath: ./src-tauri
+          tagName: ${{ github.ref_name }}
+          releaseName: "NeoDonut Browser ${{ github.ref_name }}"
+          releaseBody: |
+            Independent community fork build.
+
+            These artifacts are currently unsigned. Verify downloads with SHA256SUMS.txt.
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+
+      - name: Create portable Windows ZIP
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          PORTABLE_DIR="NeoDonut-Browser-Portable"
+          mkdir -p "$PORTABLE_DIR"
+          cp "src-tauri/target/${{ matrix.target }}/release/neodonutbrowser.exe" \
+            "$PORTABLE_DIR/NeoDonutBrowser.exe"
+          cp "src-tauri/target/${{ matrix.target }}/release/donut-proxy.exe" \
+            "$PORTABLE_DIR/donut-proxy.exe"
+          if [[ -f "src-tauri/target/${{ matrix.target }}/release/WebView2Loader.dll" ]]; then
+            cp "src-tauri/target/${{ matrix.target }}/release/WebView2Loader.dll" "$PORTABLE_DIR/"
+          fi
+          touch "$PORTABLE_DIR/.portable"
+          7z a "NeoDonut_Browser_${VERSION}_x64-portable.zip" "$PORTABLE_DIR"
+
+      - name: Upload portable Windows ZIP
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          gh release upload "$TAG" \
+            "NeoDonut_Browser_${VERSION}_x64-portable.zip" \
+            --clobber
+
+  checksums:
+    if: github.repository == 'paracosm17/donutbrowser-neo'
+    name: Publish SHA-256 checksums
+    needs: [release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download final release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          mkdir release-assets
+          gh release download "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir release-assets
+
+      - name: Generate and upload SHA256SUMS.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        shell: bash
+        working-directory: release-assets
+        run: |
+          find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\0' \
+            | sort -z \
+            | xargs -0 sha256sum > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release upload "$TAG" SHA256SUMS.txt \
+            --clobber \
+            --repo "$GITHUB_REPOSITORY"
