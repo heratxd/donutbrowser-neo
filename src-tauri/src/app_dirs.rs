@@ -59,9 +59,7 @@ pub fn data_dir() -> PathBuf {
     }
   }
 
-  if let Some(dir) = std::env::var_os("NEODONUT_DATA_DIR")
-    .filter(|value| !value.is_empty())
-  {
+  if let Some(dir) = std::env::var_os("NEODONUT_DATA_DIR").filter(|value| !value.is_empty()) {
     return PathBuf::from(dir);
   }
 
@@ -84,9 +82,7 @@ pub fn cache_dir() -> PathBuf {
     }
   }
 
-  if let Some(dir) = std::env::var_os("NEODONUT_CACHE_DIR")
-    .filter(|value| !value.is_empty())
-  {
+  if let Some(dir) = std::env::var_os("NEODONUT_CACHE_DIR").filter(|value| !value.is_empty()) {
     return PathBuf::from(dir);
   }
 

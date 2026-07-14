@@ -20,7 +20,6 @@ import {
   LuGroup,
   LuKey,
   LuLink,
-  LuLock,
   LuLockOpen,
   LuPlus,
   LuPuzzle,
@@ -145,7 +144,7 @@ function formatBytes(bytes: number): string {
 
 /**
  * Shows the total bytes routed through Donut's local proxy worker for this
- * profile. Only counts traffic flowing through the donut-proxy binary — not
+ * profile. Only counts traffic flowing through the donut-proxy binary вЂ” not
  * the browser's full network usage, hence the "Local" qualifier.
  */
 function LocalDataTransferCard({
@@ -159,7 +158,7 @@ function LocalDataTransferCard({
     total_bytes_sent: number;
     total_bytes_received: number;
   };
-  const [value, setValue] = React.useState<string>("—");
+  const [value, setValue] = React.useState<string>("вЂ”");
 
   React.useEffect(() => {
     let mounted = true;
@@ -178,7 +177,7 @@ function LocalDataTransferCard({
           formatBytes(snap.total_bytes_sent + snap.total_bytes_received),
         );
       } catch {
-        if (mounted) setValue("—");
+        if (mounted) setValue("вЂ”");
       }
     };
     void fetchSnapshot();
@@ -376,14 +375,14 @@ export function ProfileInfoDialog({
 
   // Items in the settings tab `actions` list MUST only open another dialog
   // (or trigger a navigation/action that closes this one). Do NOT put inline
-  // settings UI — inputs, toggles, save buttons — directly in this dialog's
+  // settings UI вЂ” inputs, toggles, save buttons вЂ” directly in this dialog's
   // settings tab. Each setting belongs in its own focused dialog (see
   // `ProfileLaunchHookDialog`, `ProfileBypassRulesDialog`,
   // `ProfileDnsBlocklistDialog` for the pattern). The settings tab is purely
   // a navigation hub.
   interface ActionItem {
     // Stable, language-independent key used to map sidebar sections to actions.
-    // The sidebar must NOT match on `label` — labels are translated, so English
+    // The sidebar must NOT match on `label` вЂ” labels are translated, so English
     // substring matching hides sections for every non-English user.
     id?: string;
     icon: React.ReactNode;
@@ -684,12 +683,12 @@ function ProfileInfoLayout({
   const syncAction = findAction("sync");
   const _launchHookAction = findAction("hook");
   const _networkAction = findAction("network");
-  // Password actions are no longer routed via the legacy action handlers —
+  // Password actions are no longer routed via the legacy action handlers вЂ”
   // SecuritySectionInline writes directly to the backend instead.
 
   // Cookie count is fetched at the layout level so the sidebar badge can
   // surface it without waiting for the user to open the Cookies section.
-  // The effect deps must be primitive — `cookiesAction` is a new object
+  // The effect deps must be primitive вЂ” `cookiesAction` is a new object
   // every render and using it directly here caused an infinite re-render
   // loop that froze the entire app when the dialog opened.
   // Skipped while running: the cookie DB is held by the browser and we
@@ -1717,7 +1716,7 @@ function CookiesSectionInline({
                 ? t("profileInfo.values.loading")
                 : stats
                   ? stats.total_count.toLocaleString()
-                  : "—"}
+                  : "вЂ”"}
             </p>
           </div>
           {domains.length > 0 && (
@@ -1882,7 +1881,7 @@ function SecuritySectionInline({
   isRunning: boolean;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
-  // Mode is implied by current state: unprotected → "set"; protected →
+  // Mode is implied by current state: unprotected в†’ "set"; protected в†’
   // "change" by default, with a "remove" alternative.
   type Mode = "set" | "change" | "remove";
   const initialMode: Mode = profile.password_protected ? "change" : "set";
@@ -1919,7 +1918,7 @@ function SecuritySectionInline({
   };
 
   // Reset the form whenever the underlying profile state changes (e.g. the
-  // user just set a password — flip to "change" mode and clear fields).
+  // user just set a password вЂ” flip to "change" mode and clear fields).
   React.useEffect(() => {
     setMode(profile.password_protected ? "change" : "set");
     setOldPassword("");
@@ -1942,8 +1941,7 @@ function SecuritySectionInline({
     }
     if (mode === "set" || mode === "change") {
       if (password.length < 8) return t("profilePassword.errors.tooShort");
-      if (password !== confirm)
-        return t("profilePassword.errors.mismatch");
+      if (password !== confirm) return t("profilePassword.errors.mismatch");
     }
     return null;
   };

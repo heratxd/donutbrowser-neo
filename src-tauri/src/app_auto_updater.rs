@@ -2025,9 +2025,18 @@ mod tests {
 
   #[test]
   fn test_parse_neo_version() {
-    assert_eq!(AppAutoUpdater::parse_neo_version("v1.2.3-neo.4"), Some((1, 2, 3, 4)));
-    assert_eq!(AppAutoUpdater::parse_neo_version("1.2.3-neo.4"), Some((1, 2, 3, 4)));
-    assert_eq!(AppAutoUpdater::parse_neo_version("v2.0.0-neo.1"), Some((2, 0, 0, 1)));
+    assert_eq!(
+      AppAutoUpdater::parse_neo_version("v1.2.3-neo.4"),
+      Some((1, 2, 3, 4))
+    );
+    assert_eq!(
+      AppAutoUpdater::parse_neo_version("1.2.3-neo.4"),
+      Some((1, 2, 3, 4))
+    );
+    assert_eq!(
+      AppAutoUpdater::parse_neo_version("v2.0.0-neo.1"),
+      Some((2, 0, 0, 1))
+    );
     assert_eq!(AppAutoUpdater::parse_neo_version("0.1.0"), None);
   }
 
@@ -2116,7 +2125,8 @@ not-a-hash  NeoDonut_Browser_0.29.0_amd64.deb
 
     // Plain entry.
     assert_eq!(
-      AppAutoUpdater::find_checksum_for_file(sums, "NeoDonut_Browser_0.29.0_aarch64.dmg").as_deref(),
+      AppAutoUpdater::find_checksum_for_file(sums, "NeoDonut_Browser_0.29.0_aarch64.dmg")
+        .as_deref(),
       Some("0e5a4601745092b7d1c93c1e7e1c30d923be3d1e916b661bd53d1c0c9c7f0a11")
     );
     // Binary-mode marker is stripped; hash is normalized to lowercase.
