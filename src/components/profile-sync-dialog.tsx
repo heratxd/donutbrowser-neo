@@ -100,7 +100,7 @@ export function ProfileSyncDialog({
       }
 
       if (newMode === "Encrypted" && !canUseEncryption) {
-        showErrorToast(t("settings.encryption.requiresProOrOwner"));
+        showErrorToast(t("settings.encryption.requiresTeamOwner"));
         return;
       }
 
@@ -258,7 +258,7 @@ export function ProfileSyncDialog({
                         <p className="text-sm text-muted-foreground">
                           {canUseEncryption
                             ? t("sync.mode.encryptedDescription")
-                            : t("settings.encryption.requiresProOrOwner")}
+                            : t("settings.encryption.requiresTeamOwner")}
                         </p>
                       </Label>
                     </div>

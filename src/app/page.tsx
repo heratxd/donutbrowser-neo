@@ -219,13 +219,10 @@ export default function Home() {
     checkTrialStatus,
   } = useCommercialTrial();
 
-  // Cloud auth for cross-OS unlock
   const { user: cloudUser } = useCloudAuth();
-  const crossOsUnlocked = getEntitlements(cloudUser).crossOsFingerprints;
-  // Bulk run/stop is a paid (browser automation) feature, matching the
-  // /v1/profiles/batch/run API gate. Free/starter users see the bulk Run/Stop
-  // actions disabled with a Pro badge.
-  const automationUnlocked = getEntitlements(cloudUser).browserAutomation;
+  const cloudEntitlements = getEntitlements(cloudUser);
+  const cloudBackupUnlocked = cloudEntitlements.cloudBackup;
+  const hasPaidSubscription = cloudEntitlements.active;
 
   const [selfHostedSyncConfigured, setSelfHostedSyncConfigured] =
     useState(false);
@@ -242,7 +239,7 @@ export default function Home() {
     }
   }, [cloudUser]);
 
-  const syncUnlocked = crossOsUnlocked || selfHostedSyncConfigured;
+  const syncUnlocked = cloudBackupUnlocked || selfHostedSyncConfigured;
 
   const [currentPage, setCurrentPage] = useState<AppPage>("profiles");
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
@@ -1393,7 +1390,6 @@ export default function Home() {
     let unlistenStarted: (() => void) | undefined;
     let unlistenProgress: (() => void) | undefined;
     let unlistenCompleted: (() => void) | undefined;
-    let unlistenWayfernBlocked: (() => void) | undefined;
 
     void (async () => {
       unlistenRequired = await listen(
@@ -1456,16 +1452,6 @@ export default function Home() {
         });
       });
 
-      unlistenWayfernBlocked = await listen("wayfern-paid-blocked", () => {
-        showToast({
-          id: "wayfern-paid-blocked",
-          type: "error",
-          title: t("wayfernBlocked.title"),
-          description: t("wayfernBlocked.description"),
-          duration: 15000,
-        });
-      });
-
       // If the effect was torn down mid-setup, the cleanup below already ran
       // before these handles existed — unlisten them now so nothing leaks.
       if (disposed) {
@@ -1473,7 +1459,6 @@ export default function Home() {
         unlistenStarted?.();
         unlistenProgress?.();
         unlistenCompleted?.();
-        unlistenWayfernBlocked?.();
       }
     })();
 
@@ -1483,7 +1468,6 @@ export default function Home() {
       unlistenStarted?.();
       unlistenProgress?.();
       unlistenCompleted?.();
-      unlistenWayfernBlocked?.();
     };
   }, [t]);
 
@@ -1613,14 +1597,12 @@ export default function Home() {
                 onBulkCopyCookies={handleBulkCopyCookies}
                 onBulkRun={handleBulkRun}
                 onBulkStop={handleBulkStop}
-                bulkActionsUnlocked={automationUnlocked}
                 onBulkExtensionGroupAssignment={
                   handleBulkExtensionGroupAssignment
                 }
                 onAssignExtensionGroup={handleAssignExtensionGroup}
                 onOpenProfileSyncDialog={handleOpenProfileSyncDialog}
                 onToggleProfileSync={handleToggleProfileSync}
-                crossOsUnlocked={crossOsUnlocked}
                 syncUnlocked={syncUnlocked}
                 getProfileSyncInfo={getProfileSyncInfo}
                 onLaunchWithSync={(profile) => {
@@ -1693,7 +1675,6 @@ export default function Home() {
                 setExtensionManagementDialogOpen(false);
                 setCurrentPage("profiles");
               }}
-              limitedMode={false}
               subPage={currentPage === "extensions"}
               initialTab={extensionManagementInitialTab}
             />
@@ -1706,7 +1687,6 @@ export default function Home() {
                 setImportProfileDialogOpen(false);
                 setCurrentPage("profiles");
               }}
-              crossOsUnlocked={crossOsUnlocked}
               subPage={currentPage === "import"}
             />
           )}
@@ -1736,7 +1716,6 @@ export default function Home() {
         }}
         onCreateProfile={handleCreateProfile}
         selectedGroupId={selectedGroupId}
-        crossOsUnlocked={crossOsUnlocked}
       />
 
       <CommandPalette
@@ -1854,7 +1833,6 @@ export default function Home() {
             ? runningProfiles.has(currentProfileForWayfernConfig.id)
             : false
         }
-        crossOsUnlocked={crossOsUnlocked}
       />
 
       <GroupAssignmentDialog
@@ -2037,7 +2015,7 @@ export default function Home() {
           termsAccepted === true &&
           trialStatus?.type === "Expired" &&
           !trialAcknowledged &&
-          !crossOsUnlocked
+          !hasPaidSubscription
         }
         onClose={checkTrialStatus}
       />

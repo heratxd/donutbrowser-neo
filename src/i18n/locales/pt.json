@@ -165,7 +165,6 @@
       "passwordSaved": "Senha de criptografia definida",
       "passwordMismatch": "As senhas não coincidem",
       "passwordTooShort": "A senha deve ter pelo menos 8 caracteres",
-      "requiresProOrOwner": "A criptografia de perfis está disponível para usuários Pro e proprietários de equipe.",
       "validatePassword": "Validar",
       "validateDialog": {
         "title": "Validar senha de criptografia",
@@ -173,7 +172,8 @@
         "submit": "Validar",
         "matchToast": "A senha está correta",
         "mismatchToast": "A senha não corresponde"
-      }
+      },
+      "requiresTeamOwner": "Somente o proprietário da equipe pode alterar a criptografia dos perfis compartilhados da equipe."
     },
     "commercial": {
       "title": "Licença Comercial",
@@ -270,7 +270,6 @@
       "stopLeader": "Parar este perfil e todos os seus seguidores",
       "stopFollower": "Seguindo as ações de {{leaderName}}",
       "desyncedTooltip": "A sincronização falhou em {{url}}",
-      "paidFeature": "O sincronizador é um recurso pago",
       "wayfernOnly": "Apenas perfis Wayfern podem ser sincronizados",
       "selectFollowers": "Selecionar perfis seguidores",
       "selectFollowersDesc": "Escolha os perfis que replicarão as ações do perfil líder. Apenas perfis Wayfern parados podem ser selecionados.",
@@ -307,8 +306,7 @@
       "assignExtensionGroup": "Atribuir grupo de extensões",
       "copyCookies": "Copiar cookies",
       "runSelected": "Executar selecionados",
-      "stopSelected": "Parar selecionados",
-      "proRequired": "Plano Pro necessário para execução/parada em massa"
+      "stopSelected": "Parar selecionados"
     },
     "passwordProtectedBadge": "Protegido por Senha",
     "launchHook": {
@@ -846,8 +844,7 @@
       "selectFile": "Escolher Arquivo",
       "preview": "{{count}} cookies encontrados",
       "success": "{{imported}} cookies importados com sucesso ({{replaced}} substituídos)",
-      "error": "Falha ao importar cookies",
-      "proFeature": "A importação de cookies é um recurso Pro"
+      "error": "Falha ao importar cookies"
     },
     "export": {
       "title": "Exportar Cookies",
@@ -1053,7 +1050,6 @@
     "productSub": "Produto Sub",
     "brand": "Marca",
     "brandVersion": "Versão da Marca",
-    "proFeature": "Este é um recurso Pro",
     "generateFingerprint": "Gerar Impressão Digital",
     "refreshFingerprint": "Atualizar Impressão Digital",
     "canvasNoiseSeedPlaceholder": "Insira uma string seed para a impressão digital do canvas",
@@ -1193,9 +1189,7 @@
       "cannotWhileRunning": "Pare o perfil antes de alterar a senha."
     },
     "fingerprint": {
-      "notSupported": "A edição de impressão digital só está disponível para perfis Wayfern.",
-      "lockedTitle": "Visualizar e editar a impressão digital é um recurso Pro",
-      "lockedDescription": "As informações do seu dispositivo estão protegidas em todos os perfis. Visualizar e editar a impressão digital de um perfil requer um plano pago ativo."
+      "notSupported": "A edição de impressão digital só está disponível para perfis Wayfern."
     },
     "syncStatusValue": {
       "waiting": "Aguardando",
@@ -1212,7 +1206,6 @@
     "extensionsTab": "Extensões",
     "groupsTab": "Grupos",
     "managedNotice": "As extensões gerenciadas aqui substituirão quaisquer extensões instaladas manualmente nos perfis ao serem iniciados.",
-    "proRequired": "O gerenciamento de extensões é um recurso Pro",
     "empty": "Nenhuma extensão enviada ainda.",
     "noGroups": "Nenhum grupo de extensões criado ainda.",
     "createGroup": "Criar Grupo",
@@ -1270,14 +1263,6 @@
       "groupsDescription": "Excluir {{count}} grupos de extensões? {{names}}",
       "confirmButton": "Excluir"
     }
-  },
-  "pro": {
-    "badge": "PRO",
-    "fingerprintLocked": "A edição de impressão digital é um recurso Pro",
-    "cookieCopyLocked": "A cópia de cookies é um recurso Pro",
-    "cookieImportLocked": "A importação de cookies é um recurso Pro",
-    "cookieExportLocked": "A exportação de cookies é um recurso Pro",
-    "cookieManagementLocked": "O gerenciamento de cookies é um recurso Pro"
   },
   "dnsBlocklist": {
     "title": "Lista de bloqueio DNS",
@@ -1794,7 +1779,6 @@
     "cookieDbLocked": "Não foi possível ler os cookies — o banco de dados está bloqueado. Feche o navegador e tente novamente.",
     "cookieDbUnavailable": "Não foi possível ler os cookies — o repositório de cookies está indisponível.",
     "selfHostedRequiresLogout": "Saia da sua conta Donut antes de configurar um servidor auto-hospedado.",
-    "fingerprintRequiresPro": "Visualizar ou editar a impressão digital requer um plano pago ativo. A proteção está incluída em todos os planos.",
     "proxyNotWorking": "O proxy selecionado não está funcionando, então o perfil não foi criado.",
     "proxyPaymentRequired": "O proxy selecionado exige pagamento (402) — sua assinatura pode ter expirado — então o perfil não foi criado.",
     "vpnNotWorking": "A VPN selecionada não está funcionando, então o perfil não foi criado.",
@@ -1884,9 +1868,7 @@
       "testConnection": "Testar conexão",
       "disconnect": "Desconectar"
     },
-    "deviceOrdinal": "{{ordinal}} de {{count}}",
-    "automationPrimaryOnly": "A automação do navegador funciona apenas no seu dispositivo principal (Dispositivo 1). Saia da conta nele para usá-la aqui.",
-    "automationActiveHere": "A automação do navegador está ativa neste dispositivo."
+    "deviceOrdinal": "{{ordinal}} de {{count}}"
   },
   "shortcutsPage": {
     "title": "Atalhos de teclado",
@@ -2005,10 +1987,6 @@
       "trialBadge": "2 semanas grátis",
       "commercialDesc": "Gratuito durante uma avaliação de 2 semanas. Depois, um plano pago mantém o projeto ativo e próspero."
     }
-  },
-  "wayfernBlocked": {
-    "title": "Automação do navegador pausada",
-    "description": "Sua conta foi temporariamente restringida dos recursos Pro do navegador, geralmente por entrar em vários dispositivos ao mesmo tempo. Saia dos outros dispositivos e reinicie o perfil para restaurá-la."
   },
   "wayfernConfigDialog": {
     "titleView": "Ver configurações de impressão digital - {{name}} ({{browser}})",

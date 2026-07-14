@@ -563,7 +563,7 @@ impl WayfernManager {
         "windows"
       });
 
-    // Include wayfern token if available (enables cross-OS fingerprinting for paid users)
+    // Include the Wayfern token when available; local fingerprint controls are not plan-gated.
     let wayfern_token = crate::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
     let mut refresh_params = json!({ "operatingSystem": os });
     if let Some(ref token) = wayfern_token {
@@ -885,18 +885,14 @@ impl WayfernManager {
     args.push(format!("--wayfern-profile-color={profile_color}"));
 
     let mut wayfern_token = crate::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
-    if wayfern_token.is_none()
-      && crate::cloud_auth::CLOUD_AUTH
-        .has_active_paid_subscription()
-        .await
-    {
+    if wayfern_token.is_none() && crate::cloud_auth::CLOUD_AUTH.is_logged_in().await {
       // Brief wait for the background token fetch — when the API is healthy
       // the token usually lands in well under a second. If api.donutbrowser.com
       // is unreachable we don't want to gate the whole launch on it; the
       // browser still works without the token (cross-OS fingerprinting just
       // won't be enabled for this session, and the next launch will pick it
       // up once the token arrives).
-      log::info!("Wayfern token not ready for paid user, waiting briefly...");
+      log::info!("Wayfern token not ready for signed-in user, waiting briefly...");
       for _ in 0..3 {
         tokio::time::sleep(Duration::from_secs(1)).await;
         wayfern_token = crate::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
@@ -1029,7 +1025,7 @@ impl WayfernManager {
         );
       }
 
-      // Include wayfern token if available (enables cross-OS fingerprinting for paid users)
+      // Include the Wayfern token when available; local fingerprint controls are not plan-gated.
       let wayfern_token = crate::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
       let mut fingerprint_params = fingerprint_for_cdp.clone();
       if let Some(ref token) = wayfern_token {

@@ -62,7 +62,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ProBadge } from "@/components/ui/pro-badge";
 import {
   Table,
   TableBody,
@@ -222,7 +221,6 @@ interface TableMeta {
   syncStatuses: Record<string, { status: string; error?: string }>;
   onOpenProfileSyncDialog?: (profile: BrowserProfile) => void;
   onToggleProfileSync?: (profile: BrowserProfile) => void;
-  crossOsUnlocked?: boolean;
   syncUnlocked?: boolean;
 
   // Country proxy creation (inline in proxy dropdown)
@@ -1143,12 +1141,10 @@ interface ProfilesDataTableProps {
   onBulkCopyCookies?: () => void;
   onBulkRun?: () => void;
   onBulkStop?: () => void;
-  bulkActionsUnlocked?: boolean;
   onBulkExtensionGroupAssignment?: () => void;
   onAssignExtensionGroup?: (profileIds: string[]) => void;
   onOpenProfileSyncDialog?: (profile: BrowserProfile) => void;
   onToggleProfileSync?: (profile: BrowserProfile) => void;
-  crossOsUnlocked?: boolean;
   syncUnlocked?: boolean;
   getProfileSyncInfo?: (profileId: string) =>
     | {
@@ -1191,12 +1187,10 @@ export function ProfilesDataTable({
   onBulkCopyCookies,
   onBulkRun,
   onBulkStop,
-  bulkActionsUnlocked = false,
   onBulkExtensionGroupAssignment,
   onAssignExtensionGroup,
   onOpenProfileSyncDialog,
   onToggleProfileSync,
-  crossOsUnlocked = false,
   syncUnlocked = false,
   getProfileSyncInfo,
   onLaunchWithSync,
@@ -1967,7 +1961,6 @@ export function ProfilesDataTable({
       syncStatuses,
       onOpenProfileSyncDialog,
       onToggleProfileSync,
-      crossOsUnlocked,
       syncUnlocked,
 
       // Country proxy creation
@@ -2036,7 +2029,6 @@ export function ProfilesDataTable({
       syncStatuses,
       onOpenProfileSyncDialog,
       onToggleProfileSync,
-      crossOsUnlocked,
       syncUnlocked,
       countries,
       loadCountries,
@@ -3288,7 +3280,6 @@ export function ProfilesDataTable({
                 setProfileForInfoDialog(null);
                 setProfileToDelete(profile);
               }}
-              crossOsUnlocked={crossOsUnlocked}
               isRunning={infoIsRunning}
               isDisabled={infoIsDisabled}
               isCrossOs={infoIsCrossOs}
@@ -3299,42 +3290,22 @@ export function ProfilesDataTable({
       <DataTableActionBar table={table}>
         <DataTableActionBarSelection table={table} />
         {onBulkRun && (
-          <span className="relative inline-flex">
-            <DataTableActionBarAction
-              tooltip={
-                bulkActionsUnlocked
-                  ? t("profiles.actionBar.runSelected")
-                  : t("profiles.actionBar.proRequired")
-              }
-              onClick={bulkActionsUnlocked ? onBulkRun : undefined}
-              disabled={!bulkActionsUnlocked}
-              size="icon"
-            >
-              <LuPlay className="fill-current" />
-            </DataTableActionBarAction>
-            {!bulkActionsUnlocked && (
-              <ProBadge className="pointer-events-none absolute -top-2 -right-2" />
-            )}
-          </span>
+          <DataTableActionBarAction
+            tooltip={t("profiles.actionBar.runSelected")}
+            onClick={onBulkRun}
+            size="icon"
+          >
+            <LuPlay className="fill-current" />
+          </DataTableActionBarAction>
         )}
         {onBulkStop && (
-          <span className="relative inline-flex">
-            <DataTableActionBarAction
-              tooltip={
-                bulkActionsUnlocked
-                  ? t("profiles.actionBar.stopSelected")
-                  : t("profiles.actionBar.proRequired")
-              }
-              onClick={bulkActionsUnlocked ? onBulkStop : undefined}
-              disabled={!bulkActionsUnlocked}
-              size="icon"
-            >
-              <LuSquare className="fill-current" />
-            </DataTableActionBarAction>
-            {!bulkActionsUnlocked && (
-              <ProBadge className="pointer-events-none absolute -top-2 -right-2" />
-            )}
-          </span>
+          <DataTableActionBarAction
+            tooltip={t("profiles.actionBar.stopSelected")}
+            onClick={onBulkStop}
+            size="icon"
+          >
+            <LuSquare className="fill-current" />
+          </DataTableActionBarAction>
         )}
         {onBulkGroupAssignment && (
           <DataTableActionBarAction

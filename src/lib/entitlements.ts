@@ -9,15 +9,27 @@ interface Capabilities {
   teamCollaboration: boolean;
 }
 
-const NONE: Entitlements = {
+const LOCAL_ONLY: Entitlements = {
   active: false,
-  browserAutomation: false,
-  crossOsFingerprints: false,
+  browserAutomation: true,
+  crossOsFingerprints: true,
   cloudBackup: false,
   teamCollaboration: false,
   profileLimit: 0,
-  requestsPerHour: 0,
+  requestsPerHour: DEFAULT_REQUESTS_PER_HOUR,
 };
+
+function withLocalCapabilities(entitlements: Entitlements): Entitlements {
+  return {
+    ...entitlements,
+    browserAutomation: true,
+    crossOsFingerprints: true,
+    requestsPerHour: Math.max(
+      entitlements.requestsPerHour,
+      DEFAULT_REQUESTS_PER_HOUR,
+    ),
+  };
+}
 
 // Mirror of PLAN_CAPABILITIES in apps/backend/src/plans/entitlements.ts. Keep in
 // sync — a new plan must be declared here too, or it falls back to DEFAULT_PAID.
@@ -65,16 +77,16 @@ const DEFAULT_PAID: Capabilities = {
 export function getEntitlements(
   user: CloudUser | null | undefined,
 ): Entitlements {
-  if (user?.entitlements) return user.entitlements;
-  if (!user) return NONE;
+  if (user?.entitlements) return withLocalCapabilities(user.entitlements);
+  if (!user) return LOCAL_ONLY;
 
   const active =
     user.plan !== "free" &&
     (user.subscriptionStatus === "active" || user.planPeriod === "lifetime");
-  if (!active) return NONE;
+  if (!active) return LOCAL_ONLY;
 
   const caps = PLAN_CAPABILITIES[user.plan] ?? DEFAULT_PAID;
-  return {
+  return withLocalCapabilities({
     active: true,
     browserAutomation: caps.browserAutomation,
     crossOsFingerprints: caps.crossOsFingerprints,
@@ -82,5 +94,5 @@ export function getEntitlements(
     teamCollaboration: caps.teamCollaboration,
     profileLimit: user.profileLimit,
     requestsPerHour: caps.browserAutomation ? DEFAULT_REQUESTS_PER_HOUR : 0,
-  };
+  });
 }

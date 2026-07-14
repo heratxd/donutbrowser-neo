@@ -1003,7 +1003,7 @@ export function SettingsDialog({
 
               {!canUseEncryption ? (
                 <p className="text-sm text-muted-foreground">
-                  {t("settings.encryption.requiresProOrOwner")}
+                  {t("settings.encryption.requiresTeamOwner")}
                 </p>
               ) : hasE2ePassword ? (
                 <div className="space-y-3">

@@ -25,7 +25,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCloudAuth } from "@/hooks/use-cloud-auth";
 import { translateBackendError } from "@/lib/backend-errors";
-import { getEntitlements } from "@/lib/entitlements";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { cn } from "@/lib/utils";
 import type { SyncSettings } from "@/types";
@@ -302,24 +301,6 @@ export function AccountPage({
                     )}
                   </div>
                 )}
-
-                {isLoggedIn &&
-                  user &&
-                  getEntitlements(user).browserAutomation &&
-                  user.isPrimaryDevice === false && (
-                    <p className="text-xs text-warning">
-                      {t("account.automationPrimaryOnly")}
-                    </p>
-                  )}
-                {isLoggedIn &&
-                  user &&
-                  getEntitlements(user).browserAutomation &&
-                  user.isPrimaryDevice === true &&
-                  (user.deviceCount ?? 1) > 1 && (
-                    <p className="text-xs text-success">
-                      {t("account.automationActiveHere")}
-                    </p>
-                  )}
 
                 <div className="mt-2 flex flex-wrap gap-2">
                   {isLoggedIn ? (

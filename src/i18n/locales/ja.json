@@ -165,7 +165,6 @@
       "passwordSaved": "暗号化パスワードが設定されました",
       "passwordMismatch": "パスワードが一致しません",
       "passwordTooShort": "パスワードは8文字以上である必要があります",
-      "requiresProOrOwner": "プロファイルの暗号化はProユーザーとチームオーナーのみ利用できます。",
       "validatePassword": "確認",
       "validateDialog": {
         "title": "暗号化パスワードを確認",
@@ -173,7 +172,8 @@
         "submit": "確認",
         "matchToast": "パスワードが一致しました",
         "mismatchToast": "パスワードが一致しません"
-      }
+      },
+      "requiresTeamOwner": "共有チームプロファイルの暗号化を変更できるのはチームオーナーのみです。"
     },
     "commercial": {
       "title": "商用ライセンス",
@@ -270,7 +270,6 @@
       "stopLeader": "このプロフィールとすべてのフォロワーを停止",
       "stopFollower": "{{leaderName}}のアクションを追従中",
       "desyncedTooltip": "{{url}}で同期に失敗しました",
-      "paidFeature": "シンクロナイザーは有料機能です",
       "wayfernOnly": "Wayfernプロフィールのみ同期可能です",
       "selectFollowers": "フォロワープロフィールを選択",
       "selectFollowersDesc": "リーダープロフィールのアクションを複製するプロフィールを選択してください。停止中のWayfernプロフィールのみ選択できます。",
@@ -307,8 +306,7 @@
       "assignExtensionGroup": "拡張機能グループを割り当て",
       "copyCookies": "Cookieをコピー",
       "runSelected": "選択を実行",
-      "stopSelected": "選択を停止",
-      "proRequired": "一括実行・停止には Pro プランが必要です"
+      "stopSelected": "選択を停止"
     },
     "passwordProtectedBadge": "パスワード保護",
     "launchHook": {
@@ -846,8 +844,7 @@
       "selectFile": "ファイルを選択",
       "preview": "{{count}}件のCookieが見つかりました",
       "success": "{{imported}}件のCookieをインポートしました（{{replaced}}件を置換）",
-      "error": "Cookieのインポートに失敗しました",
-      "proFeature": "Cookieのインポートはプロ機能です"
+      "error": "Cookieのインポートに失敗しました"
     },
     "export": {
       "title": "Cookieのエクスポート",
@@ -1053,7 +1050,6 @@
     "productSub": "プロダクトサブ",
     "brand": "ブランド",
     "brandVersion": "ブランドバージョン",
-    "proFeature": "これはPro機能です",
     "generateFingerprint": "フィンガープリントを生成",
     "refreshFingerprint": "フィンガープリントを更新",
     "canvasNoiseSeedPlaceholder": "キャンバスフィンガープリント用のシード文字列を入力",
@@ -1193,9 +1189,7 @@
       "cannotWhileRunning": "パスワードを変更する前にプロファイルを停止してください。"
     },
     "fingerprint": {
-      "notSupported": "フィンガープリント編集は Wayfern プロファイルでのみ利用できます。",
-      "lockedTitle": "フィンガープリントの表示と編集は Pro 機能です",
-      "lockedDescription": "デバイス情報はすべてのプロファイルで保護されています。プロファイルのフィンガープリントを表示・編集するには、有効な有料プランが必要です。"
+      "notSupported": "フィンガープリント編集は Wayfern プロファイルでのみ利用できます。"
     },
     "syncStatusValue": {
       "waiting": "待機中",
@@ -1212,7 +1206,6 @@
     "extensionsTab": "拡張機能",
     "groupsTab": "グループ",
     "managedNotice": "ここで管理される拡張機能は、起動時にプロファイルに手動でインストールされた拡張機能を置き換えます。",
-    "proRequired": "拡張機能管理はプロ機能です",
     "empty": "まだ拡張機能がアップロードされていません。",
     "noGroups": "まだ拡張機能グループが作成されていません。",
     "createGroup": "グループを作成",
@@ -1270,14 +1263,6 @@
       "groupsDescription": "{{count}}件の拡張機能グループを削除しますか？ {{names}}",
       "confirmButton": "削除"
     }
-  },
-  "pro": {
-    "badge": "PRO",
-    "fingerprintLocked": "フィンガープリント編集はプロ機能です",
-    "cookieCopyLocked": "Cookieのコピーはプロ機能です",
-    "cookieImportLocked": "Cookieのインポートはプロ機能です",
-    "cookieExportLocked": "Cookieのエクスポートはプロ機能です",
-    "cookieManagementLocked": "Cookie管理はプロ機能です"
   },
   "dnsBlocklist": {
     "title": "DNSブロックリスト",
@@ -1794,7 +1779,6 @@
     "cookieDbLocked": "Cookie を読み取れません — データベースがロックされています。ブラウザを閉じてから再試行してください。",
     "cookieDbUnavailable": "Cookie を読み取れません — Cookie ストアを利用できません。",
     "selfHostedRequiresLogout": "セルフホストサーバーを設定する前に Donut アカウントからサインアウトしてください。",
-    "fingerprintRequiresPro": "フィンガープリントの表示または編集には有効な有料プランが必要です。保護機能はすべてのプランに含まれています。",
     "proxyNotWorking": "選択したプロキシが機能していないため、プロファイルは作成されませんでした。",
     "proxyPaymentRequired": "選択したプロキシは支払いが必要です（402）。サブスクリプションが期限切れの可能性があります。そのため、プロファイルは作成されませんでした。",
     "vpnNotWorking": "選択したVPNが機能していないため、プロファイルは作成されませんでした。",
@@ -1884,9 +1868,7 @@
       "testConnection": "接続をテスト",
       "disconnect": "切断"
     },
-    "deviceOrdinal": "{{count}} 台中 {{ordinal}} 台目",
-    "automationPrimaryOnly": "ブラウザの自動化はプライマリデバイス（デバイス1）でのみ実行できます。ここで使用するには、そのデバイスでサインアウトしてください。",
-    "automationActiveHere": "ブラウザの自動化はこのデバイスで有効です。"
+    "deviceOrdinal": "{{count}} 台中 {{ordinal}} 台目"
   },
   "shortcutsPage": {
     "title": "キーボードショートカット",
@@ -2005,10 +1987,6 @@
       "trialBadge": "2週間無料",
       "commercialDesc": "2週間の評価期間は無料です。その後は有料プランが必要で、これによりプロジェクトの維持と発展が支えられます。"
     }
-  },
-  "wayfernBlocked": {
-    "title": "ブラウザの自動化が一時停止しました",
-    "description": "通常は複数のデバイスで同時にサインインしたことが原因で、アカウントのProブラウザ機能が一時的に制限されました。他のデバイスからサインアウトし、プロファイルを再起動すると復元されます。"
   },
   "wayfernConfigDialog": {
     "titleView": "フィンガープリント設定を表示 - {{name}} ({{browser}})",

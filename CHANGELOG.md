@@ -1,6 +1,18 @@
 # Changelog
 
 
+## Unreleased
+
+### Features
+
+- make cross-OS and manual fingerprint controls available to every user
+- make local REST, MCP, bulk actions, synchronizer, and extension management available without a subscription
+- request Wayfern fingerprint session tokens for free and paid signed-in users
+
+### Refactoring
+
+- remove obsolete Pro overlays, entitlement errors, and translations for local features
+
 ## v0.28.2 (2026-07-12)
 
 ### Features

@@ -106,7 +106,6 @@ interface ProfileInfoDialogProps {
   onSetPassword?: (profile: BrowserProfile) => void;
   onChangePassword?: (profile: BrowserProfile) => void;
   onRemovePassword?: (profile: BrowserProfile) => void;
-  crossOsUnlocked?: boolean;
   isRunning?: boolean;
   isDisabled?: boolean;
   isCrossOs?: boolean;
@@ -282,7 +281,6 @@ export function ProfileInfoDialog({
   onSetPassword,
   onChangePassword,
   onRemovePassword,
-  crossOsUnlocked = false,
   isRunning = false,
   isDisabled = false,
   isCrossOs = false,
@@ -393,7 +391,6 @@ export function ProfileInfoDialog({
     onClick: () => void;
     disabled?: boolean;
     destructive?: boolean;
-    proBadge?: boolean;
     runningBadge?: boolean;
     hidden?: boolean;
   }
@@ -434,9 +431,7 @@ export function ProfileInfoDialog({
       onClick: () => {
         handleAction(() => onConfigureWayfern?.(profile));
       },
-      // Viewing and editing fingerprints both require an active paid plan.
-      disabled: isDisabled || !crossOsUnlocked,
-      proBadge: !crossOsUnlocked,
+      disabled: isDisabled,
       runningBadge: isRunning,
       hidden: !isWayfern || !onConfigureWayfern,
     },
@@ -446,8 +441,7 @@ export function ProfileInfoDialog({
       onClick: () => {
         handleAction(() => onLaunchWithSync?.(profile));
       },
-      disabled: isDisabled || isRunning || !crossOsUnlocked,
-      proBadge: !crossOsUnlocked,
+      disabled: isDisabled || isRunning,
       hidden: profile.browser !== "wayfern" || !onLaunchWithSync,
     },
     {
@@ -633,7 +627,6 @@ interface ProfileInfoLayoutProps {
     onClick: () => void;
     disabled?: boolean;
     destructive?: boolean;
-    proBadge?: boolean;
     runningBadge?: boolean;
   }[];
   t: (key: string, options?: Record<string, unknown>) => string;
@@ -995,12 +988,6 @@ function ProfileInfoLayout({
             <FingerprintSectionInline
               profile={profile}
               isDisabled={isDisabled}
-              crossOsUnlocked={Boolean(
-                // Re-derive: parent passes crossOsUnlocked but the layout
-                // doesn't get it; we get it implicitly via fingerprintAction's
-                // proBadge state. Default to false if action missing.
-                fingerprintAction && !fingerprintAction.proBadge,
-              )}
               onSaved={onClose}
               t={t}
             />
@@ -1770,13 +1757,11 @@ function CookiesSectionInline({
 function FingerprintSectionInline({
   profile,
   isDisabled,
-  crossOsUnlocked,
   onSaved,
   t,
 }: {
   profile: BrowserProfile;
   isDisabled: boolean;
-  crossOsUnlocked: boolean;
   onSaved: () => void;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
@@ -1804,20 +1789,6 @@ function FingerprintSectionInline({
         </div>
         <p className="text-xs text-muted-foreground">
           {t("profileInfo.fingerprint.notSupported")}
-        </p>
-      </div>
-    );
-  }
-
-  if (!crossOsUnlocked) {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border p-6 text-center">
-        <LuLock className="size-4 shrink-0 text-muted-foreground" />
-        <h3 className="text-sm font-medium text-foreground">
-          {t("profileInfo.fingerprint.lockedTitle")}
-        </h3>
-        <p className="max-w-[48ch] text-sm text-pretty text-muted-foreground">
-          {t("profileInfo.fingerprint.lockedDescription")}
         </p>
       </div>
     );
@@ -1865,8 +1836,6 @@ function FingerprintSectionInline({
         onConfigChange={onWayfernChange}
         forceAdvanced={true}
         readOnly={isDisabled}
-        crossOsUnlocked={crossOsUnlocked}
-        limitedMode={false}
         profileVersion={profile.version}
         profileBrowser={profile.browser}
       />
@@ -1974,7 +1943,7 @@ function SecuritySectionInline({
     if (mode === "set" || mode === "change") {
       if (password.length < 8) return t("profilePassword.errors.tooShort");
       if (password !== confirm)
-        return t("profilePassword.errors.passwordMismatch");
+        return t("profilePassword.errors.mismatch");
     }
     return null;
   };

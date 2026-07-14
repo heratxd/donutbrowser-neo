@@ -165,7 +165,6 @@
       "passwordSaved": "Encryption password set",
       "passwordMismatch": "Passwords do not match",
       "passwordTooShort": "Password must be at least 8 characters",
-      "requiresProOrOwner": "Profile encryption is available for Pro users and team owners.",
       "validatePassword": "Validate",
       "validateDialog": {
         "title": "Validate Encryption Password",
@@ -173,7 +172,8 @@
         "submit": "Validate",
         "matchToast": "Password is correct",
         "mismatchToast": "Password does not match"
-      }
+      },
+      "requiresTeamOwner": "Only the team owner can change encryption for shared team profiles."
     },
     "commercial": {
       "title": "Commercial License",
@@ -270,7 +270,6 @@
       "stopLeader": "Stop this profile and all its followers",
       "stopFollower": "Following actions of {{leaderName}}",
       "desyncedTooltip": "Synchronization failed at {{url}}",
-      "paidFeature": "Synchronizer is a paid feature",
       "wayfernOnly": "Only Wayfern profiles can be synchronized",
       "selectFollowers": "Select Follower Profiles",
       "selectFollowersDesc": "Choose profiles that will mirror the actions of the leader profile. Only stopped Wayfern profiles can be selected.",
@@ -307,8 +306,7 @@
       "assignExtensionGroup": "Assign Extension Group",
       "copyCookies": "Copy Cookies",
       "runSelected": "Run selected",
-      "stopSelected": "Stop selected",
-      "proRequired": "Pro plan required for bulk run/stop"
+      "stopSelected": "Stop selected"
     },
     "passwordProtectedBadge": "Password Protected",
     "launchHook": {
@@ -846,8 +844,7 @@
       "selectFile": "Choose File",
       "preview": "{{count}} cookies found",
       "success": "Successfully imported {{imported}} cookies ({{replaced}} replaced)",
-      "error": "Failed to import cookies",
-      "proFeature": "Cookie import is a Pro feature"
+      "error": "Failed to import cookies"
     },
     "export": {
       "title": "Export Cookies",
@@ -1053,7 +1050,6 @@
     "productSub": "Product Sub",
     "brand": "Brand",
     "brandVersion": "Brand Version",
-    "proFeature": "This is a Pro feature",
     "generateFingerprint": "Generate Fingerprint",
     "refreshFingerprint": "Refresh Fingerprint",
     "canvasNoiseSeedPlaceholder": "Enter a seed string for canvas fingerprint",
@@ -1193,9 +1189,7 @@
       "cannotWhileRunning": "Stop the profile before changing its password."
     },
     "fingerprint": {
-      "notSupported": "Fingerprint editing is only available for Wayfern profiles.",
-      "lockedTitle": "Viewing & editing the fingerprint is a Pro feature",
-      "lockedDescription": "Your device information is protected in every profile. Viewing and editing a profile's fingerprint requires an active paid plan."
+      "notSupported": "Fingerprint editing is only available for Wayfern profiles."
     },
     "syncStatusValue": {
       "waiting": "Waiting",
@@ -1212,7 +1206,6 @@
     "extensionsTab": "Extensions",
     "groupsTab": "Groups",
     "managedNotice": "Extensions managed here will replace any manually installed extensions in profiles when launched.",
-    "proRequired": "Extension management is a Pro feature",
     "empty": "No extensions uploaded yet.",
     "noGroups": "No extension groups created yet.",
     "createGroup": "Create Group",
@@ -1270,14 +1263,6 @@
       "groupsDescription": "Delete {{count}} extension groups? {{names}}",
       "confirmButton": "Delete"
     }
-  },
-  "pro": {
-    "badge": "PRO",
-    "fingerprintLocked": "Fingerprint editing is a Pro feature",
-    "cookieCopyLocked": "Cookie copying is a Pro feature",
-    "cookieImportLocked": "Cookie import is a Pro feature",
-    "cookieExportLocked": "Cookie export is a Pro feature",
-    "cookieManagementLocked": "Cookie management is a Pro feature"
   },
   "dnsBlocklist": {
     "title": "DNS Blocklist",
@@ -1794,7 +1779,6 @@
     "cookieDbLocked": "Could not read cookies — the database is locked. Close the browser and try again.",
     "cookieDbUnavailable": "Could not read cookies — the cookie store is unavailable.",
     "selfHostedRequiresLogout": "Sign out of your Donut account before configuring a self-hosted server.",
-    "fingerprintRequiresPro": "Viewing or editing the fingerprint requires an active paid plan. Protection is included on all plans.",
     "proxyNotWorking": "The selected proxy isn't working, so the profile wasn't created.",
     "proxyPaymentRequired": "The selected proxy requires payment (402) — its subscription may have expired — so the profile wasn't created.",
     "vpnNotWorking": "The selected VPN isn't working, so the profile wasn't created.",
@@ -1884,9 +1868,7 @@
       "testConnection": "Test connection",
       "disconnect": "Disconnect"
     },
-    "deviceOrdinal": "{{ordinal}} of {{count}}",
-    "automationPrimaryOnly": "Browser automation runs only on your primary device (Device 1). Sign out there to use it here.",
-    "automationActiveHere": "Browser automation is active on this device."
+    "deviceOrdinal": "{{ordinal}} of {{count}}"
   },
   "shortcutsPage": {
     "title": "Keyboard shortcuts",
@@ -2005,10 +1987,6 @@
       "trialBadge": "2 weeks free",
       "commercialDesc": "Free for a 2-week evaluation. After that, a paid plan keeps the project maintained and thriving."
     }
-  },
-  "wayfernBlocked": {
-    "title": "Browser automation paused",
-    "description": "Your account was temporarily restricted from Pro browser features, usually from signing in on multiple devices at once. Sign out of other devices, then relaunch the profile to restore it."
   },
   "wayfernConfigDialog": {
     "titleView": "View Fingerprint Settings - {{name}} ({{browser}})",
