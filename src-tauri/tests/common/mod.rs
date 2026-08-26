@@ -1,6 +1,25 @@
 use std::path::PathBuf;
 use std::process::Command;
 
+<<<<<<< HEAD
+=======
+/// Whether Docker can run the Linux images these fixtures are built from.
+///
+/// `docker version` succeeding is not enough: the Windows CI runner ships a
+/// daemon in Windows-container mode, which answers that command happily and
+/// then rejects the fixtures with `unknown capability: "CAP_NET_ADMIN"`.
+#[allow(dead_code)]
+pub fn docker_supports_linux_containers() -> bool {
+  Command::new("docker")
+    .args(["version", "--format", "{{.Server.Os}}"])
+    .output()
+    .map(|output| {
+      output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "linux"
+    })
+    .unwrap_or(false)
+}
+
+>>>>>>> v0.29.6
 /// Utility functions for integration tests
 pub struct TestUtils;
 

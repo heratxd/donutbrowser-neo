@@ -207,7 +207,11 @@ impl SyncSubscription {
       ));
     }
 
+<<<<<<< HEAD
     log::info!("Connected to sync subscription at {url}");
+=======
+    log::info!("Connected to sync subscription");
+>>>>>>> v0.29.6
     let _ = events::emit("sync-subscription-status", "connected");
 
     let mut buffer = String::new();

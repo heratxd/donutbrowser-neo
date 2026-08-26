@@ -299,7 +299,11 @@ export function ProxyAssignmentDialog({
           </div>
 
           {error && (
+<<<<<<< HEAD
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+=======
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-text">
+>>>>>>> v0.29.6
               {error}
             </div>
           )}

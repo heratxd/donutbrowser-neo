@@ -1,7 +1,11 @@
 messages:
   - role: system
     content: |-
+<<<<<<< HEAD
       You are an expert technical writer tasked with generating comprehensive release notes for NeoDonut Browser, a powerful anti-detect browser desktop app built with Tauri + Next.js that helps users manage multiple browser profiles with proxy support.
+=======
+      You are an expert technical writer tasked with generating comprehensive release notes for Donut Browser, a powerful anti-detect browser desktop app built with Tauri + Next.js that helps users manage multiple browser profiles with proxy support.
+>>>>>>> v0.29.6
 
       Guidelines:
       - Use clear, user-friendly language
@@ -30,4 +34,13 @@ messages:
       ### Documentation
       ### Dependencies
       ### Developer Experience
+<<<<<<< HEAD
 model: openai/gpt-4.1
+=======
+# `auto` lets the Copilot CLI pick. Deliberately not a pinned model id: it is
+# the only value valid on every Copilot plan (Free and Student get auto
+# selection only), and it cannot go stale the way `openai/gpt-4.1` did when
+# GitHub Models was retired on 2026-07-30 and took both of these workflows
+# down with it.
+model: auto
+>>>>>>> v0.29.6

@@ -5,12 +5,23 @@ import { FaDownload } from "react-icons/fa";
 import { FiWifi } from "react-icons/fi";
 import { GoGear } from "react-icons/go";
 import {
+<<<<<<< HEAD
   LuCircleStop,
   LuCloud,
+=======
+  LuBadgeInfo,
+  LuCircleStop,
+  LuCloud,
+  LuCookie,
+>>>>>>> v0.29.6
   LuInfo,
   LuKeyboard,
   LuPlay,
   LuPlug,
+<<<<<<< HEAD
+=======
+  LuPlus,
+>>>>>>> v0.29.6
   LuPuzzle,
   LuUser,
   LuUsers,
@@ -53,6 +64,11 @@ interface CommandPaletteProps {
   onLaunchProfile: (profile: BrowserProfile) => void;
   onKillProfile: (profile: BrowserProfile) => void;
   onShowProfileInfo: (profile: BrowserProfile) => void;
+<<<<<<< HEAD
+=======
+  onCreateProfile: () => void;
+  onOpenAbout: () => void;
+>>>>>>> v0.29.6
 }
 
 const ICONS: Record<ShortcutId, React.ComponentType<{ className?: string }>> = {
@@ -63,6 +79,10 @@ const ICONS: Record<ShortcutId, React.ComponentType<{ className?: string }>> = {
   goProxies: FiWifi,
   goExtensions: LuPuzzle,
   goGroups: LuUsers,
+<<<<<<< HEAD
+=======
+  goCookieBot: LuCookie,
+>>>>>>> v0.29.6
   goIntegrations: LuPlug,
   goAccount: LuCloud,
   goSettings: GoGear,
@@ -122,6 +142,11 @@ export function CommandPalette({
   onLaunchProfile,
   onKillProfile,
   onShowProfileInfo,
+<<<<<<< HEAD
+=======
+  onCreateProfile,
+  onOpenAbout,
+>>>>>>> v0.29.6
 }: CommandPaletteProps) {
   const { t } = useTranslation();
 
@@ -251,6 +276,17 @@ export function CommandPalette({
         <CommandSeparator />
 
         <CommandGroup heading={t("commandPalette.groups.actions")}>
+<<<<<<< HEAD
+=======
+          <CommandItem
+            onSelect={() => {
+              dispatch(onCreateProfile);
+            }}
+          >
+            <LuPlus />
+            <span>{t("commandPalette.actions.createProfile")}</span>
+          </CommandItem>
+>>>>>>> v0.29.6
           {byGroup("actions").map((s) => {
             const Icon = ICONS[s.id];
             return (
@@ -268,6 +304,17 @@ export function CommandPalette({
               </CommandItem>
             );
           })}
+<<<<<<< HEAD
+=======
+          <CommandItem
+            onSelect={() => {
+              dispatch(onOpenAbout);
+            }}
+          >
+            <LuBadgeInfo />
+            <span>{t("commandPalette.actions.about")}</span>
+          </CommandItem>
+>>>>>>> v0.29.6
         </CommandGroup>
       </CommandList>
     </CommandDialog>

@@ -11,6 +11,11 @@
 
 # testing
 /coverage
+<<<<<<< HEAD
+=======
+/e2e/app/target/
+/e2e/.driver/
+>>>>>>> v0.29.6
 
 # next.js
 /.next/
@@ -62,3 +67,13 @@ nodecar/nodecar-bin
 
 # claude
 .claude/
+<<<<<<< HEAD
+=======
+# Claude Code session-recovery runtime state
+HANDOFF.md
+.claude/settings.local.json
+.claude/rate-limit-state.json
+.claude/stop-failure-events.jsonl
+.claude/quota-blocked.json
+session-recover.yaml
+>>>>>>> v0.29.6

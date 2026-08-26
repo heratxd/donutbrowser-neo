@@ -10,6 +10,7 @@ permissions:
   checks: read
 
 jobs:
+<<<<<<< HEAD
   security-scan:
     name: Security Vulnerability Scan
     if: github.repository == 'zhom/donutbrowser' && github.actor == 'dependabot[bot]'
@@ -66,6 +67,14 @@ jobs:
     if: github.repository == 'zhom/donutbrowser' && github.actor == 'dependabot[bot]'
     needs: [security-scan, lint-js, lint-rust, codeql, spellcheck]
     runs-on: ubuntu-latest
+=======
+  dependabot-automerge:
+    name: Dependabot Automerge
+    if: github.repository == 'zhom/donutbrowser' && github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    # Never execute pull-request code in this privileged workflow. Auto-merge
+    # remains gated by the unprivileged PR checks and branch protection.
+>>>>>>> v0.29.6
     steps:
       - name: Dependabot metadata
         id: metadata

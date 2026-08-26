@@ -18,8 +18,18 @@ impl DefaultBrowser {
     #[cfg(target_os = "windows")]
     return windows::is_default_browser();
 
+<<<<<<< HEAD
     #[cfg(target_os = "linux")]
     return linux::is_default_browser();
+=======
+    // Linux answers this by running `xdg-mime`, a shell script that forks
+    // further. That is blocking work with no upper bound, and this command
+    // runs on the same async runtime as every other command, the REST API and
+    // the sync scheduler — so doing it inline occupies a worker for as long as
+    // the desktop takes to answer. The Settings page polls this on a timer.
+    #[cfg(target_os = "linux")]
+    return blocking(linux::is_default_browser).await;
+>>>>>>> v0.29.6
 
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     Err("Unsupported platform".to_string())
@@ -32,14 +42,35 @@ impl DefaultBrowser {
     #[cfg(target_os = "windows")]
     return windows::set_as_default_browser();
 
+<<<<<<< HEAD
     #[cfg(target_os = "linux")]
     return linux::set_as_default_browser();
+=======
+    // Same reasoning, and this one additionally sleeps 500ms before verifying.
+    #[cfg(target_os = "linux")]
+    return blocking(linux::set_as_default_browser).await;
+>>>>>>> v0.29.6
 
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     Err("Unsupported platform".to_string())
   }
 }
 
+<<<<<<< HEAD
+=======
+/// Run blocking work off the async runtime's worker threads.
+#[cfg(target_os = "linux")]
+async fn blocking<T, F>(work: F) -> Result<T, String>
+where
+  F: FnOnce() -> Result<T, String> + Send + 'static,
+  T: Send + 'static,
+{
+  tokio::task::spawn_blocking(work)
+    .await
+    .map_err(|e| format!("Default browser check did not run: {e}"))?
+}
+
+>>>>>>> v0.29.6
 #[cfg(target_os = "macos")]
 mod macos {
   use core_foundation::base::OSStatus;
@@ -54,7 +85,11 @@ mod macos {
 
   pub fn is_default_browser() -> Result<bool, String> {
     let schemes = ["http", "https"];
+<<<<<<< HEAD
     let bundle_id = "io.github.paracosm17.neodonutbrowser";
+=======
+    let bundle_id = "com.donutbrowser";
+>>>>>>> v0.29.6
 
     for scheme in schemes {
       let scheme_str = CFString::new(scheme);
@@ -76,7 +111,11 @@ mod macos {
   }
 
   pub fn set_as_default_browser() -> Result<(), String> {
+<<<<<<< HEAD
     let bundle_id = CFString::new("io.github.paracosm17.neodonutbrowser");
+=======
+    let bundle_id = CFString::new("com.donutbrowser");
+>>>>>>> v0.29.6
     let schemes = ["http", "https"];
 
     for scheme in schemes {
@@ -89,10 +128,17 @@ mod macos {
         if status != 0 {
           let error_msg = match status {
             -54 => format!(
+<<<<<<< HEAD
               "Failed to set as default browser for scheme '{scheme}'. The app is not properly registered as a browser. Please:\n1. Build and install the app properly\n2. Manually set NeoDonut Browser as default in System Settings > General > Default web browser\n3. Make sure the app is in your Applications folder"
             ),
             _ => format!(
               "Failed to set as default browser for scheme '{scheme}'. Status code: {status}. Please manually set NeoDonut Browser as default in System Settings > General > Default web browser."
+=======
+              "Failed to set as default browser for scheme '{scheme}'. The app is not properly registered as a browser. Please:\n1. Build and install the app properly\n2. Manually set Donut Browser as default in System Settings > General > Default web browser\n3. Make sure the app is in your Applications folder"
+            ),
+            _ => format!(
+              "Failed to set as default browser for scheme '{scheme}'. Status code: {status}. Please manually set Donut Browser as default in System Settings > General > Default web browser."
+>>>>>>> v0.29.6
             )
           };
           return Err(error_msg);
@@ -110,8 +156,13 @@ mod windows {
   use winreg::enums::*;
   use winreg::RegKey;
 
+<<<<<<< HEAD
   const APP_NAME: &str = "NeoDonutBrowser";
   const PROG_ID: &str = "NeoDonutBrowser.HTML";
+=======
+  const APP_NAME: &str = "DonutBrowser";
+  const PROG_ID: &str = "DonutBrowser.HTML";
+>>>>>>> v0.29.6
 
   pub fn is_default_browser() -> Result<bool, String> {
     let schemes = ["http", "https"];
@@ -199,7 +250,11 @@ mod windows {
     app_key
       .set_value(
         "ApplicationDescription",
+<<<<<<< HEAD
         &"NeoDonut Browser - Simple Yet Powerful Anti-Detect Browser",
+=======
+        &"Donut Browser - Simple Yet Powerful Anti-Detect Browser",
+>>>>>>> v0.29.6
       )
       .map_err(|e| format!("Failed to set ApplicationDescription: {}", e))?;
 
@@ -215,7 +270,11 @@ mod windows {
     capabilities
       .set_value(
         "ApplicationDescription",
+<<<<<<< HEAD
         &"NeoDonut Browser - Simple Yet Powerful Anti-Detect Browser",
+=======
+        &"Donut Browser - Simple Yet Powerful Anti-Detect Browser",
+>>>>>>> v0.29.6
       )
       .map_err(|e| format!("Failed to set Capabilities description: {}", e))?;
 
@@ -260,11 +319,19 @@ mod windows {
       .map_err(|e| format!("Failed to create ProgID key: {}", e))?;
 
     prog_id_key
+<<<<<<< HEAD
       .set_value("", &"NeoDonut Browser Document")
       .map_err(|e| format!("Failed to set ProgID default value: {}", e))?;
 
     prog_id_key
       .set_value("FriendlyTypeName", &"NeoDonut Browser Document")
+=======
+      .set_value("", &"Donut Browser Document")
+      .map_err(|e| format!("Failed to set ProgID default value: {}", e))?;
+
+    prog_id_key
+      .set_value("FriendlyTypeName", &"Donut Browser Document")
+>>>>>>> v0.29.6
       .map_err(|e| format!("Failed to set FriendlyTypeName: {}", e))?;
 
     // Create DefaultIcon key
@@ -381,7 +448,11 @@ mod windows {
 mod linux {
   use std::process::Command;
 
+<<<<<<< HEAD
   const APP_DESKTOP_NAME: &str = "neodonutbrowser.desktop";
+=======
+  const APP_DESKTOP_NAME: &str = "donutbrowser.desktop";
+>>>>>>> v0.29.6
 
   pub fn is_default_browser() -> Result<bool, String> {
     // Check if xdg-mime is available
@@ -425,7 +496,11 @@ mod linux {
     // Check if the desktop file exists in common locations
     if !check_desktop_file_exists() {
       return Err(format!(
+<<<<<<< HEAD
         "Desktop file '{}' not found in standard locations. Please ensure the application is properly installed. You can manually set NeoDonut Browser as the default browser in your system settings.",
+=======
+        "Desktop file '{}' not found in standard locations. Please ensure the application is properly installed. You can manually set Donut Browser as the default browser in your system settings.",
+>>>>>>> v0.29.6
         APP_DESKTOP_NAME
       ));
     }
@@ -466,7 +541,11 @@ mod linux {
       Ok(false) => {
         // This is the common case where commands succeed but verification fails
         Err(format!(
+<<<<<<< HEAD
           "The xdg-mime commands completed successfully, but NeoDonut Browser is not yet set as the default. This is common on some Linux distributions. Please try one of these options:\n\n1. Restart your desktop session and try again\n2. Log out and log back in\n3. Manually set NeoDonut Browser as the default in your system settings:\n   - GNOME: Settings > Default Applications > Web\n   - KDE: System Settings > Applications > Default Applications > Web Browser\n   - XFCE: Settings > Preferred Applications > Web Browser\n   - Or run: xdg-settings set default-web-browser {}\n\nThe changes may take effect automatically after a desktop restart.",
+=======
+          "The xdg-mime commands completed successfully, but Donut Browser is not yet set as the default. This is common on some Linux distributions. Please try one of these options:\n\n1. Restart your desktop session and try again\n2. Log out and log back in\n3. Manually set Donut Browser as the default in your system settings:\n   - GNOME: Settings > Default Applications > Web\n   - KDE: System Settings > Applications > Default Applications > Web Browser\n   - XFCE: Settings > Preferred Applications > Web Browser\n   - Or run: xdg-settings set default-web-browser {}\n\nThe changes may take effect automatically after a desktop restart.",
+>>>>>>> v0.29.6
           APP_DESKTOP_NAME
         ))
       }

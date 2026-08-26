@@ -53,6 +53,10 @@ import { useBrowserDownload } from "@/hooks/use-browser-download";
 import { useProxyEvents } from "@/hooks/use-proxy-events";
 import { useVpnEvents } from "@/hooks/use-vpn-events";
 import { getBrowserIcon } from "@/lib/browser-utils";
+<<<<<<< HEAD
+=======
+import { DNS_BLOCKLIST_LEVELS } from "@/lib/dns-blocklist-levels";
+>>>>>>> v0.29.6
 import { cn } from "@/lib/utils";
 import type { BrowserReleaseTypes, WayfernConfig, WayfernOS } from "@/types";
 
@@ -87,6 +91,10 @@ interface CreateProfileDialogProps {
     password?: string;
   }) => Promise<void>;
   selectedGroupId?: string;
+<<<<<<< HEAD
+=======
+  crossOsUnlocked?: boolean;
+>>>>>>> v0.29.6
 }
 
 interface BrowserOption {
@@ -106,6 +114,10 @@ export function CreateProfileDialog({
   onClose,
   onCreateProfile,
   selectedGroupId,
+<<<<<<< HEAD
+=======
+  crossOsUnlocked = false,
+>>>>>>> v0.29.6
 }: CreateProfileDialogProps) {
   const { t } = useTranslation();
   const proxyListboxIdAntiDetect = useId();
@@ -738,7 +750,11 @@ export function CreateProfileDialog({
                                   autoComplete="new-password"
                                 />
                                 {passwordError && (
+<<<<<<< HEAD
                                   <p className="text-sm text-destructive">
+=======
+                                  <p className="text-sm text-destructive-text">
+>>>>>>> v0.29.6
                                     {passwordError}
                                   </p>
                                 )}
@@ -761,7 +777,11 @@ export function CreateProfileDialog({
                             )}
                             {!isLoadingReleaseTypes && releaseTypesError && (
                               <div className="flex items-center gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3">
+<<<<<<< HEAD
                                 <p className="flex-1 text-sm text-destructive">
+=======
+                                <p className="flex-1 text-sm text-destructive-text">
+>>>>>>> v0.29.6
                                   {releaseTypesError}
                                 </p>
                                 <RippleButton
@@ -780,7 +800,11 @@ export function CreateProfileDialog({
                               !releaseTypesError &&
                               !getBestAvailableVersion("wayfern") && (
                                 <div className="flex items-center gap-3 rounded-md border border-warning/50 bg-warning/10 p-3">
+<<<<<<< HEAD
                                   <p className="text-sm text-warning">
+=======
+                                  <p className="text-sm text-warning-text">
+>>>>>>> v0.29.6
                                     {t("createProfile.platformUnavailable", {
                                       browser: "Wayfern",
                                     })}
@@ -883,6 +907,11 @@ export function CreateProfileDialog({
                               config={wayfernConfig}
                               onConfigChange={updateWayfernConfig}
                               isCreating
+<<<<<<< HEAD
+=======
+                              crossOsUnlocked={crossOsUnlocked}
+                              limitedMode={!crossOsUnlocked}
+>>>>>>> v0.29.6
                               profileVersion={
                                 getCreatableVersion("wayfern")?.version
                               }
@@ -905,7 +934,11 @@ export function CreateProfileDialog({
                                 {!isLoadingReleaseTypes &&
                                   releaseTypesError && (
                                     <div className="flex items-center gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3">
+<<<<<<< HEAD
                                       <p className="flex-1 text-sm text-destructive">
+=======
+                                      <p className="flex-1 text-sm text-destructive-text">
+>>>>>>> v0.29.6
                                         {releaseTypesError}
                                       </p>
                                       <RippleButton
@@ -1179,6 +1212,7 @@ export function CreateProfileDialog({
                               <SelectItem value="none">
                                 {t("dnsBlocklist.none")}
                               </SelectItem>
+<<<<<<< HEAD
                               <SelectItem value="light">
                                 {t("dnsBlocklist.light")}
                               </SelectItem>
@@ -1194,6 +1228,16 @@ export function CreateProfileDialog({
                               <SelectItem value="ultimate">
                                 {t("dnsBlocklist.ultimate")}
                               </SelectItem>
+=======
+                              {DNS_BLOCKLIST_LEVELS.map((level) => (
+                                <SelectItem
+                                  key={level.value}
+                                  value={level.value}
+                                >
+                                  {t(level.labelKey)}
+                                </SelectItem>
+                              ))}
+>>>>>>> v0.29.6
                             </SelectContent>
                           </Select>
                         </div>
@@ -1274,7 +1318,11 @@ export function CreateProfileDialog({
                               )}
                               {!isLoadingReleaseTypes && releaseTypesError && (
                                 <div className="flex items-center gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3">
+<<<<<<< HEAD
                                   <p className="flex-1 text-sm text-destructive">
+=======
+                                  <p className="flex-1 text-sm text-destructive-text">
+>>>>>>> v0.29.6
                                     {releaseTypesError}
                                   </p>
                                   <RippleButton

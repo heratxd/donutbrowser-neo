@@ -2,6 +2,11 @@
 extend-exclude = [
     "src-tauri/src/territory_info.xml",
     "src/i18n/locales/*.json",
+<<<<<<< HEAD
+=======
+    # Dependency names and SPDX expressions are generated verbatim.
+    "src/generated/licenses.json",
+>>>>>>> v0.29.6
     # Auto-generated from commit subjects by release.yml; typos here originate
     # in commit messages, which are immutable, so don't spell-check it.
     "CHANGELOG.md",
@@ -10,3 +15,10 @@ extend-exclude = [
 [default.extend-words]
 DBE = "DBE"
 nd = "nd"
+<<<<<<< HEAD
+=======
+
+[default.extend-identifiers]
+# Chrome Web Store extension name in the known-VPN list.
+VeePN = "VeePN"
+>>>>>>> v0.29.6

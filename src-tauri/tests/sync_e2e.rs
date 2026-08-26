@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 use neodonutbrowser_lib::sync::types::*;
+=======
+use donutbrowser_lib::sync::types::*;
+>>>>>>> v0.29.6
 use reqwest::Client;
 use serde_json::json;
 use std::env;
@@ -846,7 +850,11 @@ async fn test_profile_bypass_rules_sync() {
 
 #[tokio::test]
 async fn test_encrypted_profile_sync() {
+<<<<<<< HEAD
   use neodonutbrowser_lib::sync::encryption::{
+=======
+  use donutbrowser_lib::sync::encryption::{
+>>>>>>> v0.29.6
     decrypt_bytes, derive_profile_key, encrypt_bytes, generate_salt,
   };
 
@@ -933,7 +941,11 @@ async fn test_encrypted_profile_sync() {
 
 #[tokio::test]
 async fn test_encrypted_delta_sync() {
+<<<<<<< HEAD
   use neodonutbrowser_lib::sync::encryption::{
+=======
+  use donutbrowser_lib::sync::encryption::{
+>>>>>>> v0.29.6
     decrypt_bytes, derive_profile_key, encrypt_bytes, generate_salt,
   };
 

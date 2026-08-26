@@ -1,5 +1,9 @@
 "use client";
 
+<<<<<<< HEAD
+=======
+import { MotionConfig } from "motion/react";
+>>>>>>> v0.29.6
 import { useEffect } from "react";
 import { I18nProvider } from "@/components/i18n-provider";
 import { OnboardingProvider } from "@/components/onboarding-provider";
@@ -17,11 +21,25 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider>
       <CustomThemeProvider>
+<<<<<<< HEAD
         <WindowDragArea />
         <TooltipProvider>
           <OnboardingProvider>{children}</OnboardingProvider>
         </TooltipProvider>
         <Toaster />
+=======
+        {/* reducedMotion="user" makes every motion/react animation honor the
+            OS prefers-reduced-motion setting: transforms are skipped, opacity
+            cross-fades are kept. The CSS-side media query in globals.css only
+            covers CSS transitions — this covers the JS-driven ones. */}
+        <MotionConfig reducedMotion="user">
+          <WindowDragArea />
+          <TooltipProvider>
+            <OnboardingProvider>{children}</OnboardingProvider>
+          </TooltipProvider>
+          <Toaster />
+        </MotionConfig>
+>>>>>>> v0.29.6
       </CustomThemeProvider>
     </I18nProvider>
   );

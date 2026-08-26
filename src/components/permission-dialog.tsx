@@ -40,11 +40,15 @@ export function PermissionDialog({
   const { t } = useTranslation();
   const [isRequesting, setIsRequesting] = useState(false);
   const [isWaitingForGrant, setIsWaitingForGrant] = useState(false);
+<<<<<<< HEAD
   const [isMacOS, setIsMacOS] = useState(false);
+=======
+>>>>>>> v0.29.6
   const {
     requestPermission,
     isMicrophoneAccessGranted,
     isCameraAccessGranted,
+<<<<<<< HEAD
   } = usePermissions();
 
   // Check if we're on macOS and close dialog if not
@@ -58,6 +62,18 @@ export function PermissionDialog({
       onClose();
     }
   }, [onClose]);
+=======
+    isInitialized,
+    requiresSystemPermissions,
+  } = usePermissions(isOpen);
+
+  // This gate only exists for macOS TCC permissions.
+  useEffect(() => {
+    if (isOpen && isInitialized && !requiresSystemPermissions) {
+      onClose();
+    }
+  }, [isInitialized, isOpen, onClose, requiresSystemPermissions]);
+>>>>>>> v0.29.6
 
   // Get current permission status
   const isCurrentPermissionGranted =
@@ -158,7 +174,13 @@ export function PermissionDialog({
   const handleRequestPermission = async () => {
     setIsRequesting(true);
     try {
+<<<<<<< HEAD
       await requestPermission(permissionType);
+=======
+      const granted = await requestPermission(permissionType);
+      if (granted) return;
+
+>>>>>>> v0.29.6
       // The macOS permission poll runs every 5 s, so the new state can take
       // a moment to surface. Keep the grant button in its busy state for
       // that window so the user has clear feedback, and notify them if the
@@ -187,7 +209,11 @@ export function PermissionDialog({
   };
 
   // Don't render if not macOS
+<<<<<<< HEAD
   if (!isMacOS) {
+=======
+  if (!requiresSystemPermissions) {
+>>>>>>> v0.29.6
     return null;
   }
 
@@ -207,7 +233,11 @@ export function PermissionDialog({
         <div className="space-y-4">
           {!isCurrentPermissionGranted && (
             <div className="rounded-lg bg-warning/10 p-3">
+<<<<<<< HEAD
               <p className="text-sm text-warning">
+=======
+              <p className="text-sm text-warning-text">
+>>>>>>> v0.29.6
                 {permissionType === "microphone"
                   ? t("permissionDialog.notGrantedMicrophone")
                   : t("permissionDialog.notGrantedCamera")}

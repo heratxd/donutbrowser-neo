@@ -5,9 +5,20 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+<<<<<<< HEAD
 import { LuChevronDown, LuChevronRight, LuUpload } from "react-icons/lu";
 import { toast } from "sonner";
 import { LoadingButton } from "@/components/loading-button";
+=======
+import { LuChevronRight, LuUpload } from "react-icons/lu";
+import { toast } from "sonner";
+import { LoadingButton } from "@/components/loading-button";
+import {
+  AnimatedDisclosureChevron,
+  AnimatedDisclosureContent,
+  AnimatedDisclosureItem,
+} from "@/components/ui/animated-disclosure";
+>>>>>>> v0.29.6
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -482,7 +493,11 @@ export function CookieManagementDialog({
             {importResult && (
               <div className="space-y-4">
                 <div className="rounded-lg bg-success/10 p-4">
+<<<<<<< HEAD
                   <div className="font-medium text-success">
+=======
+                  <div className="font-medium text-success-text">
+>>>>>>> v0.29.6
                     {t("cookies.management.importedSuccess", {
                       imported: importResult.cookies_imported,
                       replaced: importResult.cookies_replaced,
@@ -628,8 +643,13 @@ function ExportDomainRow({
     selectedCount > 0 && selectedCount < domain.cookie_count && !isAllSelected;
 
   return (
+<<<<<<< HEAD
     <div>
       <div className="flex items-center gap-2 rounded p-1.5 hover:bg-accent/50">
+=======
+    <AnimatedDisclosureItem>
+      <div className="flex items-center gap-2 rounded p-1.5 hover:bg-muted">
+>>>>>>> v0.29.6
         <Checkbox
           checked={isAllSelected || isPartial}
           onCheckedChange={() => {
@@ -639,22 +659,33 @@ function ExportDomainRow({
         />
         <button
           type="button"
+<<<<<<< HEAD
+=======
+          aria-expanded={isExpanded}
+>>>>>>> v0.29.6
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-1 border-none bg-transparent text-left text-sm"
           onClick={() => {
             onToggleExpand(domain.domain);
           }}
         >
+<<<<<<< HEAD
           {isExpanded ? (
             <LuChevronDown className="size-3.5" />
           ) : (
             <LuChevronRight className="size-3.5" />
           )}
+=======
+          <AnimatedDisclosureChevron open={isExpanded}>
+            <LuChevronRight className="size-3.5" />
+          </AnimatedDisclosureChevron>
+>>>>>>> v0.29.6
           <span className="truncate font-medium">{domain.domain}</span>
           <span className="shrink-0 text-xs text-muted-foreground">
             ({domain.cookie_count})
           </span>
         </button>
       </div>
+<<<<<<< HEAD
       {isExpanded && (
         <div className="ml-7 space-y-0.5 border-l pl-2">
           {domain.cookies.map((cookie) => {
@@ -682,5 +713,34 @@ function ExportDomainRow({
         </div>
       )}
     </div>
+=======
+      <AnimatedDisclosureContent
+        open={isExpanded}
+        className="ml-7 space-y-0.5 border-l pl-2"
+      >
+        {domain.cookies.map((cookie) => {
+          const isSelected = domainSelection?.cookies.has(cookie.name) ?? false;
+          return (
+            <div
+              key={`${domain.domain}-${cookie.name}`}
+              className="flex items-center gap-2 rounded p-1 text-sm hover:bg-accent/30"
+            >
+              <Checkbox
+                checked={isSelected || isAllSelected}
+                onCheckedChange={() => {
+                  onToggleCookie(
+                    domain.domain,
+                    cookie.name,
+                    domain.cookie_count,
+                  );
+                }}
+              />
+              <span className="truncate">{cookie.name}</span>
+            </div>
+          );
+        })}
+      </AnimatedDisclosureContent>
+    </AnimatedDisclosureItem>
+>>>>>>> v0.29.6
   );
 }

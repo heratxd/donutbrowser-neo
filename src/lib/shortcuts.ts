@@ -5,6 +5,11 @@
  * the ⌘ glyph while everyone else sees `Ctrl`.
  */
 
+<<<<<<< HEAD
+=======
+import { isMacOS } from "@/lib/platform";
+
+>>>>>>> v0.29.6
 export type ShortcutGroup =
   | "navigation"
   | "actions"
@@ -34,6 +39,10 @@ export type ShortcutId =
   | "goProxies"
   | "goExtensions"
   | "goGroups"
+<<<<<<< HEAD
+=======
+  | "goCookieBot"
+>>>>>>> v0.29.6
   | "goIntegrations"
   | "goAccount"
   | "goSettings";
@@ -91,6 +100,17 @@ export const SHORTCUTS: ShortcutDef[] = [
     mod: true,
   },
   {
+<<<<<<< HEAD
+=======
+    // Mod+B: "bot". Every other letter in the navigation group was taken.
+    id: "goCookieBot",
+    labelKey: "shortcuts.goCookieBot",
+    group: "navigation",
+    key: "b",
+    mod: true,
+  },
+  {
+>>>>>>> v0.29.6
     id: "goIntegrations",
     labelKey: "shortcuts.goIntegrations",
     group: "navigation",
@@ -98,11 +118,20 @@ export const SHORTCUTS: ShortcutDef[] = [
     mod: true,
   },
   {
+<<<<<<< HEAD
+=======
+    // Mod+Shift+A (not Mod+A): plain Mod+A must stay select-all in any
+    // focused text field or table context.
+>>>>>>> v0.29.6
     id: "goAccount",
     labelKey: "shortcuts.goAccount",
     group: "navigation",
     key: "a",
     mod: true,
+<<<<<<< HEAD
+=======
+    shift: true,
+>>>>>>> v0.29.6
   },
   {
     id: "goSettings",
@@ -134,6 +163,7 @@ export function formatGroupShortcut(digit: number): string[] {
   return [mac ? "⌘" : "Ctrl", String(digit)];
 }
 
+<<<<<<< HEAD
 export function isMac(): boolean {
   if (typeof navigator === "undefined") return false;
   // userAgentData is preferred but not in all browsers; fall back to platform.
@@ -145,6 +175,10 @@ export function isMac(): boolean {
     navigator.platform ??
     "";
   return /Mac|iPhone|iPad|iPod/.test(platform) || /Mac OS X/.test(ua);
+=======
+function isMac(): boolean {
+  return isMacOS();
+>>>>>>> v0.29.6
 }
 
 /**

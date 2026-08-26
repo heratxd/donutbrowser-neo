@@ -1,9 +1,17 @@
 use clap::{Arg, Command};
+<<<<<<< HEAD
 use neodonutbrowser_lib::proxy_runner::{
   start_proxy_process_with_profile, stop_all_proxy_processes, stop_proxy_process,
 };
 use neodonutbrowser_lib::proxy_server::run_proxy_server;
 use neodonutbrowser_lib::proxy_storage::get_proxy_config;
+=======
+use donutbrowser_lib::proxy_runner::{
+  start_proxy_process_with_profile, stop_all_proxy_processes, stop_proxy_process,
+};
+use donutbrowser_lib::proxy_server::{redacted_upstream, run_proxy_server};
+use donutbrowser_lib::proxy_storage::{build_proxy_url, get_proxy_config};
+>>>>>>> v0.29.6
 use std::process;
 
 fn set_high_priority() {
@@ -55,6 +63,7 @@ fn set_high_priority() {
   }
 }
 
+<<<<<<< HEAD
 fn build_proxy_url(
   proxy_type: &str,
   host: &str,
@@ -80,6 +89,8 @@ fn build_proxy_url(
   url
 }
 
+=======
+>>>>>>> v0.29.6
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
   // Initialize logger to write to stderr (which will be redirected to file).
@@ -110,6 +121,10 @@ async fn main() {
   }));
 
   let matches = Command::new("donut-proxy")
+<<<<<<< HEAD
+=======
+    .version(env!("BUILD_VERSION"))
+>>>>>>> v0.29.6
     .subcommand(
       Command::new("proxy")
         .about("Manage proxy servers")
@@ -128,8 +143,11 @@ async fn main() {
                 .long("type")
                 .help("Proxy type (http, https, socks4, socks5, ss)"),
             )
+<<<<<<< HEAD
             .arg(Arg::new("username").long("username").help("Proxy username"))
             .arg(Arg::new("password").long("password").help("Proxy password"))
+=======
+>>>>>>> v0.29.6
             .arg(
               Arg::new("port")
                 .short('p')
@@ -164,6 +182,15 @@ async fn main() {
                 .help("Path to DNS blocklist file (one domain per line)"),
             )
             .arg(
+<<<<<<< HEAD
+=======
+              Arg::new("dns-allowlist-mode")
+                .long("dns-allowlist-mode")
+                .num_args(0)
+                .help("Treat --blocklist-file as an allowlist (block all domains not listed)"),
+            )
+            .arg(
+>>>>>>> v0.29.6
               Arg::new("local-protocol")
                 .long("local-protocol")
                 .help("Protocol served to the browser: http (default) or socks5"),
@@ -216,6 +243,20 @@ async fn main() {
         ),
     )
     .subcommand(
+<<<<<<< HEAD
+=======
+      Command::new("xray-worker")
+        .about("Run an Xray-core worker process (internal use)")
+        .arg(Arg::new("action").required(true).help("Action (start)"))
+        .arg(
+          Arg::new("config-path")
+            .long("config-path")
+            .required(true)
+            .help("Direct path to the Xray worker config JSON file"),
+        ),
+    )
+    .subcommand(
+>>>>>>> v0.29.6
       Command::new("mcp-bridge")
         .about("Bridge stdio MCP to a local HTTP MCP server")
         .arg(
@@ -236,16 +277,34 @@ async fn main() {
         start_matches.get_one::<u16>("proxy-port"),
         start_matches.get_one::<String>("type"),
       ) {
+<<<<<<< HEAD
         let username = start_matches.get_one::<String>("username");
         let password = start_matches.get_one::<String>("password");
+=======
+        let username = std::env::var("DONUT_PROXY_USERNAME").ok();
+        let password = std::env::var("DONUT_PROXY_PASSWORD").ok();
+>>>>>>> v0.29.6
         upstream_url = Some(build_proxy_url(
           proxy_type,
           host,
           *port,
+<<<<<<< HEAD
           username.map(|s| s.as_str()),
           password.map(|s| s.as_str()),
         ));
       } else if let Some(upstream) = start_matches.get_one::<String>("upstream") {
+=======
+          username.as_deref(),
+          password.as_deref(),
+        ));
+      } else if let Some(upstream) = start_matches.get_one::<String>("upstream") {
+        if url::Url::parse(upstream)
+          .is_ok_and(|parsed| !parsed.username().is_empty() || parsed.password().is_some())
+        {
+          eprintln!("Credentialed upstream URLs are not accepted as process arguments");
+          process::exit(2);
+        }
+>>>>>>> v0.29.6
         upstream_url = Some(upstream.clone());
       }
 
@@ -256,6 +315,10 @@ async fn main() {
         .and_then(|s| serde_json::from_str(s).ok())
         .unwrap_or_default();
       let blocklist_file = start_matches.get_one::<String>("blocklist-file").cloned();
+<<<<<<< HEAD
+=======
+      let dns_allowlist_mode = start_matches.get_flag("dns-allowlist-mode");
+>>>>>>> v0.29.6
       let local_protocol = start_matches.get_one::<String>("local-protocol").cloned();
 
       match start_proxy_process_with_profile(
@@ -264,6 +327,10 @@ async fn main() {
         profile_id,
         bypass_rules,
         blocklist_file,
+<<<<<<< HEAD
+=======
+        dns_allowlist_mode,
+>>>>>>> v0.29.6
         local_protocol,
       )
       .await
@@ -277,7 +344,11 @@ async fn main() {
               "id": config.id,
               "localPort": config.local_port,
               "localUrl": config.local_url,
+<<<<<<< HEAD
               "upstreamUrl": config.upstream_url,
+=======
+              "upstreamUrl": redacted_upstream(&config.upstream_url),
+>>>>>>> v0.29.6
             })
           );
           process::exit(0);
@@ -302,7 +373,11 @@ async fn main() {
         }
       } else if let Some(upstream) = stop_matches.get_one::<String>("upstream") {
         // Find proxies with this upstream URL
+<<<<<<< HEAD
         let configs = neodonutbrowser_lib::proxy_storage::list_proxy_configs();
+=======
+        let configs = donutbrowser_lib::proxy_storage::list_proxy_configs();
+>>>>>>> v0.29.6
         let matching_configs: Vec<_> = configs
           .iter()
           .filter(|config| config.upstream_url == *upstream)
@@ -335,7 +410,11 @@ async fn main() {
         }
       }
     } else if proxy_matches.subcommand_matches("list").is_some() {
+<<<<<<< HEAD
       let configs = neodonutbrowser_lib::proxy_storage::list_proxy_configs();
+=======
+      let configs = donutbrowser_lib::proxy_storage::list_proxy_configs();
+>>>>>>> v0.29.6
       // Use println! here because this needs to go to stdout for parsing
       println!("{}", serde_json::to_string(&configs).unwrap());
       process::exit(0);
@@ -371,7 +450,11 @@ async fn main() {
               "Found config: id={}, port={:?}, upstream={}",
               config.id,
               config.local_port,
+<<<<<<< HEAD
               config.upstream_url
+=======
+              redacted_upstream(&config.upstream_url)
+>>>>>>> v0.29.6
             );
             break config;
           }
@@ -423,7 +506,11 @@ async fn main() {
         log::info!("Loading VPN worker config from: {}", path);
         match std::fs::read_to_string(path) {
           Ok(content) => match serde_json::from_str::<
+<<<<<<< HEAD
             neodonutbrowser_lib::vpn_worker_storage::VpnWorkerConfig,
+=======
+            donutbrowser_lib::vpn_worker_storage::VpnWorkerConfig,
+>>>>>>> v0.29.6
           >(&content)
           {
             Ok(config) => {
@@ -447,11 +534,19 @@ async fn main() {
         }
       } else {
         // Fallback: discover config by ID with retries
+<<<<<<< HEAD
         let storage_dir = neodonutbrowser_lib::proxy_storage::get_storage_dir();
         log::info!("Looking for VPN worker config in: {:?}", storage_dir);
         let mut attempts = 0;
         loop {
           if let Some(config) = neodonutbrowser_lib::vpn_worker_storage::get_vpn_worker_config(id) {
+=======
+        let storage_dir = donutbrowser_lib::proxy_storage::get_storage_dir();
+        log::info!("Looking for VPN worker config in: {:?}", storage_dir);
+        let mut attempts = 0;
+        loop {
+          if let Some(config) = donutbrowser_lib::vpn_worker_storage::get_vpn_worker_config(id) {
+>>>>>>> v0.29.6
             log::info!(
               "Found VPN worker config: id={}, vpn_type={}, vpn_id={}",
               config.id,
@@ -494,7 +589,11 @@ async fn main() {
 
       match config.vpn_type.as_str() {
         "wireguard" => {
+<<<<<<< HEAD
           let wg_config = match neodonutbrowser_lib::vpn::parse_wireguard_config(&vpn_config_data) {
+=======
+          let wg_config = match donutbrowser_lib::vpn::parse_wireguard_config(&vpn_config_data) {
+>>>>>>> v0.29.6
             Ok(c) => c,
             Err(e) => {
               log::error!("Failed to parse WireGuard config: {}", e);
@@ -503,7 +602,11 @@ async fn main() {
           };
 
           let server =
+<<<<<<< HEAD
             neodonutbrowser_lib::vpn::socks5_server::WireGuardSocks5Server::new(wg_config, port);
+=======
+            donutbrowser_lib::vpn::socks5_server::WireGuardSocks5Server::new(wg_config, port);
+>>>>>>> v0.29.6
           if let Err(e) = server
             .run(id.clone(), config_path.map(std::path::PathBuf::from))
             .await
@@ -521,6 +624,28 @@ async fn main() {
       log::error!("Invalid action for vpn-worker. Use 'start'");
       process::exit(1);
     }
+<<<<<<< HEAD
+=======
+  } else if let Some(xray_matches) = matches.subcommand_matches("xray-worker") {
+    let action = xray_matches
+      .get_one::<String>("action")
+      .expect("action is required");
+    let config_path = xray_matches
+      .get_one::<String>("config-path")
+      .expect("config-path is required");
+    if action != "start" {
+      log::error!("Invalid action for xray-worker. Use 'start'");
+      process::exit(1);
+    }
+
+    set_high_priority();
+    if let Err(error) =
+      donutbrowser_lib::xray_worker_runner::run_xray_worker(std::path::Path::new(config_path)).await
+    {
+      log::error!("Xray worker failed: {error}");
+      process::exit(1);
+    }
+>>>>>>> v0.29.6
   } else if let Some(bridge_matches) = matches.subcommand_matches("mcp-bridge") {
     let url = bridge_matches
       .get_one::<String>("url")

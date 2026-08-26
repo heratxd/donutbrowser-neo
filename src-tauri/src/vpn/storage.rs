@@ -135,6 +135,7 @@ impl VpnStorage {
     key
   }
 
+<<<<<<< HEAD
   /// Optionally import VPN configs from the upstream Donut Browser location.
   ///
   /// The import is disabled by default to preserve strict data separation. A
@@ -145,6 +146,10 @@ impl VpnStorage {
       return;
     }
 
+=======
+  /// Migrate VPN configs from the old ProjectDirs location to the new app_dirs location.
+  fn migrate_from_old_location(new_dir: &std::path::Path) {
+>>>>>>> v0.29.6
     let old_dir = match directories::ProjectDirs::from("com", "donut", "donutbrowser") {
       Some(dirs) => dirs.data_local_dir().to_path_buf(),
       None => return,

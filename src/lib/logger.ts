@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   attachConsole,
   debug,
@@ -6,6 +7,9 @@ import {
   trace,
   warn,
 } from "@tauri-apps/plugin-log";
+=======
+import { attachConsole } from "@tauri-apps/plugin-log";
+>>>>>>> v0.29.6
 
 let consoleAttached = false;
 
@@ -22,6 +26,7 @@ export async function setupLogging() {
     console.error("Failed to attach console to logging plugin:", err);
   }
 }
+<<<<<<< HEAD
 
 export const logger = {
   error: (message: string, ...args: unknown[]) => {
@@ -40,3 +45,5 @@ export const logger = {
     trace(`${message} ${args.map((arg) => JSON.stringify(arg)).join(" ")}`);
   },
 };
+=======
+>>>>>>> v0.29.6

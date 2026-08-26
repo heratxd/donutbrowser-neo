@@ -54,6 +54,17 @@ pub struct AppSettings {
   pub language: Option<String>, // ISO 639-1: "en", "es", "pt", "fr", "zh", "ja", "ko", "ru", or None for system default
   #[serde(default)]
   pub window_resize_warning_dismissed: bool,
+<<<<<<< HEAD
+=======
+  /// Stop blocking launches whose proxy exit disagrees with the fingerprint.
+  /// Lives here rather than in localStorage because the Rust launch path is
+  /// what enforces the block and cannot read the frontend's storage.
+  #[serde(default)]
+  pub fingerprint_gate_disabled: bool,
+  /// Stop warning about VPN/proxy extensions found in a profile.
+  #[serde(default)]
+  pub vpn_extension_warning_disabled: bool,
+>>>>>>> v0.29.6
   #[serde(default)]
   pub onboarding_completed: bool, // First-launch onboarding has been shown/handled (one-shot)
   #[serde(default)]
@@ -96,6 +107,11 @@ impl Default for AppSettings {
       mcp_token: None,
       language: None,
       window_resize_warning_dismissed: false,
+<<<<<<< HEAD
+=======
+      fingerprint_gate_disabled: false,
+      vpn_extension_warning_disabled: false,
+>>>>>>> v0.29.6
       onboarding_completed: false,
       disable_auto_updates: false,
       keep_decrypted_profiles_in_ram: false,
@@ -852,7 +868,17 @@ pub async fn read_log_files(app_handle: tauri::AppHandle) -> Result<String, Stri
   const MAX_BYTES: usize = 5 * 1024 * 1024;
   let mut out = String::with_capacity(64 * 1024);
   for (path, _) in entries.iter().rev() {
+<<<<<<< HEAD
     let header = format!("===== {} =====\n", path.display());
+=======
+    let header = format!(
+      "===== {} =====\n",
+      path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("log")
+    );
+>>>>>>> v0.29.6
     if out.len() + header.len() >= MAX_BYTES {
       break;
     }
@@ -884,7 +910,11 @@ pub async fn read_log_files(app_handle: tauri::AppHandle) -> Result<String, Stri
     .map(|s| format!("===== {s}"))
     .collect::<String>();
 
+<<<<<<< HEAD
   Ok(final_out)
+=======
+  Ok(crate::log_redaction::text(&final_out))
+>>>>>>> v0.29.6
 }
 
 /// Reveal the log directory in the OS file manager.
@@ -1184,6 +1214,11 @@ mod tests {
       mcp_token: None,
       language: None,
       window_resize_warning_dismissed: false,
+<<<<<<< HEAD
+=======
+      fingerprint_gate_disabled: false,
+      vpn_extension_warning_disabled: false,
+>>>>>>> v0.29.6
       onboarding_completed: false,
       disable_auto_updates: false,
       keep_decrypted_profiles_in_ram: false,

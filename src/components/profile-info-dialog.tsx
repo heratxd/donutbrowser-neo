@@ -15,11 +15,19 @@ import {
   LuCookie,
   LuCopy,
   LuDownload,
+<<<<<<< HEAD
+=======
+  LuEraser,
+>>>>>>> v0.29.6
   LuFingerprint,
   LuGlobe,
   LuGroup,
   LuKey,
   LuLink,
+<<<<<<< HEAD
+=======
+  LuLock,
+>>>>>>> v0.29.6
   LuLockOpen,
   LuPlus,
   LuPuzzle,
@@ -27,12 +35,20 @@ import {
   LuSettings,
   LuShield,
   LuShieldCheck,
+<<<<<<< HEAD
+=======
+  LuTimer,
+>>>>>>> v0.29.6
   LuTrash2,
   LuUpload,
   LuUsers,
   LuX,
 } from "react-icons/lu";
 import { SharedFingerprintConfigForm } from "@/components/shared-fingerprint-config-form";
+<<<<<<< HEAD
+=======
+import { AnimatedSwitch } from "@/components/ui/animated-switch";
+>>>>>>> v0.29.6
 import { Button } from "@/components/ui/button";
 import {
   ColorPicker,
@@ -72,6 +88,10 @@ import {
 } from "@/components/ui/select";
 import { translateBackendError } from "@/lib/backend-errors";
 import { getProfileIcon } from "@/lib/browser-utils";
+<<<<<<< HEAD
+=======
+import { DNS_BLOCKLIST_LEVELS } from "@/lib/dns-blocklist-levels";
+>>>>>>> v0.29.6
 import { formatRelativeTime } from "@/lib/flag-utils";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { cn } from "@/lib/utils";
@@ -105,6 +125,10 @@ interface ProfileInfoDialogProps {
   onSetPassword?: (profile: BrowserProfile) => void;
   onChangePassword?: (profile: BrowserProfile) => void;
   onRemovePassword?: (profile: BrowserProfile) => void;
+<<<<<<< HEAD
+=======
+  crossOsUnlocked?: boolean;
+>>>>>>> v0.29.6
   isRunning?: boolean;
   isDisabled?: boolean;
   isCrossOs?: boolean;
@@ -124,6 +148,59 @@ function _OSIcon({ os }: { os: string }) {
   }
 }
 
+<<<<<<< HEAD
+=======
+function ClearOnCloseToggle({
+  profile,
+  isDisabled,
+}: {
+  profile: BrowserProfile;
+  isDisabled: boolean;
+}) {
+  const { t } = useTranslation();
+  const [enabled, setEnabled] = React.useState(profile.clear_on_close === true);
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    setEnabled(profile.clear_on_close === true);
+  }, [profile.clear_on_close]);
+
+  const toggle = async (next: boolean) => {
+    setEnabled(next);
+    setSaving(true);
+    try {
+      await invoke("update_profile_clear_on_close", {
+        profileId: profile.id,
+        clearOnClose: next,
+      });
+    } catch (error) {
+      setEnabled(!next);
+      showErrorToast(translateBackendError(t, error));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
+      <LuEraser className="size-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">{t("clearOnClose.label")}</p>
+        <p className="text-[11px] text-muted-foreground">
+          {t("clearOnClose.description")}
+        </p>
+      </div>
+      <AnimatedSwitch
+        checked={enabled}
+        disabled={saving || isDisabled}
+        onCheckedChange={(v) => void toggle(v === true)}
+        aria-label={t("clearOnClose.label")}
+      />
+    </div>
+  );
+}
+
+>>>>>>> v0.29.6
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border bg-muted/50 px-3 py-2.5">
@@ -144,7 +221,11 @@ function formatBytes(bytes: number): string {
 
 /**
  * Shows the total bytes routed through Donut's local proxy worker for this
+<<<<<<< HEAD
  * profile. Only counts traffic flowing through the donut-proxy binary вЂ” not
+=======
+ * profile. Only counts traffic flowing through the donut-proxy binary — not
+>>>>>>> v0.29.6
  * the browser's full network usage, hence the "Local" qualifier.
  */
 function LocalDataTransferCard({
@@ -158,7 +239,11 @@ function LocalDataTransferCard({
     total_bytes_sent: number;
     total_bytes_received: number;
   };
+<<<<<<< HEAD
   const [value, setValue] = React.useState<string>("вЂ”");
+=======
+  const [value, setValue] = React.useState<string>("—");
+>>>>>>> v0.29.6
 
   React.useEffect(() => {
     let mounted = true;
@@ -177,7 +262,11 @@ function LocalDataTransferCard({
           formatBytes(snap.total_bytes_sent + snap.total_bytes_received),
         );
       } catch {
+<<<<<<< HEAD
         if (mounted) setValue("вЂ”");
+=======
+        if (mounted) setValue("—");
+>>>>>>> v0.29.6
       }
     };
     void fetchSnapshot();
@@ -280,6 +369,10 @@ export function ProfileInfoDialog({
   onSetPassword,
   onChangePassword,
   onRemovePassword,
+<<<<<<< HEAD
+=======
+  crossOsUnlocked = false,
+>>>>>>> v0.29.6
   isRunning = false,
   isDisabled = false,
   isCrossOs = false,
@@ -375,14 +468,22 @@ export function ProfileInfoDialog({
 
   // Items in the settings tab `actions` list MUST only open another dialog
   // (or trigger a navigation/action that closes this one). Do NOT put inline
+<<<<<<< HEAD
   // settings UI вЂ” inputs, toggles, save buttons вЂ” directly in this dialog's
+=======
+  // settings UI — inputs, toggles, save buttons — directly in this dialog's
+>>>>>>> v0.29.6
   // settings tab. Each setting belongs in its own focused dialog (see
   // `ProfileLaunchHookDialog`, `ProfileBypassRulesDialog`,
   // `ProfileDnsBlocklistDialog` for the pattern). The settings tab is purely
   // a navigation hub.
   interface ActionItem {
     // Stable, language-independent key used to map sidebar sections to actions.
+<<<<<<< HEAD
     // The sidebar must NOT match on `label` вЂ” labels are translated, so English
+=======
+    // The sidebar must NOT match on `label` — labels are translated, so English
+>>>>>>> v0.29.6
     // substring matching hides sections for every non-English user.
     id?: string;
     icon: React.ReactNode;
@@ -390,6 +491,10 @@ export function ProfileInfoDialog({
     onClick: () => void;
     disabled?: boolean;
     destructive?: boolean;
+<<<<<<< HEAD
+=======
+    proBadge?: boolean;
+>>>>>>> v0.29.6
     runningBadge?: boolean;
     hidden?: boolean;
   }
@@ -430,7 +535,13 @@ export function ProfileInfoDialog({
       onClick: () => {
         handleAction(() => onConfigureWayfern?.(profile));
       },
+<<<<<<< HEAD
       disabled: isDisabled,
+=======
+      // Viewing and editing fingerprints both require an active paid plan.
+      disabled: isDisabled || !crossOsUnlocked,
+      proBadge: !crossOsUnlocked,
+>>>>>>> v0.29.6
       runningBadge: isRunning,
       hidden: !isWayfern || !onConfigureWayfern,
     },
@@ -440,7 +551,12 @@ export function ProfileInfoDialog({
       onClick: () => {
         handleAction(() => onLaunchWithSync?.(profile));
       },
+<<<<<<< HEAD
       disabled: isDisabled || isRunning,
+=======
+      disabled: isDisabled || isRunning || !crossOsUnlocked,
+      proBadge: !crossOsUnlocked,
+>>>>>>> v0.29.6
       hidden: profile.browser !== "wayfern" || !onLaunchWithSync,
     },
     {
@@ -626,6 +742,10 @@ interface ProfileInfoLayoutProps {
     onClick: () => void;
     disabled?: boolean;
     destructive?: boolean;
+<<<<<<< HEAD
+=======
+    proBadge?: boolean;
+>>>>>>> v0.29.6
     runningBadge?: boolean;
   }[];
   t: (key: string, options?: Record<string, unknown>) => string;
@@ -674,6 +794,16 @@ function ProfileInfoLayout({
     [visibleActions],
   );
 
+<<<<<<< HEAD
+=======
+  // An ephemeral profile is discarded when the browser closes, so it has
+  // nowhere to keep cookies, extensions or a synced copy. The sections were
+  // hidden outright, which left no way to discover that and read as the app
+  // being broken or the plan lacking the feature. Keep them listed and explain.
+  const isEphemeral = profile.ephemeral === true;
+  const isWayfernProfile = profile.browser === "wayfern";
+
+>>>>>>> v0.29.6
   const deleteAction = findAction("delete");
   const fingerprintAction = findAction("fingerprint");
   const cookiesManageAction = findAction("cookiesManage");
@@ -683,12 +813,20 @@ function ProfileInfoLayout({
   const syncAction = findAction("sync");
   const _launchHookAction = findAction("hook");
   const _networkAction = findAction("network");
+<<<<<<< HEAD
   // Password actions are no longer routed via the legacy action handlers вЂ”
+=======
+  // Password actions are no longer routed via the legacy action handlers —
+>>>>>>> v0.29.6
   // SecuritySectionInline writes directly to the backend instead.
 
   // Cookie count is fetched at the layout level so the sidebar badge can
   // surface it without waiting for the user to open the Cookies section.
+<<<<<<< HEAD
   // The effect deps must be primitive вЂ” `cookiesAction` is a new object
+=======
+  // The effect deps must be primitive — `cookiesAction` is a new object
+>>>>>>> v0.29.6
   // every render and using it directly here caused an infinite re-render
   // loop that froze the entire app when the dialog opened.
   // Skipped while running: the cookie DB is held by the browser and we
@@ -753,20 +891,32 @@ function ProfileInfoLayout({
         cookieCount !== null && cookieCount > 0
           ? cookieCount.toLocaleString()
           : undefined,
+<<<<<<< HEAD
       hidden: !cookiesAction,
+=======
+      hidden: !cookiesAction && !(isEphemeral && isWayfernProfile),
+>>>>>>> v0.29.6
     },
     {
       id: "extensions",
       icon: <LuPuzzle className="size-3.5" />,
       label: t("profileInfo.sections.extensions"),
       badge: extensionGroupName ?? undefined,
+<<<<<<< HEAD
       hidden: !extensionAction,
+=======
+      hidden: !extensionAction && !isEphemeral,
+>>>>>>> v0.29.6
     },
     {
       id: "sync",
       icon: <LuRefreshCw className="size-3.5" />,
       label: t("profileInfo.sections.sync"),
+<<<<<<< HEAD
       hidden: !syncAction,
+=======
+      hidden: !syncAction && !isEphemeral,
+>>>>>>> v0.29.6
     },
     {
       id: "automation",
@@ -809,7 +959,11 @@ function ProfileInfoLayout({
           type="button"
           aria-label={t("common.buttons.close")}
           onClick={onClose}
+<<<<<<< HEAD
           className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors duration-100 hover:bg-accent/50 hover:text-foreground"
+=======
+          className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors duration-100 hover:bg-accent hover:text-accent-foreground"
+>>>>>>> v0.29.6
         >
           <LuX className="size-3.5" />
         </button>
@@ -832,7 +986,11 @@ function ProfileInfoLayout({
                     "flex h-7 items-center gap-2 rounded-md px-2 text-left text-xs transition-colors duration-100",
                     active
                       ? "bg-accent text-accent-foreground"
+<<<<<<< HEAD
                       : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+=======
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+>>>>>>> v0.29.6
                   )}
                 >
                   <span className="shrink-0">{it.icon}</span>
@@ -852,7 +1010,11 @@ function ProfileInfoLayout({
                 type="button"
                 onClick={deleteAction.onClick}
                 disabled={deleteAction.disabled}
+<<<<<<< HEAD
                 className="flex h-7 items-center gap-2 rounded-md px-2 text-xs text-destructive transition-colors duration-100 hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
+=======
+                className="flex h-7 items-center gap-2 rounded-md px-2 text-xs text-destructive-text transition-colors duration-100 hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
+>>>>>>> v0.29.6
               >
                 <LuTrash2 className="size-3.5 shrink-0" />
                 <span className="flex-1 text-left">
@@ -968,6 +1130,13 @@ function ProfileInfoLayout({
                 </div>
               </div>
 
+<<<<<<< HEAD
+=======
+              {!profile.ephemeral && !profile.password_protected && (
+                <ClearOnCloseToggle profile={profile} isDisabled={isDisabled} />
+              )}
+
+>>>>>>> v0.29.6
               {profile.created_by_email && (
                 <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
                   <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
@@ -987,6 +1156,15 @@ function ProfileInfoLayout({
             <FingerprintSectionInline
               profile={profile}
               isDisabled={isDisabled}
+<<<<<<< HEAD
+=======
+              crossOsUnlocked={Boolean(
+                // Re-derive: parent passes crossOsUnlocked but the layout
+                // doesn't get it; we get it implicitly via fingerprintAction's
+                // proBadge state. Default to false if action missing.
+                fingerprintAction && !fingerprintAction.proBadge,
+              )}
+>>>>>>> v0.29.6
               onSaved={onClose}
               t={t}
             />
@@ -1002,6 +1180,7 @@ function ProfileInfoLayout({
             />
           )}
 
+<<<<<<< HEAD
           {section === "cookies" && (
             <CookiesSectionInline
               profile={profile}
@@ -1030,6 +1209,57 @@ function ProfileInfoLayout({
               t={t}
             />
           )}
+=======
+          {section === "cookies" &&
+            (isEphemeral ? (
+              <EphemeralSectionNotice
+                title={t("profileInfo.sections.cookies")}
+                description={t("profileInfo.ephemeral.cookiesUnavailable")}
+                t={t}
+              />
+            ) : (
+              <CookiesSectionInline
+                profile={profile}
+                isRunning={isRunning}
+                isDisabled={isDisabled}
+                onCopyCookies={cookiesCopyAction?.onClick}
+                onImportCookies={cookiesManageAction?.onClick}
+                t={t}
+              />
+            ))}
+
+          {section === "extensions" &&
+            (isEphemeral ? (
+              <EphemeralSectionNotice
+                title={t("profileInfo.sections.extensions")}
+                description={t("profileInfo.ephemeral.extensionsUnavailable")}
+                t={t}
+              />
+            ) : (
+              <ExtensionsSectionInline
+                profile={profile}
+                isDisabled={isDisabled}
+                t={t}
+              />
+            ))}
+
+          {section === "sync" &&
+            (isEphemeral ? (
+              <EphemeralSectionNotice
+                title={t("profileInfo.sections.sync")}
+                description={t("profileInfo.ephemeral.syncUnavailable")}
+                t={t}
+              />
+            ) : (
+              <SyncSectionInline
+                profile={profile}
+                syncMode={syncMode}
+                syncStatus={syncStatus}
+                isDisabled={isDisabled}
+                t={t}
+              />
+            ))}
+>>>>>>> v0.29.6
 
           {section === "automation" && (
             <LaunchHookEditor profile={profile} t={t} />
@@ -1110,8 +1340,13 @@ function _SectionAction({
       className={cn(
         "flex h-9 items-center gap-2 rounded-md px-3 text-left text-xs transition-colors",
         destructive
+<<<<<<< HEAD
           ? "text-destructive hover:bg-destructive/10"
           : "hover:bg-accent",
+=======
+          ? "text-destructive-text hover:bg-destructive/10"
+          : "hover:bg-accent hover:text-accent-foreground",
+>>>>>>> v0.29.6
         "disabled:pointer-events-none disabled:opacity-50",
       )}
     >
@@ -1183,11 +1418,19 @@ function LaunchHookEditor({
         className="font-mono text-xs"
       />
       {showInvalidHint && (
+<<<<<<< HEAD
         <p className="text-xs text-warning">
           {t("profileInfo.launchHook.invalidUrlHint")}
         </p>
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}
+=======
+        <p className="text-xs text-warning-text">
+          {t("profileInfo.launchHook.invalidUrlHint")}
+        </p>
+      )}
+      {error && <p className="text-xs text-destructive-text">{error}</p>}
+>>>>>>> v0.29.6
       <div className="flex items-center gap-2">
         <Button
           size="sm"
@@ -1289,11 +1532,21 @@ function SyncSectionInline({
             {t(`profileInfo.syncStatusValue.${syncStatus.status}`)}
           </p>
           {syncStatus.error && (
+<<<<<<< HEAD
             <p className="mt-1 text-xs text-destructive">{syncStatus.error}</p>
           )}
         </div>
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}
+=======
+            <p className="mt-1 text-xs text-destructive-text">
+              {syncStatus.error}
+            </p>
+          )}
+        </div>
+      )}
+      {error && <p className="text-xs text-destructive-text">{error}</p>}
+>>>>>>> v0.29.6
     </div>
   );
 }
@@ -1429,7 +1682,36 @@ function NetworkSectionInline({
         </Select>
       </div>
 
+<<<<<<< HEAD
       {error && <p className="text-xs text-destructive">{error}</p>}
+=======
+      {error && <p className="text-xs text-destructive-text">{error}</p>}
+    </div>
+  );
+}
+
+/// Explains why a section has nothing to offer on an ephemeral profile.
+/// Mirrors the locked-fingerprint empty state so the two read as one pattern.
+function EphemeralSectionNotice({
+  title,
+  description,
+  t,
+}: {
+  title: string;
+  description: string;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-lg border p-6 text-center">
+      <LuTimer className="size-4 shrink-0 text-muted-foreground" />
+      <h3 className="text-sm font-medium text-foreground">{title}</h3>
+      <p className="max-w-[48ch] text-sm text-pretty text-muted-foreground">
+        {description}
+      </p>
+      <p className="max-w-[48ch] text-xs text-pretty text-muted-foreground">
+        {t("profileInfo.ephemeral.hint")}
+      </p>
+>>>>>>> v0.29.6
     </div>
   );
 }
@@ -1533,7 +1815,11 @@ function ExtensionsSectionInline({
           </SelectContent>
         </Select>
       </div>
+<<<<<<< HEAD
       {error && <p className="text-xs text-destructive">{error}</p>}
+=======
+      {error && <p className="text-xs text-destructive-text">{error}</p>}
+>>>>>>> v0.29.6
     </div>
   );
 }
@@ -1716,7 +2002,11 @@ function CookiesSectionInline({
                 ? t("profileInfo.values.loading")
                 : stats
                   ? stats.total_count.toLocaleString()
+<<<<<<< HEAD
                   : "вЂ”"}
+=======
+                  : "—"}
+>>>>>>> v0.29.6
             </p>
           </div>
           {domains.length > 0 && (
@@ -1741,7 +2031,11 @@ function CookiesSectionInline({
               </ul>
             </div>
           )}
+<<<<<<< HEAD
           {error && <p className="text-xs text-destructive">{error}</p>}
+=======
+          {error && <p className="text-xs text-destructive-text">{error}</p>}
+>>>>>>> v0.29.6
         </>
       )}
     </div>
@@ -1756,11 +2050,19 @@ function CookiesSectionInline({
 function FingerprintSectionInline({
   profile,
   isDisabled,
+<<<<<<< HEAD
+=======
+  crossOsUnlocked,
+>>>>>>> v0.29.6
   onSaved,
   t,
 }: {
   profile: BrowserProfile;
   isDisabled: boolean;
+<<<<<<< HEAD
+=======
+  crossOsUnlocked: boolean;
+>>>>>>> v0.29.6
   onSaved: () => void;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
@@ -1793,6 +2095,23 @@ function FingerprintSectionInline({
     );
   }
 
+<<<<<<< HEAD
+=======
+  if (!crossOsUnlocked) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-lg border p-6 text-center">
+        <LuLock className="size-4 shrink-0 text-muted-foreground" />
+        <h3 className="text-sm font-medium text-foreground">
+          {t("profileInfo.fingerprint.lockedTitle")}
+        </h3>
+        <p className="max-w-[48ch] text-sm text-pretty text-muted-foreground">
+          {t("profileInfo.fingerprint.lockedDescription")}
+        </p>
+      </div>
+    );
+  }
+
+>>>>>>> v0.29.6
   const onWayfernChange = (key: keyof WayfernConfig, value: unknown) => {
     setWayfernConfig((prev) => ({ ...prev, [key]: value }));
     setSuccess(null);
@@ -1835,12 +2154,24 @@ function FingerprintSectionInline({
         onConfigChange={onWayfernChange}
         forceAdvanced={true}
         readOnly={isDisabled}
+<<<<<<< HEAD
+=======
+        crossOsUnlocked={crossOsUnlocked}
+        limitedMode={false}
+>>>>>>> v0.29.6
         profileVersion={profile.version}
         profileBrowser={profile.browser}
       />
 
+<<<<<<< HEAD
       {error && <p className="text-xs text-destructive">{error}</p>}
       {success && !error && <p className="text-xs text-success">{success}</p>}
+=======
+      {error && <p className="text-xs text-destructive-text">{error}</p>}
+      {success && !error && (
+        <p className="text-xs text-success-text">{success}</p>
+      )}
+>>>>>>> v0.29.6
 
       <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
         <Button
@@ -1881,7 +2212,11 @@ function SecuritySectionInline({
   isRunning: boolean;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
+<<<<<<< HEAD
   // Mode is implied by current state: unprotected в†’ "set"; protected в†’
+=======
+  // Mode is implied by current state: unprotected → "set"; protected →
+>>>>>>> v0.29.6
   // "change" by default, with a "remove" alternative.
   type Mode = "set" | "change" | "remove";
   const initialMode: Mode = profile.password_protected ? "change" : "set";
@@ -1918,7 +2253,11 @@ function SecuritySectionInline({
   };
 
   // Reset the form whenever the underlying profile state changes (e.g. the
+<<<<<<< HEAD
   // user just set a password вЂ” flip to "change" mode and clear fields).
+=======
+  // user just set a password — flip to "change" mode and clear fields).
+>>>>>>> v0.29.6
   React.useEffect(() => {
     setMode(profile.password_protected ? "change" : "set");
     setOldPassword("");
@@ -2012,7 +2351,11 @@ function SecuritySectionInline({
             }}
             className={cn(
               "h-7 flex-1 rounded-md border px-2 text-xs transition-colors",
+<<<<<<< HEAD
               "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+=======
+              "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+>>>>>>> v0.29.6
             )}
           >
             {t("profilePassword.modes.validate")}
@@ -2027,7 +2370,11 @@ function SecuritySectionInline({
               "h-7 flex-1 rounded-md border px-2 text-xs transition-colors",
               mode === "change"
                 ? "border-transparent bg-accent text-accent-foreground"
+<<<<<<< HEAD
                 : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+=======
+                : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+>>>>>>> v0.29.6
             )}
           >
             {t("profilePassword.modes.change")}
@@ -2041,8 +2388,13 @@ function SecuritySectionInline({
             className={cn(
               "h-7 flex-1 rounded-md border px-2 text-xs transition-colors",
               mode === "remove"
+<<<<<<< HEAD
                 ? "border-transparent bg-destructive/10 text-destructive"
                 : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+=======
+                ? "border-transparent bg-destructive/10 text-destructive-text"
+                : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+>>>>>>> v0.29.6
             )}
           >
             {t("profilePassword.modes.remove")}
@@ -2092,8 +2444,15 @@ function SecuritySectionInline({
         )}
       </div>
 
+<<<<<<< HEAD
       {error && <p className="text-xs text-destructive">{error}</p>}
       {success && !error && <p className="text-xs text-success">{success}</p>}
+=======
+      {error && <p className="text-xs text-destructive-text">{error}</p>}
+      {success && !error && (
+        <p className="text-xs text-success-text">{success}</p>
+      )}
+>>>>>>> v0.29.6
 
       {isRunning && (
         <p className="text-xs text-muted-foreground">
@@ -2287,11 +2646,18 @@ export function ProfileDnsBlocklistDialog({
 
   const options = [
     { value: "", label: t("dnsBlocklist.none") },
+<<<<<<< HEAD
     { value: "light", label: t("dnsBlocklist.light") },
     { value: "normal", label: t("dnsBlocklist.normal") },
     { value: "pro", label: t("dnsBlocklist.pro") },
     { value: "pro_plus", label: t("dnsBlocklist.proPlus") },
     { value: "ultimate", label: t("dnsBlocklist.ultimate") },
+=======
+    ...DNS_BLOCKLIST_LEVELS.map((l) => ({
+      value: l.value as string,
+      label: t(l.labelKey),
+    })),
+>>>>>>> v0.29.6
   ];
 
   return (
@@ -2306,7 +2672,11 @@ export function ProfileDnsBlocklistDialog({
             href="https://github.com/hagezi/dns-blocklists"
             target="_blank"
             rel="noopener noreferrer"
+<<<<<<< HEAD
             className="text-primary hover:underline"
+=======
+            className="text-primary-text hover:underline"
+>>>>>>> v0.29.6
           >
             {t("common.buttons.moreInfo")}
           </a>
@@ -2319,8 +2689,13 @@ export function ProfileDnsBlocklistDialog({
               onClick={() => setLevel(option.value)}
               className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                 level === option.value
+<<<<<<< HEAD
                   ? "bg-primary/10 text-primary border border-primary/30"
                   : "hover:bg-accent border border-transparent"
+=======
+                  ? "border border-primary/30 bg-primary/10 text-primary-text"
+                  : "border border-transparent hover:bg-accent hover:text-accent-foreground"
+>>>>>>> v0.29.6
               }`}
             >
               {option.label}
@@ -2442,7 +2817,11 @@ export function ProfileBypassRulesDialog({
                       onClick={() => {
                         handleRemoveRule(rule);
                       }}
+<<<<<<< HEAD
                       className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
+=======
+                      className="shrink-0 text-muted-foreground transition-colors hover:text-destructive-text"
+>>>>>>> v0.29.6
                     >
                       <LuX className="size-3.5" />
                     </button>

@@ -70,7 +70,11 @@ export function WayfernTermsDialog({
             href="https://wayfern.com/tos"
             target="_blank"
             rel="noopener noreferrer"
+<<<<<<< HEAD
             className="block text-sm font-medium text-primary hover:underline"
+=======
+            className="block text-sm font-medium text-primary-text hover:underline"
+>>>>>>> v0.29.6
           >
             https://wayfern.com/tos
           </a>

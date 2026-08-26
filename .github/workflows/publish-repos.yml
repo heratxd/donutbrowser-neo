@@ -24,13 +24,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
+<<<<<<< HEAD
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+=======
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+>>>>>>> v0.29.6
 
       - name: Determine release tag
         id: tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_TAG: ${{ inputs.tag }}
+<<<<<<< HEAD
         run: |
           if [[ -n "${INPUT_TAG:-}" ]]; then
             echo "tag=${INPUT_TAG}" >> "$GITHUB_OUTPUT"
@@ -42,6 +47,26 @@ jobs:
             TAG=$(gh release view --repo "${{ github.repository }}" --json tagName -q .tagName)
             echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           fi
+=======
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [[ -n "${INPUT_TAG:-}" ]]; then
+            TAG="$INPUT_TAG"
+          elif [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            # The Release workflow is triggered by a tag push (v*),
+            # so head_branch is the tag name
+            TAG="$WORKFLOW_HEAD_BRANCH"
+          else
+            TAG=$(gh release view --repo "$REPOSITORY" --json tagName -q .tagName)
+          fi
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag" >&2
+            exit 1
+          fi
+          printf 'tag=%s\n' "$TAG" >> "$GITHUB_OUTPUT"
+>>>>>>> v0.29.6
 
       - name: Install tools
         run: |
@@ -59,6 +84,7 @@ jobs:
           R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+<<<<<<< HEAD
         run: |
           # GitHub injects secrets verbatim. If a value was pasted with
           # surrounding quotes or a trailing newline — the local .env wraps all
@@ -69,9 +95,18 @@ jobs:
           # sources .env through bash, which strips the quotes; CI has no .env,
           # so strip here. No-op when the secrets are already clean. The script
           # itself is intentionally left untouched.
+=======
+          RELEASE_TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          # Normalize accidental quotes and whitespace in configured secrets.
+>>>>>>> v0.29.6
           strip() { printf '%s' "$1" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'\$/\1/"; }
           export R2_ACCESS_KEY_ID="$(strip "$R2_ACCESS_KEY_ID")"
           export R2_SECRET_ACCESS_KEY="$(strip "$R2_SECRET_ACCESS_KEY")"
           export R2_ENDPOINT_URL="$(strip "$R2_ENDPOINT_URL")"
           export R2_BUCKET_NAME="$(strip "$R2_BUCKET_NAME")"
+<<<<<<< HEAD
           bash scripts/publish-repo.sh "${{ steps.tag.outputs.tag }}"
+=======
+          bash scripts/publish-repo.sh "$RELEASE_TAG"
+>>>>>>> v0.29.6

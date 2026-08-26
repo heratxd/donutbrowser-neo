@@ -1,6 +1,10 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
+<<<<<<< HEAD
+=======
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+>>>>>>> v0.29.6
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { FiCheck } from "react-icons/fi";
@@ -13,6 +17,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatRelativeTime } from "@/lib/flag-utils";
+<<<<<<< HEAD
+=======
+import { MOTION_EASE_OUT } from "@/lib/motion";
+>>>>>>> v0.29.6
 import type { ProxyCheckResult, StoredProxy } from "@/types";
 
 interface ProxyCheckButtonProps {
@@ -37,6 +45,10 @@ export function ProxyCheckButton({
   setCheckingProfileId,
 }: ProxyCheckButtonProps) {
   const { t } = useTranslation();
+<<<<<<< HEAD
+=======
+  const reduceMotion = useReducedMotion();
+>>>>>>> v0.29.6
   const [localResult, setLocalResult] = React.useState<
     ProxyCheckResult | undefined
   >(cachedResult);
@@ -111,6 +123,16 @@ export function ProxyCheckButton({
 
   const isCurrentlyChecking = checkingProfileId === profileId;
   const result = localResult;
+<<<<<<< HEAD
+=======
+  const statusKey = isCurrentlyChecking
+    ? "checking"
+    : result?.is_valid && result.country_code
+      ? "valid-location"
+      : result && !result.is_valid
+        ? "invalid"
+        : "idle";
+>>>>>>> v0.29.6
 
   return (
     <Tooltip>
@@ -122,6 +144,7 @@ export function ProxyCheckButton({
           onClick={handleCheck}
           disabled={isCurrentlyChecking || disabled}
         >
+<<<<<<< HEAD
           {isCurrentlyChecking ? (
             <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
           ) : result?.is_valid && result.country_code ? (
@@ -134,6 +157,47 @@ export function ProxyCheckButton({
           ) : (
             <FiCheck className="size-3" />
           )}
+=======
+          <AnimatePresence initial={false} mode="wait">
+            <motion.span
+              key={statusKey}
+              initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.9 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                transition: {
+                  duration: reduceMotion ? 0.15 : 0.16,
+                  ease: MOTION_EASE_OUT,
+                },
+              }}
+              exit={{
+                opacity: 0,
+                scale: reduceMotion ? 1 : 0.9,
+                transition: {
+                  duration: reduceMotion ? 0.15 : 0.1,
+                  ease: MOTION_EASE_OUT,
+                },
+              }}
+              className="inline-flex size-3 items-center justify-center"
+            >
+              {isCurrentlyChecking ? (
+                <span className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+              ) : result?.is_valid && result.country_code ? (
+                <span className="relative inline-flex items-center justify-center">
+                  <FlagIcon
+                    countryCode={result.country_code}
+                    className="h-2.5"
+                  />
+                  <FiCheck className="absolute right-[-4px] bottom-[-6px]" />
+                </span>
+              ) : result && !result.is_valid ? (
+                <span className="text-sm text-destructive-text">✕</span>
+              ) : (
+                <FiCheck className="size-3" />
+              )}
+            </motion.span>
+          </AnimatePresence>
+>>>>>>> v0.29.6
         </Button>
       </TooltipTrigger>
       <TooltipContent>
@@ -148,10 +212,17 @@ export function ProxyCheckButton({
               {[result.city, result.country].filter(Boolean).join(", ") ||
                 t("proxyCheck.unknownLocation")}
             </p>
+<<<<<<< HEAD
             <p className="text-xs text-primary-foreground/70">
               {t("proxyCheck.tooltipIp", { ip: result.ip })}
             </p>
             <p className="text-xs text-primary-foreground/70">
+=======
+            <p className="text-xs text-primary-foreground">
+              {t("proxyCheck.tooltipIp", { ip: result.ip })}
+            </p>
+            <p className="text-xs text-primary-foreground">
+>>>>>>> v0.29.6
               {t("proxyCheck.tooltipChecked", {
                 time: formatRelativeTime(result.timestamp),
               })}
@@ -160,7 +231,11 @@ export function ProxyCheckButton({
         ) : result && !result.is_valid ? (
           <div>
             <p>{t("proxyCheck.tooltipFailedTitle")}</p>
+<<<<<<< HEAD
             <p className="text-xs text-primary-foreground/70">
+=======
+            <p className="text-xs text-primary-foreground">
+>>>>>>> v0.29.6
               {t("proxyCheck.tooltipFailed", {
                 time: formatRelativeTime(result.timestamp),
               })}

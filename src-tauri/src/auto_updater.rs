@@ -668,6 +668,10 @@ mod tests {
       created_by_email: None,
       dns_blocklist: None,
       password_protected: false,
+<<<<<<< HEAD
+=======
+      clear_on_close: false,
+>>>>>>> v0.29.6
       created_at: None,
       updated_at: None,
     }

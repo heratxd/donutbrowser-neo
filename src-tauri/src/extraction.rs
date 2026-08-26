@@ -606,7 +606,11 @@ impl Extractor {
     // the copy itself. Without it, `cp -R` preserves quarantine from the
     // mounted DMG, which then has to be removed with `xattr -dr` — and that
     // removexattr syscall on a signed .app bundle trips macOS Sequoia's App
+<<<<<<< HEAD
     // Management TCC notification ("NeoDonut Browser.app was prevented from modifying
+=======
+    // Management TCC notification ("Donut.app was prevented from modifying
+>>>>>>> v0.29.6
     // apps on your Mac"). Stripping at copy time is silent.
     let copy_src = app_entry.to_str().unwrap().to_string();
     let copy_dst = app_path.to_str().unwrap().to_string();
@@ -649,7 +653,11 @@ impl Extractor {
     // Remove the macOS quarantine attribute so Gatekeeper doesn't block launch
     // — but only if it's actually present. A no-op `removexattr` syscall on a
     // signed .app bundle still trips macOS Sequoia's App Management privacy
+<<<<<<< HEAD
     // prompt ("NeoDonut Browser.app was prevented from modifying apps on your Mac"),
+=======
+    // prompt ("Donut.app was prevented from modifying apps on your Mac"),
+>>>>>>> v0.29.6
     // even when no modification actually happens, so we gate the call behind
     // a read-only `getxattr` check.
     if has_quarantine_attr(&app_path) {

@@ -203,7 +203,11 @@ export function ProfilePasswordDialog({
         <div className="flex flex-col gap-3">
           {(mode === "set" || mode === "change") && (
             <div className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
+<<<<<<< HEAD
               <p className="font-medium text-warning">
+=======
+              <p className="font-medium text-warning-text">
+>>>>>>> v0.29.6
                 {t("profilePassword.warnings.forgetWarningTitle")}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -212,7 +216,11 @@ export function ProfilePasswordDialog({
             </div>
           )}
           {lockoutSecondsRemaining != null && (
+<<<<<<< HEAD
             <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+=======
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive-text">
+>>>>>>> v0.29.6
               {t("backendErrors.lockedOut", {
                 duration: formatLockoutDuration(t, lockoutSecondsRemaining),
               })}

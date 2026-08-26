@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: temporary suppress until in active use */
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: temporary suppress until in active use */
+=======
+>>>>>>> v0.29.6
 "use client";
 
 import { Command as CommandPrimitive, useCommandState } from "cmdk";
@@ -14,9 +17,15 @@ export interface Option {
   value: string;
   label?: string;
   disable?: boolean;
+<<<<<<< HEAD
   /** fixed option that can't be removed. */
   fixed?: boolean;
   /** Group the options by providing key. */
+=======
+  /** An option that cannot be removed. */
+  fixed?: boolean;
+  /** Group options by this property. */
+>>>>>>> v0.29.6
   [key: string]: string | boolean | undefined;
 }
 type GroupOption = Record<string, Option[]>;
@@ -24,13 +33,18 @@ type GroupOption = Record<string, Option[]>;
 interface MultipleSelectorProps {
   value?: Option[];
   defaultOptions?: Option[];
+<<<<<<< HEAD
   /** manually controlled options */
+=======
+  /** Manually controlled options. */
+>>>>>>> v0.29.6
   options?: Option[];
   placeholder?: string;
   /** Loading component. */
   loadingIndicator?: React.ReactNode;
   /** Empty component. */
   emptyIndicator?: React.ReactNode;
+<<<<<<< HEAD
   /** Debounce time for async search. Only work with `onSearch`. */
   delay?: number;
   /**
@@ -39,6 +53,15 @@ interface MultipleSelectorProps {
    **/
   triggerSearchOnFocus?: boolean;
   /** async search */
+=======
+  /** Debounce time for async search. Used only with `onSearch`. */
+  delay?: number;
+  /**
+   * Trigger `onSearch` when the input receives focus.
+   **/
+  triggerSearchOnFocus?: boolean;
+  /** Asynchronous search. */
+>>>>>>> v0.29.6
   onSearch?: (value: string) => Promise<Option[]>;
   onChange?: (options: Option[]) => void;
   /** Limit the maximum number of selected options. */
@@ -48,13 +71,21 @@ interface MultipleSelectorProps {
   /** Hide the placeholder when there are options selected. */
   hidePlaceholderWhenSelected?: boolean;
   disabled?: boolean;
+<<<<<<< HEAD
   /** Group the options base on provided key. */
+=======
+  /** Group options by the provided key. */
+>>>>>>> v0.29.6
   groupBy?: string;
   className?: string;
   badgeClassName?: string;
   /**
+<<<<<<< HEAD
    * First item selected is a default behavior by cmdk. That is why the default is true.
    * This is a workaround solution by add a dummy item.
+=======
+   * Prevent cmdk from selecting the first item by inserting a dummy item.
+>>>>>>> v0.29.6
    *
    * @reference: https://github.com/pacocoursey/cmdk/issues/171
    */
@@ -375,7 +406,11 @@ const MultipleSelector = React.forwardRef<
       return Object.values(selectables).some((group) => group.length > 0);
     }, [selectables]);
 
+<<<<<<< HEAD
     /** Avoid Creatable Selector freezing or lagging when paste a long string. */
+=======
+    // Skip fuzzy matching for creatable inputs to keep long pasted values responsive.
+>>>>>>> v0.29.6
     const commandFilter = React.useCallback(() => {
       if (commandProps?.filter) {
         return commandProps.filter;
@@ -401,13 +436,24 @@ const MultipleSelector = React.forwardRef<
           "relative h-auto overflow-visible bg-transparent",
           commandProps?.className,
         )}
+<<<<<<< HEAD
+=======
+        // Consumers may override filtering even when search is asynchronous.
+>>>>>>> v0.29.6
         shouldFilter={
           commandProps?.shouldFilter !== undefined
             ? commandProps.shouldFilter
             : !onSearch
+<<<<<<< HEAD
         } // When onSearch is provided, we don't want to filter the options. You can still override it.
         filter={commandFilter()}
       >
+=======
+        }
+        filter={commandFilter()}
+      >
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: pointer focus is forwarded to the nested input; keyboard users focus nested controls directly */}
+>>>>>>> v0.29.6
         <div
           className={cn(
             "min-h-10 rounded-md border border-input text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
@@ -417,7 +463,11 @@ const MultipleSelector = React.forwardRef<
             },
             className,
           )}
+<<<<<<< HEAD
           onClick={() => {
+=======
+          onMouseDown={() => {
+>>>>>>> v0.29.6
             if (disabled) return;
             inputRef.current?.focus();
           }}

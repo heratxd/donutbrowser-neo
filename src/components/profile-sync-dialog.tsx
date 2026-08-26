@@ -100,7 +100,11 @@ export function ProfileSyncDialog({
       }
 
       if (newMode === "Encrypted" && !canUseEncryption) {
+<<<<<<< HEAD
         showErrorToast(t("settings.encryption.requiresTeamOwner"));
+=======
+        showErrorToast(t("settings.encryption.requiresProOrOwner"));
+>>>>>>> v0.29.6
         return;
       }
 
@@ -258,7 +262,11 @@ export function ProfileSyncDialog({
                         <p className="text-sm text-muted-foreground">
                           {canUseEncryption
                             ? t("sync.mode.encryptedDescription")
+<<<<<<< HEAD
                             : t("settings.encryption.requiresTeamOwner")}
+=======
+                            : t("settings.encryption.requiresProOrOwner")}
+>>>>>>> v0.29.6
                         </p>
                       </Label>
                     </div>
@@ -267,7 +275,11 @@ export function ProfileSyncDialog({
                   {syncMode === "Encrypted" &&
                     !hasE2ePassword &&
                     userChangedMode && (
+<<<<<<< HEAD
                       <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+=======
+                      <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-text">
+>>>>>>> v0.29.6
                         {t("sync.mode.noPasswordWarning")}
                       </div>
                     )}

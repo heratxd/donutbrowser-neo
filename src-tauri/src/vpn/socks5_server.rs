@@ -1158,7 +1158,11 @@ mod tests {
 
   #[test]
   fn test_parse_key_valid() {
+<<<<<<< HEAD
     let key = "YEocP0e2o1WT5GlvBvQzVF7EeR6z9aCk+ZdZ5NKEuXA=";
+=======
+    let key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+>>>>>>> v0.29.6
     assert!(parse_key(key).is_ok());
   }
 

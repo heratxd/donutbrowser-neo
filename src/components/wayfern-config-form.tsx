@@ -8,6 +8,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+<<<<<<< HEAD
+=======
+import { ProBadge } from "@/components/ui/pro-badge";
+>>>>>>> v0.29.6
 import {
   Select,
   SelectContent,
@@ -30,6 +34,11 @@ interface WayfernConfigFormProps {
   isCreating?: boolean;
   forceAdvanced?: boolean;
   readOnly?: boolean;
+<<<<<<< HEAD
+=======
+  crossOsUnlocked?: boolean;
+  limitedMode?: boolean;
+>>>>>>> v0.29.6
   profileVersion?: string;
   profileBrowser?: string;
 }
@@ -38,6 +47,17 @@ const isFingerprintEditingDisabled = (config: WayfernConfig): boolean => {
   return config.randomize_fingerprint_on_launch === true;
 };
 
+<<<<<<< HEAD
+=======
+/** What `generate_sample_fingerprint` returns. Identity fields are null on a
+ * browser version that predates the Wayfern identity API. */
+interface GeneratedFingerprint {
+  fingerprint: string;
+  identity_id: string | null;
+  identity_baseline: string | null;
+}
+
+>>>>>>> v0.29.6
 const getCurrentOS = (): WayfernOS => {
   if (typeof navigator === "undefined") return "linux";
   const platform = navigator.platform.toLowerCase();
@@ -61,6 +81,11 @@ export function WayfernConfigForm({
   isCreating = false,
   forceAdvanced = false,
   readOnly = false,
+<<<<<<< HEAD
+=======
+  crossOsUnlocked = false,
+  limitedMode = false,
+>>>>>>> v0.29.6
   profileVersion,
   profileBrowser,
 }: WayfernConfigFormProps) {
@@ -78,12 +103,32 @@ export function WayfernConfigForm({
     setIsGeneratingFingerprint(true);
     try {
       const configJson = JSON.stringify(config);
+<<<<<<< HEAD
       const result = await invoke<string>("generate_sample_fingerprint", {
         browser: profileBrowser ?? "wayfern",
         version: profileVersion,
         configJson,
       });
       onConfigChange("fingerprint", result);
+=======
+      const result = await invoke<GeneratedFingerprint>(
+        "generate_sample_fingerprint",
+        {
+          browser: profileBrowser ?? "wayfern",
+          version: profileVersion,
+          configJson,
+        },
+      );
+      onConfigChange("fingerprint", result.fingerprint);
+      // The identity travels with the fingerprint it produced. Storing one
+      // without the other leaves a device the launch path cannot reproduce, so
+      // it would be discarded and re-minted on the next launch.
+      onConfigChange("identity_id", result.identity_id ?? undefined);
+      onConfigChange(
+        "identity_baseline",
+        result.identity_baseline ?? undefined,
+      );
+>>>>>>> v0.29.6
     } catch (error) {
       console.error("Failed to generate fingerprint:", error);
     } finally {
@@ -166,13 +211,26 @@ export function WayfernConfigForm({
 
   const isEditingDisabled = isFingerprintEditingDisabled(config) || readOnly;
 
+<<<<<<< HEAD
+=======
+  /** For an identity-backed profile these fields have no stored value to show,
+   * and editing them by hand produces an inconsistent device. Hidden rather
+   * than rendered blank-and-disabled, because a blank box reads as data loss
+   * whereas their absence is the truth. */
+  const isIdentityDerived = config.identity_id != null;
+
+>>>>>>> v0.29.6
   const renderAdvancedForm = () => (
     <div className="space-y-6">
       {/* Operating System Selection */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label>{t("fingerprint.osLabel")}</Label>
+<<<<<<< HEAD
           {profileVersion && (
+=======
+          {profileVersion && (!isCreating || crossOsUnlocked) && (
+>>>>>>> v0.29.6
             <LoadingButton
               isLoading={isGeneratingFingerprint}
               onClick={handleGenerateFingerprint}
@@ -199,6 +257,7 @@ export function WayfernConfigForm({
           <SelectContent>
             {(
               ["windows", "macos", "linux", "android", "ios"] as WayfernOS[]
+<<<<<<< HEAD
             ).map((os) => (
               <SelectItem key={os} value={os}>
                 {osLabels[os]}
@@ -207,6 +266,22 @@ export function WayfernConfigForm({
           </SelectContent>
         </Select>
         {selectedOS !== currentOS && (
+=======
+            ).map((os) => {
+              const isDisabled = os !== currentOS && !crossOsUnlocked;
+              return (
+                <SelectItem key={os} value={os} disabled={isDisabled}>
+                  <span className="flex items-center gap-2">
+                    {osLabels[os]}
+                    {isDisabled && <ProBadge />}
+                  </span>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+        {selectedOS !== currentOS && crossOsUnlocked && (
+>>>>>>> v0.29.6
           <Alert className="mt-2">
             <AlertDescription>
               {t("fingerprint.crossOsWarning")}
@@ -250,6 +325,7 @@ export function WayfernConfigForm({
         </div>
       </div>
 
+<<<<<<< HEAD
       <div>
         {isEditingDisabled ? (
           <Alert>
@@ -266,6 +342,34 @@ export function WayfernConfigForm({
         )}
 
         <fieldset disabled={isEditingDisabled} className="space-y-6">
+=======
+      <div
+        className={
+          limitedMode ? "relative overflow-hidden rounded-lg" : undefined
+        }
+      >
+        {!limitedMode &&
+          (isEditingDisabled ? (
+            <Alert>
+              <AlertDescription>
+                {readOnly
+                  ? t("fingerprint.editingDisabledRunning")
+                  : t("fingerprint.editingDisabledRandomized")}
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert>
+              <AlertDescription>
+                {t("fingerprint.basicWarning")}
+              </AlertDescription>
+            </Alert>
+          ))}
+
+        <fieldset
+          disabled={isEditingDisabled || limitedMode}
+          className="space-y-6"
+        >
+>>>>>>> v0.29.6
           {/* User Agent and Platform */}
           <div className="space-y-3">
             <Label>{t("fingerprint.userAgentAndPlatform")}</Label>
@@ -873,6 +977,7 @@ export function WayfernConfigForm({
           </div>
 
           {/* WebGL Parameters (JSON) */}
+<<<<<<< HEAD
           <div className="space-y-3">
             <Label>{t("fingerprint.webglParametersJson")}</Label>
             <Textarea
@@ -888,6 +993,25 @@ export function WayfernConfigForm({
               rows={4}
             />
           </div>
+=======
+          {!isIdentityDerived && (
+            <div className="space-y-3">
+              <Label>{t("fingerprint.webglParametersJson")}</Label>
+              <Textarea
+                value={fingerprintConfig.webglParameters ?? ""}
+                onChange={(e) => {
+                  updateFingerprintConfig(
+                    "webglParameters",
+                    e.target.value || undefined,
+                  );
+                }}
+                placeholder='{"7936": "Intel", "7937": "Intel(R) HD Graphics"}'
+                className="font-mono text-sm"
+                rows={4}
+              />
+            </div>
+          )}
+>>>>>>> v0.29.6
 
           {/* Canvas Noise Seed */}
           <div className="space-y-3">
@@ -1019,6 +1143,7 @@ export function WayfernConfigForm({
           {/* Vendor Info */}
           <div className="space-y-3">
             <Label>{t("fingerprint.vendorInfo")}</Label>
+<<<<<<< HEAD
             <div className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="vendor">{t("fingerprint.vendor")}</Label>
@@ -1050,6 +1175,51 @@ export function WayfernConfigForm({
                   placeholder=""
                 />
               </div>
+=======
+            <div
+              className={
+                isIdentityDerived
+                  ? "grid grid-cols-1 gap-4"
+                  : "grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3"
+              }
+            >
+              {!isIdentityDerived && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="vendor">{t("fingerprint.vendor")}</Label>
+                    <Input
+                      id="vendor"
+                      value={fingerprintConfig.vendor ?? ""}
+                      onChange={(e) => {
+                        updateFingerprintConfig(
+                          "vendor",
+                          e.target.value || undefined,
+                        );
+                      }}
+                      placeholder={t("common.placeholders.example", {
+                        value: "Google Inc.",
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="vendor-sub">
+                      {t("fingerprint.vendorSub")}
+                    </Label>
+                    <Input
+                      id="vendor-sub"
+                      value={fingerprintConfig.vendorSub ?? ""}
+                      onChange={(e) => {
+                        updateFingerprintConfig(
+                          "vendorSub",
+                          e.target.value || undefined,
+                        );
+                      }}
+                      placeholder=""
+                    />
+                  </div>
+                </>
+              )}
+>>>>>>> v0.29.6
               <div className="space-y-2">
                 <Label htmlFor="product-sub">
                   {t("fingerprint.productSub")}
@@ -1071,6 +1241,26 @@ export function WayfernConfigForm({
             </div>
           </div>
         </fieldset>
+<<<<<<< HEAD
+=======
+        {limitedMode && (
+          <>
+            <div className="absolute inset-0 z-1 bg-background/30 backdrop-blur-[6px]" />
+            <div className="absolute inset-y-0 left-0 z-2 w-6 bg-linear-to-r from-background to-transparent" />
+            <div className="absolute inset-y-0 right-0 z-2 w-6 bg-linear-to-l from-background to-transparent" />
+            <div className="absolute inset-x-0 top-0 z-2 h-6 bg-linear-to-b from-background to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 z-2 h-6 bg-linear-to-t from-background to-transparent" />
+            <div className="absolute inset-0 z-3 flex items-center justify-center">
+              <div className="flex items-center gap-2 rounded-md bg-background/80 px-3 py-1.5">
+                <ProBadge />
+                <span className="text-sm font-medium text-muted-foreground">
+                  {t("fingerprint.proFeature")}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+>>>>>>> v0.29.6
       </div>
     </div>
   );
@@ -1119,6 +1309,7 @@ export function WayfernConfigForm({
                       "android",
                       "ios",
                     ] as WayfernOS[]
+<<<<<<< HEAD
                   ).map((os) => (
                     <SelectItem key={os} value={os}>
                       {osLabels[os]}
@@ -1127,6 +1318,22 @@ export function WayfernConfigForm({
                 </SelectContent>
               </Select>
               {selectedOS !== currentOS && (
+=======
+                  ).map((os) => {
+                    const isDisabled = os !== currentOS && !crossOsUnlocked;
+                    return (
+                      <SelectItem key={os} value={os} disabled={isDisabled}>
+                        <span className="flex items-center gap-2">
+                          {osLabels[os]}
+                          {isDisabled && <ProBadge />}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              {selectedOS !== currentOS && crossOsUnlocked && (
+>>>>>>> v0.29.6
                 <Alert className="mt-2">
                   <AlertDescription>
                     {t("fingerprint.crossOsLimitations")}
@@ -1174,8 +1381,20 @@ export function WayfernConfigForm({
             </div>
 
             {/* Screen Resolution */}
+<<<<<<< HEAD
             <div>
               <fieldset disabled={isEditingDisabled} className="space-y-3">
+=======
+            <div
+              className={
+                limitedMode ? "relative overflow-hidden rounded-lg" : undefined
+              }
+            >
+              <fieldset
+                disabled={isEditingDisabled || limitedMode}
+                className="space-y-3"
+              >
+>>>>>>> v0.29.6
                 <Label>{t("fingerprint.screenResolution")}</Label>
                 <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
                   <div className="space-y-2">
@@ -1264,6 +1483,26 @@ export function WayfernConfigForm({
                   </div>
                 </div>
               </fieldset>
+<<<<<<< HEAD
+=======
+              {limitedMode && (
+                <>
+                  <div className="absolute inset-0 z-1 bg-background/30 backdrop-blur-[6px]" />
+                  <div className="absolute inset-y-0 left-0 z-2 w-6 bg-linear-to-r from-background to-transparent" />
+                  <div className="absolute inset-y-0 right-0 z-2 w-6 bg-linear-to-l from-background to-transparent" />
+                  <div className="absolute inset-x-0 top-0 z-2 h-6 bg-linear-to-b from-background to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 z-2 h-6 bg-linear-to-t from-background to-transparent" />
+                  <div className="absolute inset-0 z-3 flex items-center justify-center">
+                    <div className="flex items-center gap-2 rounded-md bg-background/80 px-3 py-1.5">
+                      <ProBadge />
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {t("fingerprint.proFeature")}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
+>>>>>>> v0.29.6
             </div>
           </TabsContent>
 

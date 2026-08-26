@@ -3,6 +3,10 @@ use std::env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, Runtime, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+<<<<<<< HEAD
+=======
+#[cfg(not(feature = "e2e"))]
+>>>>>>> v0.29.6
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_log::{Target, TargetKind};
 
@@ -14,14 +18,62 @@ static PENDING_URLS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 // to the confirmation dialog.
 static QUIT_CONFIRMED: AtomicBool = AtomicBool::new(false);
 
+<<<<<<< HEAD
+=======
+pub(crate) fn backend_error(code: &str) -> String {
+  serde_json::json!({ "code": code }).to_string()
+}
+
+pub(crate) fn backend_error_with_detail(code: &str, detail: impl std::fmt::Display) -> String {
+  serde_json::json!({ "code": code, "params": { "detail": detail.to_string() } }).to_string()
+}
+
+/// A VLESS URI Donut cannot use, carrying which part is unsupported so the UI
+/// can say so instead of implying a typo.
+pub(crate) fn vless_config_error(error: &crate::xray::XrayError) -> String {
+  serde_json::json!({
+    "code": "VLESS_CONFIG_INVALID",
+    "params": { "reason": error.reason_code(), "detail": error.to_string() }
+  })
+  .to_string()
+}
+
+fn e2e_automation_enabled() -> bool {
+  #[cfg(feature = "e2e")]
+  {
+    std::env::var("TAURI_AUTOMATION")
+      .is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+  }
+  #[cfg(not(feature = "e2e"))]
+  {
+    false
+  }
+}
+
+#[cfg(feature = "e2e")]
+fn e2e_automation_profile_dir() -> Option<std::path::PathBuf> {
+  e2e_automation_enabled()
+    .then(|| std::env::var_os("TAURI_AUTOMATION_PROFILE_DIR").map(std::path::PathBuf::from))
+    .flatten()
+}
+
+>>>>>>> v0.29.6
 mod api_client;
 mod api_server;
 mod app_auto_updater;
 pub mod app_dirs;
 mod auto_updater;
+<<<<<<< HEAD
 mod browser;
 mod browser_runner;
 mod browser_version_manager;
+=======
+mod automation_rate_limiter;
+mod browser;
+mod browser_runner;
+mod browser_version_manager;
+mod cdp_target;
+>>>>>>> v0.29.6
 mod default_browser;
 pub mod dns_blocklist;
 mod downloaded_browsers_registry;
@@ -29,18 +81,38 @@ mod downloader;
 mod ephemeral_dirs;
 mod extension_manager;
 mod extraction;
+<<<<<<< HEAD
+=======
+mod fingerprint_consistency;
+mod fs_secure;
+>>>>>>> v0.29.6
 mod geoip_downloader;
 mod geolocation;
 mod group_manager;
 mod human_typing;
 mod ip_utils;
+<<<<<<< HEAD
 mod platform_browser;
 mod profile;
+=======
+mod launch_gate;
+mod launch_gate_prefs;
+mod log_redaction;
+mod platform_browser;
+mod profile;
+mod profile_import;
+>>>>>>> v0.29.6
 mod profile_importer;
 mod proxy_manager;
 pub mod proxy_runner;
 pub mod proxy_server;
 pub mod proxy_storage;
+<<<<<<< HEAD
+=======
+mod remote_exit;
+mod remote_handoff;
+mod remote_session;
+>>>>>>> v0.29.6
 mod settings_manager;
 pub mod socks5_local;
 pub mod sync;
@@ -48,9 +120,18 @@ mod synchronizer;
 pub mod traffic_stats;
 mod wayfern_manager;
 mod wayfern_terms;
+<<<<<<< HEAD
 // mod theme_detector; // removed: theme detection handled in webview via CSS prefers-color-scheme
 pub mod cloud_auth;
 mod commercial_license;
+=======
+mod window_decorations;
+// mod theme_detector; // removed: theme detection handled in webview via CSS prefers-color-scheme
+pub mod cloud_auth;
+mod cloud_errors;
+mod commercial_license;
+mod cookie_bot;
+>>>>>>> v0.29.6
 mod cookie_manager;
 pub mod events;
 mod mcp_integrations;
@@ -59,8 +140,17 @@ mod tag_manager;
 mod team_lock;
 mod version_updater;
 pub mod vpn;
+<<<<<<< HEAD
 pub mod vpn_worker_runner;
 pub mod vpn_worker_storage;
+=======
+mod vpn_extension_detect;
+pub mod vpn_worker_runner;
+pub mod vpn_worker_storage;
+pub mod xray;
+pub mod xray_worker_runner;
+pub mod xray_worker_storage;
+>>>>>>> v0.29.6
 
 use browser_runner::{
   check_browser_exists, kill_browser_profile, launch_browser_profile, open_url_with_profile,
@@ -68,9 +158,16 @@ use browser_runner::{
 
 use profile::manager::{
   check_browser_status, clone_profile, create_browser_profile_new, delete_profile,
+<<<<<<< HEAD
   list_browser_profiles, rename_profile, update_profile_dns_blocklist, update_profile_launch_hook,
   update_profile_note, update_profile_proxy, update_profile_proxy_bypass_rules,
   update_profile_tags, update_profile_vpn, update_profile_window_color, update_wayfern_config,
+=======
+  list_browser_profiles, rename_profile, update_profile_clear_on_close,
+  update_profile_dns_blocklist, update_profile_launch_hook, update_profile_note,
+  update_profile_proxy, update_profile_proxy_bypass_rules, update_profile_tags, update_profile_vpn,
+  update_profile_window_color, update_wayfern_config,
+>>>>>>> v0.29.6
 };
 
 use profile::password::{
@@ -125,12 +222,25 @@ use app_auto_updater::{
   restart_application,
 };
 
+<<<<<<< HEAD
 use profile_importer::{detect_existing_profiles, import_browser_profile};
 
 use extension_manager::{
   add_extension, add_extension_to_group, assign_extension_group_to_profile, create_extension_group,
   delete_extension, delete_extension_group, get_extension_group_for_profile, get_extension_icon,
   list_extension_groups, list_extensions, remove_extension_from_group, update_extension,
+=======
+use profile_importer::{
+  cleanup_profile_import_scratch, detect_existing_profiles, import_browser_profiles,
+  scan_folder_for_profiles, scan_profile_archive,
+};
+
+use extension_manager::{
+  add_extension, add_extension_to_group, add_unpacked_extension, assign_extension_group_to_profile,
+  create_extension_group, delete_extension, delete_extension_group,
+  get_extension_group_for_profile, get_extension_icon, list_extension_groups, list_extensions,
+  remove_extension_from_group, update_extension, update_extension_from_path,
+>>>>>>> v0.29.6
   update_extension_group,
 };
 
@@ -222,7 +332,11 @@ impl<R: Runtime> WindowExt for WebviewWindow<R> {
 // Called internally for deep-link / startup URL handling — not invoked from the
 // frontend, so it is intentionally not a `#[tauri::command]`.
 async fn handle_url_open(app: tauri::AppHandle, url: String) -> Result<(), String> {
+<<<<<<< HEAD
   log::info!("handle_url_open called with URL: {url}");
+=======
+  log::info!("Handling URL open request");
+>>>>>>> v0.29.6
 
   // Check if the main window exists and is ready
   if let Some(window) = app.get_webview_window("main") {
@@ -245,15 +359,24 @@ async fn handle_url_open(app: tauri::AppHandle, url: String) -> Result<(), Strin
   Ok(())
 }
 
+<<<<<<< HEAD
 /// Prefix a command error with context, but pass structured `{"code": ...}`
 /// backend errors through untouched — the frontend can only translate a code
 /// when the JSON is the entire message (see src/lib/backend-errors.ts).
+=======
+/// Preserve structured backend errors and wrap lower-level diagnostics in the
+/// generic structured error shape expected by the frontend.
+>>>>>>> v0.29.6
 pub(crate) fn wrap_backend_error(e: impl std::fmt::Display, context: &str) -> String {
   let msg = e.to_string();
   if msg.starts_with('{') {
     msg
   } else {
+<<<<<<< HEAD
     format!("{context}: {msg}")
+=======
+    backend_error_with_detail("INTERNAL_ERROR", format!("{context}: {msg}"))
+>>>>>>> v0.29.6
   }
 }
 
@@ -272,6 +395,19 @@ async fn create_stored_proxy(
   }
 }
 
+<<<<<<< HEAD
+=======
+/// Validate a VLESS URI without touching the network, so the proxy form can
+/// tell the user their setup is unsupported while they are still editing it
+/// rather than only after they try to save or launch.
+#[tauri::command]
+fn validate_vless_uri(uri: String) -> Result<(), String> {
+  crate::xray::parse_vless_uri(uri.trim())
+    .map(|_| ())
+    .map_err(|error| vless_config_error(&error))
+}
+
+>>>>>>> v0.29.6
 #[tauri::command]
 async fn get_stored_proxies() -> Result<Vec<crate::proxy_manager::StoredProxy>, String> {
   Ok(crate::proxy_manager::PROXY_MANAGER.get_stored_proxies())
@@ -505,14 +641,23 @@ async fn get_mcp_config(app_handle: tauri::AppHandle) -> Result<Option<McpConfig
 
   let port = mcp_server
     .get_port()
+<<<<<<< HEAD
     .ok_or("MCP server port not available")?;
+=======
+    .ok_or_else(|| backend_error("MCP_CONFIGURATION_UNAVAILABLE"))?;
+>>>>>>> v0.29.6
 
   let settings_manager = settings_manager::SettingsManager::instance();
   let token = settings_manager
     .get_mcp_token(&app_handle)
     .await
+<<<<<<< HEAD
     .map_err(|e| format!("Failed to get MCP token: {e}"))?
     .ok_or("MCP token not found")?;
+=======
+    .map_err(|e| backend_error_with_detail("INTERNAL_ERROR", e))?
+    .ok_or_else(|| backend_error("MCP_CONFIGURATION_UNAVAILABLE"))?;
+>>>>>>> v0.29.6
 
   Ok(Some(McpConfig { port, token }))
 }
@@ -575,10 +720,17 @@ async fn add_mcp_to_claude_desktop_internal(app_handle: &tauri::AppHandle) -> Re
   let manifest = serde_json::json!({
     "manifest_version": "0.3",
     "name": "donut-browser",
+<<<<<<< HEAD
     "display_name": "NeoDonut Browser",
     "version": env!("CARGO_PKG_VERSION"),
     "description": "Control NeoDonut Browser profiles, proxies, and automation via MCP",
     "author": { "name": "NeoDonut Browser" },
+=======
+    "display_name": "Donut Browser",
+    "version": env!("CARGO_PKG_VERSION"),
+    "description": "Control Donut Browser profiles, proxies, and automation via MCP",
+    "author": { "name": "Donut Browser" },
+>>>>>>> v0.29.6
     "tools_generated": true,
     "server": {
       "type": "node",
@@ -713,13 +865,24 @@ fn update_claude_extensions_registry(
 
 async fn current_mcp_url(app_handle: &tauri::AppHandle) -> Result<String, String> {
   let mcp_server = mcp_server::McpServer::instance();
+<<<<<<< HEAD
   let port = mcp_server.get_port().ok_or("MCP server is not running")?;
+=======
+  let port = mcp_server
+    .get_port()
+    .ok_or_else(|| backend_error("MCP_SERVER_NOT_RUNNING"))?;
+>>>>>>> v0.29.6
   let settings_manager = settings_manager::SettingsManager::instance();
   let token = settings_manager
     .get_mcp_token(app_handle)
     .await
+<<<<<<< HEAD
     .map_err(|e| format!("Failed to get MCP token: {e}"))?
     .ok_or("MCP token not found")?;
+=======
+    .map_err(|e| backend_error_with_detail("INTERNAL_ERROR", e))?
+    .ok_or_else(|| backend_error("MCP_CONFIGURATION_UNAVAILABLE"))?;
+>>>>>>> v0.29.6
   Ok(format!("http://127.0.0.1:{port}/mcp/{token}"))
 }
 
@@ -735,6 +898,7 @@ async fn list_mcp_agents() -> Result<Vec<mcp_integrations::McpAgentInfo>, String
 #[tauri::command]
 async fn add_mcp_to_agent(app_handle: tauri::AppHandle, agent_id: String) -> Result<(), String> {
   if !mcp_integrations::agent_exists(&agent_id) {
+<<<<<<< HEAD
     return Err(format!("Unknown agent: {agent_id}"));
   }
   if agent_id == "claude-desktop" {
@@ -742,17 +906,39 @@ async fn add_mcp_to_agent(app_handle: tauri::AppHandle, agent_id: String) -> Res
   }
   let url = current_mcp_url(&app_handle).await?;
   mcp_integrations::install_generic(&agent_id, &url)
+=======
+    return Err(backend_error("MCP_AGENT_UNKNOWN"));
+  }
+  let result = if agent_id == "claude-desktop" {
+    add_mcp_to_claude_desktop_internal(&app_handle).await
+  } else {
+    let url = current_mcp_url(&app_handle).await?;
+    mcp_integrations::install_generic(&agent_id, &url)
+  };
+  result.map_err(|e| backend_error_with_detail("MCP_AGENT_INSTALL_FAILED", e))
+>>>>>>> v0.29.6
 }
 
 #[tauri::command]
 async fn remove_mcp_from_agent(agent_id: String) -> Result<(), String> {
   if !mcp_integrations::agent_exists(&agent_id) {
+<<<<<<< HEAD
     return Err(format!("Unknown agent: {agent_id}"));
   }
   if agent_id == "claude-desktop" {
     return remove_mcp_from_claude_desktop_internal();
   }
   mcp_integrations::uninstall_generic(&agent_id)
+=======
+    return Err(backend_error("MCP_AGENT_UNKNOWN"));
+  }
+  let result = if agent_id == "claude-desktop" {
+    remove_mcp_from_claude_desktop_internal()
+  } else {
+    mcp_integrations::uninstall_generic(&agent_id)
+  };
+  result.map_err(|e| backend_error_with_detail("MCP_AGENT_REMOVE_FAILED", e))
+>>>>>>> v0.29.6
 }
 
 #[tauri::command]
@@ -782,6 +968,16 @@ async fn clear_all_traffic_stats() -> Result<(), String> {
 }
 
 #[tauri::command]
+<<<<<<< HEAD
+=======
+async fn clear_profile_traffic_stats(profile_id: String) -> Result<(), String> {
+  crate::traffic_stats::delete_traffic_stats(&profile_id);
+  let _ = events::emit_empty("traffic-stats-changed");
+  Ok(())
+}
+
+#[tauri::command]
+>>>>>>> v0.29.6
 async fn get_traffic_stats_for_period(
   profile_id: String,
   seconds: u64,
@@ -1180,13 +1376,34 @@ async fn list_active_vpn_connections() -> Result<Vec<vpn::VpnStatus>, String> {
   )
 }
 
+<<<<<<< HEAD
+=======
+/// What the fingerprint form gets back from `generate_sample_fingerprint`.
+///
+/// The identity fields are `None` on a browser without the identity API. They
+/// have to travel with the fingerprint rather than be re-derived later: the
+/// form writes all three into the profile's Wayfern config in one edit, and a
+/// fingerprint stored without its identity is one the launch path would throw
+/// away and mint again.
+#[derive(serde::Serialize)]
+struct SampleFingerprint {
+  fingerprint: String,
+  identity_id: Option<String>,
+  identity_baseline: Option<String>,
+}
+
+>>>>>>> v0.29.6
 #[tauri::command]
 async fn generate_sample_fingerprint(
   app_handle: tauri::AppHandle,
   browser: String,
   version: String,
   config_json: String,
+<<<<<<< HEAD
 ) -> Result<String, String> {
+=======
+) -> Result<SampleFingerprint, String> {
+>>>>>>> v0.29.6
   let temp_profile = crate::profile::BrowserProfile {
     id: uuid::Uuid::new_v4(),
     name: "temp_fingerprint_gen".to_string(),
@@ -1214,6 +1431,10 @@ async fn generate_sample_fingerprint(
     created_by_email: None,
     dns_blocklist: None,
     password_protected: false,
+<<<<<<< HEAD
+=======
+    clear_on_close: false,
+>>>>>>> v0.29.6
     created_at: None,
     updated_at: None,
   };
@@ -1225,7 +1446,15 @@ async fn generate_sample_fingerprint(
     manager
       .generate_fingerprint_config(&app_handle, &temp_profile, &config)
       .await
+<<<<<<< HEAD
       .map(|(fingerprint, _geolocation_applied)| fingerprint)
+=======
+      .map(|generated| SampleFingerprint {
+        fingerprint: generated.fingerprint,
+        identity_id: generated.identity_id,
+        identity_baseline: generated.identity_baseline,
+      })
+>>>>>>> v0.29.6
       .map_err(|e| format!("Failed to generate fingerprint: {e}"))
   } else {
     Err(format!(
@@ -1234,6 +1463,267 @@ async fn generate_sample_fingerprint(
   }
 }
 
+<<<<<<< HEAD
+=======
+// --- Remote sessions --------------------------------------------------------
+//
+// Everything below is transport only. The session state machine, the fleet, the
+// schedule, the browsing behaviour and the budget all live behind
+// donutbrowser-infra; these commands carry the user's own scalars there and
+// render back what the server says.
+
+/// Turn a remote-session failure into the code the frontend translates.
+///
+/// The typed variants carry the backend's own English, which reaches the user
+/// untranslated if it is surfaced as-is. The raw text is kept in the app log,
+/// where support can read it, and never in the toast.
+fn remote_session_error(context: &str, err: remote_session::RemoteSessionError) -> String {
+  log::warn!("Remote session {context} failed: {err}");
+  err.to_error_json()
+}
+
+/// Every remote session the signed-in user currently owns.
+#[tauri::command]
+async fn list_remote_sessions() -> Result<Vec<remote_session::RemoteSessionState>, String> {
+  remote_session::list_remote_sessions()
+    .await
+    .map_err(|e| remote_session_error("list", e))
+}
+
+/// One session's real state.
+///
+/// The stream is how the desktop normally learns a transition; this is the
+/// one-shot read for a window opened after the fact, or a reconnect confirming
+/// what it missed.
+#[tauri::command]
+async fn get_remote_session(
+  session_id: String,
+) -> Result<remote_session::RemoteSessionState, String> {
+  remote_session::get_remote_session(&session_id)
+    .await
+    .map_err(|e| remote_session_error("read", e))
+}
+
+/// Stop a remote session and settle what it cost.
+///
+/// Without this the only thing that ends a session is the fleet's two-hour cap,
+/// so a handful of short launches bills an allowance meant for a hundred.
+#[tauri::command]
+async fn stop_remote_session(
+  app_handle: tauri::AppHandle,
+  session_id: String,
+) -> Result<remote_session::EndRemoteSessionOutcome, String> {
+  let outcome = remote_session::end_remote_session(&session_id)
+    .await
+    .map_err(|e| remote_session_error("stop", e))?;
+  // The stream normally reports the close, but a stop must not depend on a
+  // socket being up: without this the session's work would sit in cloud storage
+  // with nothing to pull it, and the profile would look ready to open locally
+  // while its local copy still predated the session.
+  remote_session::note_session_stopped(&app_handle, &session_id);
+  Ok(outcome)
+}
+
+/// Which profiles cannot be launched locally right now, and why.
+///
+/// Backed by the same store the launch gate reads, so the button the UI disables
+/// and the refusal the backend would produce can never disagree.
+#[tauri::command]
+fn get_remote_handoff_states() -> std::collections::HashMap<String, remote_handoff::HandoffState> {
+  remote_handoff::states()
+}
+
+/// Subscribe to session transitions. Idempotent.
+///
+/// Called once the desktop has a cloud session: signed out there is nothing to
+/// stream and the socket would only be refused on a loop.
+#[tauri::command]
+fn start_remote_session_events(app_handle: tauri::AppHandle) {
+  remote_session::start_session_events(app_handle);
+}
+
+/// Unsubscribe. Safe when nothing is running; called on sign-out.
+#[tauri::command]
+fn stop_remote_session_events() {
+  remote_session::stop_session_events();
+}
+
+/// Whether the desktop is subscribed to session transitions.
+///
+/// A UI that mounts after the stream started has no `remote-session-stream`
+/// event to read, so this is how it decides whether to trust the live state or
+/// fall back to `list_remote_sessions`.
+#[tauri::command]
+fn get_remote_session_events_status() -> bool {
+  remote_session::session_events_running()
+}
+
+// --- Cookie bot -------------------------------------------------------------
+
+/// Turn a cookie-bot failure into the code the frontend translates.
+fn cookie_bot_error(context: &str, err: cookie_bot::CookieBotError) -> String {
+  log::warn!(
+    "Cookie bot {context} failed: {} (HTTP {})",
+    err.code(),
+    err.status()
+  );
+  err.to_error_json()
+}
+
+/// The local profile a cookie-bot write refers to.
+///
+/// Enrolment and run-now act on a profile this machine holds: the client-side
+/// preconditions read its sync mode, OS and exit node, and none of that can be
+/// checked for a profile that is not here.
+fn cookie_bot_profile(profile_id: &str) -> Result<profile::BrowserProfile, String> {
+  let profiles = profile::manager::ProfileManager::instance()
+    .list_profiles()
+    .map_err(|e| wrap_backend_error(e, "Failed to read profiles"))?;
+  profiles
+    .into_iter()
+    .find(|p| p.id.to_string() == profile_id)
+    .ok_or_else(|| backend_error("PROFILE_NOT_FOUND"))
+}
+
+/// Every enrolment the caller can see. `scope` is `mine` or `team`.
+#[tauri::command]
+async fn get_cookie_bot_schedules(
+  scope: Option<String>,
+) -> Result<cookie_bot::CookieBotScheduleList, String> {
+  cookie_bot::list_schedules(scope.as_deref())
+    .await
+    .map_err(|e| cookie_bot_error("schedule list", e))
+}
+
+/// This profile's enrolment, or `None` when it has none.
+#[tauri::command]
+async fn get_cookie_bot_schedule(
+  profile_id: String,
+) -> Result<Option<cookie_bot::CookieBotSchedule>, String> {
+  cookie_bot::get_schedule(&profile_id)
+    .await
+    .map_err(|e| cookie_bot_error("schedule read", e))
+}
+
+/// Create or replace this profile's enrolment.
+///
+/// `acknowledge_conflict` is the second half of a two-step write: a teammate's
+/// existing enrolment refuses the first PUT and names them, and the same call
+/// with the flag set goes through.
+#[tauri::command]
+async fn save_cookie_bot_schedule(
+  profile_id: String,
+  schedule: cookie_bot::CookieBotScheduleInput,
+  acknowledge_conflict: bool,
+) -> Result<cookie_bot::CookieBotScheduleSaved, String> {
+  // Refused here rather than at 02:00: a profile that can never be warmed
+  // should never reach a schedule row, an hour of quota or a leased host.
+  let profile = cookie_bot_profile(&profile_id)?;
+  cookie_bot::bot_precondition(&profile, &cookie_bot::exit_reachability(&profile))?;
+  // The frontend sends the user's choices; the profile facts the server refuses
+  // a run on are stamped here, from the profile itself, so a caller cannot
+  // assert them.
+  let schedule = schedule.with_profile_state(cookie_bot::profile_state(&profile));
+  cookie_bot::save_schedule(&profile_id, &schedule, acknowledge_conflict)
+    .await
+    .map_err(|e| cookie_bot_error("schedule write", e))
+}
+
+/// Turn the bot off for this profile. `false` means there was nothing enrolled.
+#[tauri::command]
+async fn delete_cookie_bot_schedule(profile_id: String) -> Result<bool, String> {
+  cookie_bot::delete_schedule(&profile_id)
+    .await
+    .map(|outcome| outcome.deleted)
+    .map_err(|e| cookie_bot_error("schedule delete", e))
+}
+
+/// Who else already warms this profile, without writing anything.
+#[tauri::command]
+async fn check_cookie_bot_conflicts(
+  profile_id: String,
+  run_at_minute: Option<u16>,
+  timezone: Option<String>,
+  days_mask: Option<u8>,
+) -> Result<Vec<cookie_bot::CookieBotConflict>, String> {
+  cookie_bot::check_conflicts(&profile_id, run_at_minute, timezone.as_deref(), days_mask)
+    .await
+    .map(|check| check.conflicts)
+    .map_err(|e| cookie_bot_error("conflict check", e))
+}
+
+/// One page of run history, newest first.
+#[tauri::command]
+async fn get_cookie_bot_runs(
+  profile_id: Option<String>,
+  scope: Option<String>,
+  limit: Option<u32>,
+  before: Option<String>,
+) -> Result<cookie_bot::CookieBotRunPage, String> {
+  cookie_bot::list_runs(
+    profile_id.as_deref(),
+    scope.as_deref(),
+    limit,
+    before.as_deref(),
+  )
+  .await
+  .map_err(|e| cookie_bot_error("run list", e))
+}
+
+/// Start a run now instead of waiting for tonight.
+///
+/// The preset and the site list come from the stored enrolment, so an
+/// unenrolled profile is refused rather than run with client-chosen defaults.
+#[tauri::command]
+async fn run_cookie_bot_now(
+  profile_id: String,
+  max_minutes: Option<u32>,
+) -> Result<cookie_bot::CookieBotRunStarted, String> {
+  let profile = cookie_bot_profile(&profile_id)?;
+  cookie_bot::bot_precondition(&profile, &cookie_bot::exit_reachability(&profile))?;
+  cookie_bot::run_now(&profile_id, max_minutes)
+    .await
+    .map_err(|e| cookie_bot_error("run start", e))
+}
+
+/// Stop a run that is still going.
+#[tauri::command]
+async fn cancel_cookie_bot_run(run_id: String) -> Result<cookie_bot::CookieBotRun, String> {
+  cookie_bot::cancel_run(&run_id)
+    .await
+    .map_err(|e| cookie_bot_error("run cancel", e))
+}
+
+/// The intensities the server offers today. Opaque ids and a typical duration —
+/// what each one actually does is the server's to know.
+#[tauri::command]
+async fn get_cookie_bot_presets() -> Result<cookie_bot::CookieBotPresetList, String> {
+  cookie_bot::list_presets()
+    .await
+    .map_err(|e| cookie_bot_error("preset list", e))
+}
+
+/// The pooled remote-hour budget: bot and interactive sessions share one pool.
+///
+/// Being refused a launch must not be the only way to learn a limit exists.
+#[tauri::command]
+async fn get_remote_hours_quota() -> Result<cookie_bot::RemoteHoursQuota, String> {
+  cookie_bot::remote_hours_quota()
+    .await
+    .map_err(|e| cookie_bot_error("quota read", e))
+}
+
+/// Per-member and per-profile spend for a calendar month (`YYYY-MM`).
+#[tauri::command]
+async fn get_cookie_bot_usage(
+  period: Option<String>,
+) -> Result<cookie_bot::CookieBotUsage, String> {
+  cookie_bot::team_usage(period.as_deref())
+    .await
+    .map_err(|e| cookie_bot_error("usage read", e))
+}
+
+>>>>>>> v0.29.6
 /// Confirm a quit chosen from the close-confirmation dialog and exit the app.
 #[tauri::command]
 fn confirm_quit(app_handle: tauri::AppHandle) {
@@ -1250,6 +1740,10 @@ fn hide_to_tray(app_handle: tauri::AppHandle) -> Result<(), String> {
   Ok(())
 }
 
+<<<<<<< HEAD
+=======
+#[cfg(not(feature = "e2e"))]
+>>>>>>> v0.29.6
 fn show_main_window(app_handle: &tauri::AppHandle) {
   if let Some(window) = app_handle.get_webview_window("main") {
     let _ = window.show();
@@ -1289,6 +1783,10 @@ fn update_tray_menu(
 /// Build the system tray. Best-effort: on Linux the tray depends on
 /// libayatana-appindicator at runtime, so any failure here must not abort app
 /// startup — the caller logs and continues without a tray.
+<<<<<<< HEAD
+=======
+#[cfg(not(feature = "e2e"))]
+>>>>>>> v0.29.6
 fn setup_system_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
   use std::sync::atomic::Ordering;
   use tauri::menu::{MenuBuilder, MenuItemBuilder};
@@ -1297,7 +1795,11 @@ fn setup_system_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::E
   // Bootstrap labels only — the frontend pushes localized labels via
   // `update_tray_menu` on mount and on language change, and the menu is only
   // opened after a minimize-to-tray (post-mount), so these are never shown.
+<<<<<<< HEAD
   let show_item = MenuItemBuilder::with_id("tray_show", "Show NeoDonut Browser").build(app)?;
+=======
+  let show_item = MenuItemBuilder::with_id("tray_show", "Show Donut Browser").build(app)?;
+>>>>>>> v0.29.6
   let quit_item = MenuItemBuilder::with_id("tray_quit", "Quit").build(app)?;
   let tray_menu = MenuBuilder::new(app)
     .item(&show_item)
@@ -1324,7 +1826,11 @@ fn setup_system_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::E
   TrayIconBuilder::with_id("main")
     .icon(tray_image)
     .icon_as_template(cfg!(target_os = "macos"))
+<<<<<<< HEAD
     .tooltip("NeoDonut Browser")
+=======
+    .tooltip("Donut Browser")
+>>>>>>> v0.29.6
     .menu(&tray_menu)
     .show_menu_on_left_click(false)
     .on_menu_event(|app_handle, event| match event.id().as_ref() {
@@ -1338,7 +1844,11 @@ fn setup_system_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::E
     .on_tray_icon_event(|tray, event| {
       // Click events are not delivered on Linux (AppIndicator/SNI only drives
       // the menu), so left-click-to-restore is macOS/Windows only — Linux users
+<<<<<<< HEAD
       // restore via the "Show NeoDonut Browser" menu item.
+=======
+      // restore via the "Show Donut Browser" menu item.
+>>>>>>> v0.29.6
       if let TrayIconEvent::Click {
         button: MouseButton::Left,
         button_state: MouseButtonState::Up,
@@ -1355,19 +1865,39 @@ fn setup_system_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::E
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+<<<<<<< HEAD
+=======
+  run_with_builder(|builder| builder);
+}
+
+#[doc(hidden)]
+pub fn run_with_builder(
+  configure_builder: impl FnOnce(tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry>,
+) {
+>>>>>>> v0.29.6
   let args: Vec<String> = env::args().collect();
   let startup_url = args.iter().find(|arg| arg.starts_with("http")).cloned();
 
   if let Some(url) = startup_url.clone() {
+<<<<<<< HEAD
     log::info!("Found startup URL in command line: {url}");
+=======
+    log::info!("Found startup URL in command line");
+>>>>>>> v0.29.6
     let mut pending = PENDING_URLS.lock().unwrap();
     pending.push(url.clone());
   }
 
   let log_file_name = app_dirs::app_name();
 
+<<<<<<< HEAD
   // Honor NEODONUT_DATA_ROOT: when set, logs go to <root>/logs instead of
   // the platform default app log dir, so all on-disk state lives under one root.
+=======
+  // Honor DONUTBROWSER_DATA_ROOT and portable mode: logs go to <root>/logs or
+  // <exe dir>/logs instead of the platform default app log dir, so all on-disk
+  // state lives under one root rather than leaking onto the host machine.
+>>>>>>> v0.29.6
   let file_log_target = match app_dirs::log_dir_override() {
     Some(path) => Target::new(TargetKind::Folder {
       path,
@@ -1378,6 +1908,7 @@ pub fn run() {
     }),
   };
 
+<<<<<<< HEAD
   tauri::Builder::default()
     .plugin(
       tauri_plugin_log::Builder::new()
@@ -1419,13 +1950,67 @@ pub fn run() {
         }
       },
     ))
+=======
+  let builder = configure_builder(tauri::Builder::default());
+
+  let builder = builder.plugin(
+    tauri_plugin_log::Builder::new()
+      .clear_targets() // Clear default targets to avoid duplicates
+      .target(Target::new(TargetKind::Stdout))
+      .target(Target::new(TargetKind::Webview))
+      .target(file_log_target)
+      // Keep enough context for customer support without letting a long-running
+      // installation accumulate logs without bound.
+      .max_file_size(5 * 1024 * 1024)
+      .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepSome(10))
+      .level(log::LevelFilter::Info)
+      .format(|out, message, record| {
+        use chrono::Local;
+        let now = Local::now();
+        let timestamp = format!(
+          "{}.{:03}",
+          now.format("%Y-%m-%d %H:%M:%S"),
+          now.timestamp_subsec_millis()
+        );
+        out.finish(format_args!(
+          "[{}][{}][{}] {}",
+          timestamp,
+          record.target(),
+          record.level(),
+          message
+        ))
+      })
+      .build(),
+  );
+
+  #[cfg(not(feature = "e2e"))]
+  let builder = builder.plugin(tauri_plugin_single_instance::init(
+    |app_handle, args, _cwd| {
+      log::info!("Single instance triggered with args: {args:?}");
+      if let Some(window) = app_handle.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.set_focus();
+        let _ = window.unminimize();
+      }
+    },
+  ));
+
+  let builder = builder
+>>>>>>> v0.29.6
     .plugin(tauri_plugin_deep_link::init())
     .plugin(tauri_plugin_fs::init())
     .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_shell::init())
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_macos_permissions::init())
+<<<<<<< HEAD
     .plugin(tauri_plugin_clipboard_manager::init())
+=======
+    .plugin(tauri_plugin_clipboard_manager::init());
+
+  #[cfg(not(feature = "e2e"))]
+  let builder = builder
+>>>>>>> v0.29.6
     // Persist window size/position across restarts. VISIBLE is excluded
     // because the app hides to tray: restoring visibility would otherwise
     // relaunch with an invisible window after quitting from the tray while
@@ -1433,6 +2018,7 @@ pub fn run() {
     // (the green button zooms instead) — the maximized flag captures the
     // "filled screen" state, including green-button zoom on macOS.
     .plugin(
+<<<<<<< HEAD
       tauri_plugin_window_state::Builder::default()
         .with_state_flags(
           tauri_plugin_window_state::StateFlags::all()
@@ -1442,6 +2028,37 @@ pub fn run() {
         .build(),
     )
     .setup(|app| {
+=======
+      {
+        let mut window_state = tauri_plugin_window_state::Builder::default();
+        // Keep window geometry with the rest of the relocated state instead of
+        // the host's app-config dir. The plugin only lets us name the file, so
+        // the name is an absolute path; see `window_state_path_override`.
+        if let Some(path) = app_dirs::window_state_path_override() {
+          if let Some(parent) = path.parent() {
+            if let Err(e) = std::fs::create_dir_all(parent) {
+              log::warn!("Failed to create the window-state directory: {e}");
+            }
+          }
+          window_state = window_state.with_filename(path.to_string_lossy().into_owned());
+        }
+        window_state
+      }
+      .with_state_flags(
+        tauri_plugin_window_state::StateFlags::all()
+            & !tauri_plugin_window_state::StateFlags::VISIBLE
+            & !tauri_plugin_window_state::StateFlags::FULLSCREEN
+            // Whether the window is decorated is decided per-session by
+            // `window_decorations::use_client_side_decorations()`, not by what
+            // a previous run saved. Restoring it would put a real titlebar back
+            // on top of the one the app draws — or strip both.
+            & !tauri_plugin_window_state::StateFlags::DECORATIONS,
+      )
+      .build(),
+    );
+
+  builder.setup(|app| {
+>>>>>>> v0.29.6
       // Recover ephemeral dir mappings from RAM-backed storage (tmpfs/ramdisk)
       ephemeral_dirs::recover_ephemeral_dirs();
 
@@ -1454,7 +2071,11 @@ pub fn run() {
       // Create the main window programmatically
       #[allow(unused_variables)]
       let win_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+<<<<<<< HEAD
         .title("NeoDonut Browser")
+=======
+        .title("Donut Browser")
+>>>>>>> v0.29.6
         .inner_size(880.0, 500.0)
         .min_inner_size(640.0, 400.0)
         .resizable(true)
@@ -1463,9 +2084,40 @@ pub fn run() {
         .focused(true)
         .visible(true);
 
+<<<<<<< HEAD
       #[cfg(target_os = "windows")]
       let win_builder = win_builder.decorations(false);
 
+=======
+      #[cfg(feature = "e2e")]
+      let win_builder = match e2e_automation_profile_dir() {
+          Some(profile_dir) => win_builder
+            .data_directory(profile_dir.join("webview"))
+            // WKWebView ignores data_directory on macOS. Incognito gives every
+            // launched app process a non-persistent data store there, and also
+            // prevents WebView2/WebKitGTK caches from escaping the session on
+            // the other platforms. Durable app state is still exercised via
+            // DONUTBROWSER_DATA_ROOT; only browser-engine storage is ephemeral.
+            .incognito(true),
+          None => win_builder,
+      };
+
+      // The app draws its own titlebar. macOS keeps the native one and makes
+      // it transparent (below); Windows and Linux drop decorations entirely and
+      // render their own controls.
+      #[cfg(target_os = "windows")]
+      let win_builder = win_builder.decorations(false);
+
+      // Linux opts out on the one configuration where dropping decorations can
+      // make things worse rather than better — see `use_client_side_decorations`.
+      #[cfg(target_os = "linux")]
+      let win_builder = if window_decorations::use_client_side_decorations() {
+        win_builder.decorations(false)
+      } else {
+        win_builder
+      };
+
+>>>>>>> v0.29.6
       #[allow(unused_variables)]
       let window = win_builder.build().unwrap();
 
@@ -1473,8 +2125,16 @@ pub fn run() {
       // dialog's "Minimize" action hides the window. Best-effort: a tray
       // failure (e.g. missing libayatana-appindicator on Linux) must never
       // prevent the app from launching, so we log and continue without it.
+<<<<<<< HEAD
       if let Err(e) = setup_system_tray(app.handle()) {
         log::warn!("System tray unavailable, continuing without it: {e}");
+=======
+      #[cfg(not(feature = "e2e"))]
+      {
+        if let Err(e) = setup_system_tray(app.handle()) {
+          log::warn!("System tray unavailable, continuing without it: {e}");
+        }
+>>>>>>> v0.29.6
       }
 
       // Intercept the window close so the frontend can ask the user whether
@@ -1495,6 +2155,48 @@ pub fn run() {
         });
       }
 
+<<<<<<< HEAD
+=======
+      // Publish the desktop's titlebar button layout to the frontend. Runs
+      // here because `setup` is the GTK main thread, which `gtk::Settings`
+      // requires.
+      //
+      // The decorated state is logged alongside it: "my window has no titlebar"
+      // and "my window has two titlebars" are both reports that hinge on this
+      // one boolean, and it is otherwise invisible after the fact.
+      #[cfg(target_os = "linux")]
+      {
+        log::info!(
+          "Linux window decorations: server-side = {:?}",
+          window.is_decorated()
+        );
+
+        // tao makes the window visible before it clears the decorations, so it
+        // is realized while still framed and the frame extents come out of the
+        // size we asked for (a requested 880x500 arrives noticeably smaller).
+        //
+        // Only correct that on a first run. Once window-state has geometry
+        // saved, that geometry is the user's and has already been restored —
+        // re-applying the default here would move and resize their window on
+        // every launch, and the plugin would then persist the reset.
+        // Must resolve through the same helper the plugin was configured with:
+        // probing the platform default while the plugin writes elsewhere would
+        // read "first run" on every launch and reset the user's window.
+        let has_saved_geometry = app_dirs::window_state_path(app.handle())
+          .map(|path| path.exists())
+          .unwrap_or(false);
+        if window_decorations::use_client_side_decorations() && !has_saved_geometry {
+          if let Err(e) = window.set_size(tauri::LogicalSize::new(880.0, 500.0)) {
+            log::warn!("Failed to re-apply the window size after dropping decorations: {e}");
+          }
+          if let Err(e) = window.center() {
+            log::warn!("Failed to re-center the window after dropping decorations: {e}");
+          }
+        }
+      }
+      window_decorations::init(app.handle());
+
+>>>>>>> v0.29.6
       // Set transparent titlebar for macOS
       #[cfg(target_os = "macos")]
       {
@@ -1517,7 +2219,11 @@ pub fn run() {
         log::warn!("Failed to set global event emitter: {e}");
       }
 
+<<<<<<< HEAD
       #[cfg(windows)]
+=======
+      #[cfg(all(windows, not(feature = "e2e")))]
+>>>>>>> v0.29.6
       {
         // For Windows, register all deep links at runtime
         if let Err(e) = app.deep_link().register_all() {
@@ -1525,7 +2231,11 @@ pub fn run() {
         }
       }
 
+<<<<<<< HEAD
       #[cfg(target_os = "macos")]
+=======
+      #[cfg(all(target_os = "macos", not(feature = "e2e")))]
+>>>>>>> v0.29.6
       {
         // On macOS, try to register deep links for development builds
         if let Err(e) = app.deep_link().register_all() {
@@ -1535,6 +2245,7 @@ pub fn run() {
         }
       }
 
+<<<<<<< HEAD
       app.deep_link().on_open_url({
         let handle = handle.clone();
         move |event| {
@@ -1557,17 +2268,46 @@ pub fn run() {
           }
         }
       });
+=======
+      #[cfg(not(feature = "e2e"))]
+      {
+        app.deep_link().on_open_url({
+          let handle = handle.clone();
+          move |event| {
+            let urls = event.urls();
+            log::info!("Deep link event received with {} URLs", urls.len());
+
+            for url in urls {
+              let url_string = url.to_string();
+              log::info!("Processing deep link URL");
+              let handle_clone = handle.clone();
+
+              tauri::async_runtime::spawn(async move {
+                if let Err(e) = handle_url_open(handle_clone, url_string.clone()).await {
+                  log::error!("Failed to handle deep link URL: {e}");
+                }
+              });
+            }
+          }
+        });
+      }
+>>>>>>> v0.29.6
 
       if let Some(startup_url) = startup_url {
         let handle_clone = handle.clone();
         tauri::async_runtime::spawn(async move {
+<<<<<<< HEAD
           log::info!("Processing startup URL from command line: {startup_url}");
+=======
+          log::info!("Processing startup URL from command line");
+>>>>>>> v0.29.6
           if let Err(e) = handle_url_open(handle_clone, startup_url.clone()).await {
             log::error!("Failed to handle startup URL: {e}");
           }
         });
       }
 
+<<<<<<< HEAD
       // Initialize and start background version updater
       let app_handle = app.handle().clone();
       tauri::async_runtime::spawn(async move {
@@ -1592,6 +2332,31 @@ pub fn run() {
       tauri::async_runtime::spawn(async move {
         version_updater::VersionUpdater::run_background_task().await;
       });
+=======
+      if !e2e_automation_enabled() {
+        // Initialize and start background version updater
+        let app_handle = app.handle().clone();
+        tauri::async_runtime::spawn(async move {
+          let version_updater = get_version_updater();
+
+          {
+            let mut updater_guard = version_updater.lock().await;
+            updater_guard.set_app_handle(app_handle);
+          }
+
+          {
+            let updater_guard = version_updater.lock().await;
+            if let Err(e) = updater_guard.start_background_updates().await {
+              log::error!("Failed to start background updates: {e}");
+            }
+          }
+        });
+
+        tauri::async_runtime::spawn(async move {
+          version_updater::VersionUpdater::run_background_task().await;
+        });
+      }
+>>>>>>> v0.29.6
 
       // Auto-start MCP server if it was previously enabled. Always log the
       // decision so customer logs reveal whether MCP is actually running —
@@ -1679,6 +2444,7 @@ pub fn run() {
           .collect();
 
         for config in list_proxy_configs() {
+<<<<<<< HEAD
           let has_running_browser = config
             .profile_id
             .as_ref()
@@ -1686,6 +2452,24 @@ pub fn run() {
           if has_running_browser {
             log::info!(
               "Startup: preserving proxy worker {} (profile browser still running)",
+=======
+          // Prefer the owner identity the worker itself recorded: it pins the
+          // browser to one exact process, so a recycled PID cannot make a dead
+          // browser look alive and strand this worker for good. Configs written
+          // before that field existed fall back to the profile's stored PID,
+          // which is all the information those workers have.
+          let has_running_browser = if config.browser_pid_start_time.is_some() {
+            crate::proxy_storage::browser_owner_is_alive(&config)
+          } else {
+            config
+              .profile_id
+              .as_ref()
+              .is_some_and(|pid| running_profile_ids.contains(pid))
+          };
+          if has_running_browser {
+            log::info!(
+              "Startup: preserving proxy worker {} (browser still running)",
+>>>>>>> v0.29.6
               config.id
             );
             continue;
@@ -1752,12 +2536,21 @@ pub fn run() {
         }
       }
 
+<<<<<<< HEAD
       let app_handle_auto_updater = app.handle().clone();
 
       // Start the auto-update check task separately
       tauri::async_runtime::spawn(async move {
         auto_updater::check_for_updates_with_progress(app_handle_auto_updater).await;
       });
+=======
+      if !e2e_automation_enabled() {
+        let app_handle_auto_updater = app.handle().clone();
+        tauri::async_runtime::spawn(async move {
+          auto_updater::check_for_updates_with_progress(app_handle_auto_updater).await;
+        });
+      }
+>>>>>>> v0.29.6
 
       // Handle any pending URLs that were received before the window was ready
       let handle_pending = handle.clone();
@@ -1773,13 +2566,18 @@ pub fn run() {
         };
 
         for url in pending_urls {
+<<<<<<< HEAD
           log::info!("Processing pending URL: {url}");
+=======
+          log::info!("Processing pending URL");
+>>>>>>> v0.29.6
           if let Err(e) = handle_url_open(handle_pending.clone(), url).await {
             log::error!("Failed to handle pending URL: {e}");
           }
         }
       });
 
+<<<<<<< HEAD
       // Start periodic cleanup task for unused binaries
       // Only runs when sync is not in progress to avoid deleting browsers
       // that might be needed for profiles being synced from the cloud
@@ -1881,6 +2679,87 @@ pub fn run() {
           }
         }
       });
+=======
+      if !e2e_automation_enabled() {
+        // Start periodic cleanup task for unused binaries.
+        tauri::async_runtime::spawn(async move {
+          let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(43200));
+          loop {
+            interval.tick().await;
+            if let Some(scheduler) = sync::get_global_scheduler() {
+              if scheduler.is_sync_in_progress().await {
+                log::debug!("Skipping cleanup: sync is in progress");
+                continue;
+              }
+            }
+
+            let registry =
+              crate::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+            if let Err(e) = registry.cleanup_unused_binaries() {
+              log::error!("Periodic cleanup failed: {e}");
+            } else {
+              log::debug!("Periodic cleanup completed successfully");
+            }
+          }
+        });
+
+        tauri::async_runtime::spawn(async move {
+          let manager = dns_blocklist::BlocklistManager::instance();
+          let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(43200));
+          interval.tick().await;
+          loop {
+            interval.tick().await;
+            manager.refresh_all_stale().await;
+          }
+        });
+
+        tauri::async_runtime::spawn(async move {
+          let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3 * 60 * 60));
+          loop {
+            interval.tick().await;
+            log::info!("Checking for app updates...");
+            match app_auto_updater::check_for_app_updates().await {
+              Ok(Some(update_info)) => {
+                log::info!(
+                  "App update available: {} -> {}",
+                  update_info.current_version,
+                  update_info.new_version
+                );
+                if let Err(e) = events::emit("app-update-available", &update_info) {
+                  log::error!("Failed to emit app update event: {e}");
+                }
+              }
+              Ok(None) => log::debug!("No app updates available"),
+              Err(e) => log::error!("Failed to check for app updates: {e}"),
+            }
+          }
+        });
+
+        let app_handle_geoip = app.handle().clone();
+        tauri::async_runtime::spawn(async move {
+          tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+          let geoip_downloader = crate::geoip_downloader::GeoIPDownloader::instance();
+          match geoip_downloader.check_missing_geoip_database() {
+            Ok(true) => {
+              log::info!(
+                "GeoIP database is missing for Wayfern profiles, downloading at startup..."
+              );
+              let geoip_downloader = GeoIPDownloader::instance();
+              if let Err(e) = geoip_downloader
+                .download_geoip_database(&app_handle_geoip)
+                .await
+              {
+                log::error!("Failed to download GeoIP database at startup: {e}");
+              } else {
+                log::info!("GeoIP database downloaded successfully at startup");
+              }
+            }
+            Ok(false) => {}
+            Err(e) => log::error!("Failed to check GeoIP database status at startup: {e}"),
+          }
+        });
+      }
+>>>>>>> v0.29.6
 
       // Start proxy cleanup task for dead browser processes
       let app_handle_proxy_cleanup = app.handle().clone();
@@ -2041,6 +2920,19 @@ pub fn run() {
                       .await;
                   }
 
+<<<<<<< HEAD
+=======
+                  // Clear-on-close for natural exits (user closed the window).
+                  // The explicit kill path in browser_runner.rs handles
+                  // app-driven stops. Must also run before
+                  // `mark_profile_stopped` so a queued sync sees the cleared
+                  // dir rather than re-uploading the wiped browsing data.
+                  if !is_running {
+                    crate::profile::clear_on_close::clear_profile_browsing_data(&profile)
+                      .await;
+                  }
+
+>>>>>>> v0.29.6
                   // Notify sync scheduler of running state changes
                   if let Some(scheduler) = sync::get_global_scheduler() {
                     if is_running {
@@ -2203,6 +3095,21 @@ pub fn run() {
             }
           };
           tokio::join!(sync_token_fut, proxy_fut, wayfern_fut);
+<<<<<<< HEAD
+=======
+
+          // Subscribe to remote-session transitions. Started here rather than
+          // unconditionally because a signed-out desktop has nothing to stream
+          // and would only be refused on a loop; the frontend starts it again
+          // through `start_remote_session_events` once the user signs in.
+          remote_session::start_session_events(app_handle_cloud.clone());
+
+          // A session that finished while this machine was shut, or whose pull
+          // ran out of retries offline, leaves a profile blocked from launching
+          // with its work still in cloud storage. Signing in is the first moment
+          // that pull can succeed, so it is where it is retried.
+          remote_handoff::resume_pending_pulls(&app_handle_cloud);
+>>>>>>> v0.29.6
         }
         cloud_auth::CloudAuthManager::start_sync_token_refresh_loop(app_handle_cloud).await;
       });
@@ -2233,6 +3140,10 @@ pub fn run() {
       update_profile_vpn,
       update_profile_tags,
       update_profile_note,
+<<<<<<< HEAD
+=======
+      update_profile_clear_on_close,
+>>>>>>> v0.29.6
       update_profile_launch_hook,
       update_profile_window_color,
       update_profile_proxy_bypass_rules,
@@ -2266,7 +3177,14 @@ pub fn run() {
       download_and_prepare_app_update,
       restart_application,
       detect_existing_profiles,
+<<<<<<< HEAD
       import_browser_profile,
+=======
+      import_browser_profiles,
+      scan_folder_for_profiles,
+      scan_profile_archive,
+      cleanup_profile_import_scratch,
+>>>>>>> v0.29.6
       check_missing_binaries,
       check_missing_geoip_database,
       ensure_all_binaries_exist,
@@ -2293,7 +3211,13 @@ pub fn run() {
       list_extensions,
       get_extension_icon,
       add_extension,
+<<<<<<< HEAD
       update_extension,
+=======
+      add_unpacked_extension,
+      update_extension,
+      update_extension_from_path,
+>>>>>>> v0.29.6
       delete_extension,
       list_extension_groups,
       create_extension_group,
@@ -2311,7 +3235,17 @@ pub fn run() {
       get_all_traffic_snapshots,
       get_profile_traffic_snapshot,
       clear_all_traffic_stats,
+<<<<<<< HEAD
       get_traffic_stats_for_period,
+=======
+      clear_profile_traffic_stats,
+      get_traffic_stats_for_period,
+      fingerprint_consistency::match_profile_fingerprint_to_exit,
+      launch_gate::get_profile_pre_launch_checks,
+      launch_gate::ack_launch_gate,
+      window_decorations::get_window_decoration_layout,
+      validate_vless_uri,
+>>>>>>> v0.29.6
       get_sync_settings,
       save_sync_settings,
       set_profile_sync_mode,
@@ -2369,9 +3303,12 @@ pub fn run() {
       cloud_auth::cloud_logout,
       cloud_auth::cloud_get_proxy_usage,
       cloud_auth::cloud_get_countries,
+<<<<<<< HEAD
       cloud_auth::cloud_get_regions,
       cloud_auth::cloud_get_cities,
       cloud_auth::cloud_get_isps,
+=======
+>>>>>>> v0.29.6
       cloud_auth::create_cloud_location_proxy,
       cloud_auth::restart_sync_service,
       cloud_auth::cloud_get_wayfern_token,
@@ -2387,6 +3324,41 @@ pub fn run() {
       // DNS blocklist commands
       dns_blocklist::get_dns_blocklist_cache_status,
       dns_blocklist::refresh_dns_blocklists,
+<<<<<<< HEAD
+=======
+      dns_blocklist::get_custom_dns_config,
+      dns_blocklist::set_custom_dns_config,
+      dns_blocklist::import_custom_dns_rules,
+      dns_blocklist::export_custom_dns_rules,
+      // Remote session commands
+      list_remote_sessions,
+      get_remote_session,
+      stop_remote_session,
+      get_remote_handoff_states,
+      start_remote_session_events,
+      stop_remote_session_events,
+      get_remote_session_events_status,
+      // Cookie bot commands
+      get_cookie_bot_schedules,
+      get_cookie_bot_schedule,
+      save_cookie_bot_schedule,
+      delete_cookie_bot_schedule,
+      check_cookie_bot_conflicts,
+      get_cookie_bot_runs,
+      run_cookie_bot_now,
+      cancel_cookie_bot_run,
+      get_cookie_bot_presets,
+      get_remote_hours_quota,
+      get_cookie_bot_usage,
+      // Defined in `cookie_bot.rs` rather than here because they carry no local
+      // precondition — there is no profile to look up and no `bot_precondition`
+      // to apply. Unregistered they are unreachable, and the saved-list tab
+      // fails at runtime with "command not found" rather than at build time.
+      cookie_bot::get_cookie_bot_user_templates,
+      cookie_bot::create_cookie_bot_user_template,
+      cookie_bot::update_cookie_bot_user_template,
+      cookie_bot::delete_cookie_bot_user_template,
+>>>>>>> v0.29.6
       // Profile password commands
       set_profile_password,
       change_profile_password,
@@ -2399,6 +3371,15 @@ pub fn run() {
     .build(tauri::generate_context!())
     .expect("error while building tauri application")
     .run(|_app_handle, _event| {
+<<<<<<< HEAD
+=======
+      // Drop the session stream before the runtime goes away, so a shutdown
+      // never waits out a reconnect backoff that is about to be pointless.
+      if let tauri::RunEvent::Exit = _event {
+        remote_session::stop_session_events();
+      }
+
+>>>>>>> v0.29.6
       #[cfg(target_os = "macos")]
       if let tauri::RunEvent::Reopen { .. } = _event {
         if let Some(window) = _app_handle.get_webview_window("main") {
@@ -2415,6 +3396,51 @@ mod tests {
   use std::fs;
 
   #[test]
+<<<<<<< HEAD
+=======
+  fn backend_error_helpers_preserve_codes_and_structure_diagnostics() {
+    let coded = super::backend_error("PROFILE_NOT_FOUND");
+    assert_eq!(
+      serde_json::from_str::<serde_json::Value>(&coded).unwrap()["code"],
+      "PROFILE_NOT_FOUND"
+    );
+    assert_eq!(super::wrap_backend_error(&coded, "ignored"), coded);
+
+    let wrapped = super::wrap_backend_error("disk unavailable", "Failed to save");
+    let parsed = serde_json::from_str::<serde_json::Value>(&wrapped).unwrap();
+    assert_eq!(parsed["code"], "INTERNAL_ERROR");
+    assert_eq!(
+      parsed["params"]["detail"],
+      "Failed to save: disk unavailable"
+    );
+  }
+
+  #[test]
+  fn the_frontend_listens_for_the_remote_session_events_that_are_emitted() {
+    // These names are the whole of BUG-2's fix: the backend answers a launch
+    // with `provisioning` and nothing else, so a desktop that subscribes to a
+    // name the emitter does not use is blind between launch and stop and shows
+    // nothing at all. Renaming one side is silent everywhere else.
+    let client = fs::read_to_string("../src/lib/remote-sessions.ts")
+      .expect("the frontend remote-session client must exist");
+    for event in [
+      crate::remote_session::EVENT_SESSION_STATE,
+      crate::remote_session::EVENT_SESSION_SNAPSHOT,
+      crate::remote_session::EVENT_STREAM_STATUS,
+      // The launch gate is emitted from the same place for the same reason: a
+      // Run button that does not hear about it stays enabled over a profile the
+      // backend will refuse, or over unsynced work it must not open.
+      crate::remote_handoff::EVENT_REMOTE_HANDOFF,
+    ] {
+      assert!(
+        client.contains(&format!("\"{event}\"")),
+        "no frontend listener for the emitted event {event}"
+      );
+    }
+  }
+
+  #[test]
+>>>>>>> v0.29.6
   fn test_no_unused_tauri_commands() {
     check_unused_commands(false); // Run in strict mode for CI
   }
