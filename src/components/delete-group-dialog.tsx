@@ -165,7 +165,11 @@ export function DeleteGroupDialog({
                         <RadioGroupItem value="delete" id="delete" />
                         <Label
                           htmlFor="delete"
+<<<<<<< HEAD
                           className="text-sm text-destructive"
+=======
+                          className="text-sm text-destructive-text"
+>>>>>>> v0.29.6
                         >
                           {t("groups.deleteAlongWithGroup")}
                         </Label>
@@ -184,7 +188,11 @@ export function DeleteGroupDialog({
           )}
 
           {error && (
+<<<<<<< HEAD
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+=======
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive-text">
+>>>>>>> v0.29.6
               {error}
             </div>
           )}

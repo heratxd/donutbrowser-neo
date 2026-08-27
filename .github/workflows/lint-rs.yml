@@ -3,13 +3,20 @@
 name: Lint Rust
 
 on:
+<<<<<<< HEAD
   workflow_call:
+=======
+  workflow_call: {}
+>>>>>>> v0.29.6
   push:
     branches:
       - main
     tags:
       - "v*"
+<<<<<<< HEAD
       - "!v*-neo.*"
+=======
+>>>>>>> v0.29.6
   pull_request:
     paths-ignore:
       - "src/**"
@@ -42,15 +49,26 @@ jobs:
         run: git config --global core.autocrlf false
 
       - name: Checkout repository code
+<<<<<<< HEAD
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
 
       - name: Set up pnpm package manager
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 #v6.0.9
+=======
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+
+      - name: Set up pnpm package manager
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 #v6.0.10
+>>>>>>> v0.29.6
         with:
           run_install: false
 
       - name: Set up Node.js
+<<<<<<< HEAD
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f #v6.1.0
+=======
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 #v7.0.0
+>>>>>>> v0.29.6
         with:
           node-version-file: .node-version
           cache: "pnpm"
@@ -68,13 +86,21 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get update
+<<<<<<< HEAD
           sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev openvpn
+=======
+          sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev openvpn unzip
+>>>>>>> v0.29.6
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build frontend
+<<<<<<< HEAD
         run: pnpm next build
+=======
+        run: pnpm build
+>>>>>>> v0.29.6
 
       - name: Get host target
         id: host_target
@@ -102,6 +128,12 @@ jobs:
             chmod +x src-tauri/binaries/donut-proxy-${HOST_TARGET}
           fi
 
+<<<<<<< HEAD
+=======
+      - name: Download verified Xray-core sidecar
+        run: node src-tauri/download-xray.mjs --target ${{ steps.host_target.outputs.target }}
+
+>>>>>>> v0.29.6
       - name: Run rustfmt check
         run: cargo fmt --all -- --check
         working-directory: src-tauri

@@ -1,5 +1,9 @@
 "use client";
 
+<<<<<<< HEAD
+=======
+import { motion } from "motion/react";
+>>>>>>> v0.29.6
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaDownload } from "react-icons/fa";
@@ -7,12 +11,22 @@ import { FiWifi } from "react-icons/fi";
 import { GoGear, GoKebabHorizontal } from "react-icons/go";
 import {
   LuCloud,
+<<<<<<< HEAD
+=======
+  LuCookie,
+  LuInfo,
+>>>>>>> v0.29.6
   LuKeyboard,
   LuPlug,
   LuPuzzle,
   LuUser,
   LuUsers,
 } from "react-icons/lu";
+<<<<<<< HEAD
+=======
+import { launchDonutClone } from "@/lib/donut-physics";
+import { MOTION_SPRING_POSITION } from "@/lib/motion";
+>>>>>>> v0.29.6
 import { cn } from "@/lib/utils";
 import { Logo } from "./icons/logo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -22,6 +36,10 @@ export type AppPage =
   | "proxies"
   | "extensions"
   | "groups"
+<<<<<<< HEAD
+=======
+  | "cookieBot"
+>>>>>>> v0.29.6
   | "vpns"
   | "settings"
   | "integrations"
@@ -31,11 +49,14 @@ export type AppPage =
 
 const CLICK_THRESHOLD = 5;
 const CLICK_WINDOW_MS = 2000;
+<<<<<<< HEAD
 const GRAVITY = 2200;
 const BOUNCE_DAMPING = 0.6;
 const INITIAL_HORIZONTAL_SPEED = 350;
 const SPIN_SPEED = 720;
 const MIN_BOUNCE_VELOCITY = 60;
+=======
+>>>>>>> v0.29.6
 const LOGO_HIDDEN_KEY = "donut-logo-hidden";
 
 function useLogoEasterEgg({
@@ -64,13 +85,18 @@ function useLogoEasterEgg({
     }
   });
   const logoRef = useRef<HTMLButtonElement>(null);
+<<<<<<< HEAD
   const animFrameRef = useRef<number>(0);
+=======
+  const cancelFallRef = useRef<(() => void) | null>(null);
+>>>>>>> v0.29.6
 
   const triggerFall = useCallback(() => {
     const el = logoRef.current;
     if (!el || isFalling) return;
     setIsFalling(true);
 
+<<<<<<< HEAD
     const rect = el.getBoundingClientRect();
     const startX = rect.left;
     const startY = rect.top;
@@ -132,6 +158,10 @@ function useLogoEasterEgg({
 
       if (offScreenLeft || offScreenBottom || offScreenTop) {
         clone.remove();
+=======
+    cancelFallRef.current = launchDonutClone(el, {
+      onExit: () => {
+>>>>>>> v0.29.6
         try {
           sessionStorage.setItem(LOGO_HIDDEN_KEY, "1");
         } catch {
@@ -139,16 +169,25 @@ function useLogoEasterEgg({
         }
         setIsHidden(true);
         setIsFalling(false);
+<<<<<<< HEAD
         return;
       }
       animFrameRef.current = requestAnimationFrame(animate);
     };
     animFrameRef.current = requestAnimationFrame(animate);
+=======
+      },
+    });
+>>>>>>> v0.29.6
   }, [isFalling]);
 
   useEffect(() => {
     return () => {
+<<<<<<< HEAD
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+=======
+      cancelFallRef.current?.();
+>>>>>>> v0.29.6
     };
   }, []);
 
@@ -236,6 +275,28 @@ function useLogoEasterEgg({
 interface RailNavProps {
   currentPage: AppPage;
   onNavigate: (page: AppPage) => void;
+<<<<<<< HEAD
+=======
+  onOpenAbout: () => void;
+  /**
+   * A remote session is running right now. The Cookie Bot item carries a dot so
+   * the state is legible from every other page — an overnight job you cannot
+   * see from where you are standing may as well not be observable at all.
+   */
+  cookieBotRunning?: boolean;
+}
+
+/** Shared-element indicator that slides between the active rail items. */
+function ActiveIndicator() {
+  return (
+    <motion.span
+      aria-hidden="true"
+      layoutId="rail-indicator"
+      transition={MOTION_SPRING_POSITION}
+      className="absolute inset-y-1.5 left-[-7px] w-[2px] rounded-full bg-foreground"
+    />
+  );
+>>>>>>> v0.29.6
 }
 
 interface RailItem {
@@ -249,6 +310,10 @@ const TOP_ITEMS: RailItem[] = [
   { page: "proxies", Icon: FiWifi, labelKey: "rail.network" },
   { page: "extensions", Icon: LuPuzzle, labelKey: "rail.extensions" },
   { page: "groups", Icon: LuUsers, labelKey: "rail.groups" },
+<<<<<<< HEAD
+=======
+  { page: "cookieBot", Icon: LuCookie, labelKey: "rail.cookieBot" },
+>>>>>>> v0.29.6
   { page: "integrations", Icon: LuPlug, labelKey: "rail.integrations" },
   { page: "account", Icon: LuCloud, labelKey: "rail.account" },
 ];
@@ -275,7 +340,16 @@ const MORE_ITEMS: MoreMenuItem[] = [
   },
 ];
 
+<<<<<<< HEAD
 export function RailNav({ currentPage, onNavigate }: RailNavProps) {
+=======
+export function RailNav({
+  currentPage,
+  onNavigate,
+  onOpenAbout,
+  cookieBotRunning = false,
+}: RailNavProps) {
+>>>>>>> v0.29.6
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const {
@@ -289,6 +363,20 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
     handleClick,
   } = useLogoEasterEgg({ currentPage, onNavigate });
 
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+    if (!moreOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [moreOpen]);
+
+>>>>>>> v0.29.6
   return (
     <nav className="relative flex w-10 shrink-0 flex-col items-center gap-1 border-r border-border bg-background py-2">
       {!isHidden ? (
@@ -354,6 +442,7 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
                   className={cn(
                     "relative grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
                     active
+<<<<<<< HEAD
                       ? "bg-accent text-foreground"
                       : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
                   )}
@@ -368,6 +457,27 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">{t(labelKey)}</TooltipContent>
+=======
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  {active && <ActiveIndicator />}
+                  <Icon className="size-3.5" />
+                  {page === "cookieBot" && cookieBotRunning && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-1 right-1 size-1.5 rounded-full bg-success"
+                    />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {page === "cookieBot" && cookieBotRunning
+                  ? t("rail.cookieBotRunning")
+                  : t(labelKey)}
+              </TooltipContent>
+>>>>>>> v0.29.6
             </Tooltip>
           );
         })}
@@ -387,8 +497,13 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
             className={cn(
               "grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
               moreOpen
+<<<<<<< HEAD
                 ? "bg-accent text-foreground"
                 : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
+=======
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+>>>>>>> v0.29.6
             )}
           >
             <GoKebabHorizontal className="size-3.5" />
@@ -409,6 +524,7 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
             className={cn(
               "relative grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
               currentPage === "settings"
+<<<<<<< HEAD
                 ? "bg-accent text-foreground"
                 : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
             )}
@@ -419,6 +535,13 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
                 className="absolute inset-y-1.5 left-[-7px] w-[2px] rounded-full bg-foreground"
               />
             )}
+=======
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            )}
+          >
+            {currentPage === "settings" && <ActiveIndicator />}
+>>>>>>> v0.29.6
             <GoGear className="size-3.5" />
           </button>
         </TooltipTrigger>
@@ -435,16 +558,32 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
               setMoreOpen(false);
             }}
           />
+<<<<<<< HEAD
           <div className="absolute bottom-14 left-11 z-40 w-56 animate-in rounded-lg border border-border bg-card p-1 shadow-2xl duration-100 fade-in-0 slide-in-from-bottom-1">
+=======
+          <div
+            role="menu"
+            aria-label={t("rail.more.label")}
+            className="surface-material-card absolute bottom-14 left-11 z-40 w-56 animate-in rounded-lg border border-border p-1 shadow-2xl duration-100 fade-in-0 slide-in-from-bottom-1"
+          >
+>>>>>>> v0.29.6
             {MORE_ITEMS.map(({ page, Icon, labelKey, hintKey }) => (
               <button
                 key={page}
                 type="button"
+<<<<<<< HEAD
+=======
+                role="menuitem"
+>>>>>>> v0.29.6
                 onClick={() => {
                   setMoreOpen(false);
                   onNavigate(page);
                 }}
+<<<<<<< HEAD
                 className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors duration-100 hover:bg-accent"
+=======
+                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors duration-100 hover:bg-accent hover:text-accent-foreground"
+>>>>>>> v0.29.6
               >
                 <span className="grid size-5 shrink-0 place-items-center rounded bg-muted text-muted-foreground">
                   <Icon className="size-3" />
@@ -459,6 +598,30 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
                 </span>
               </button>
             ))}
+<<<<<<< HEAD
+=======
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMoreOpen(false);
+                onOpenAbout();
+              }}
+              className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors duration-100 hover:bg-accent hover:text-accent-foreground"
+            >
+              <span className="grid size-5 shrink-0 place-items-center rounded bg-muted text-muted-foreground">
+                <LuInfo className="size-3" />
+              </span>
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-xs font-medium text-foreground">
+                  {t("rail.more.about")}
+                </span>
+                <span className="truncate text-[10px] text-muted-foreground">
+                  {t("rail.more.aboutHint")}
+                </span>
+              </span>
+            </button>
+>>>>>>> v0.29.6
           </div>
         </>
       )}

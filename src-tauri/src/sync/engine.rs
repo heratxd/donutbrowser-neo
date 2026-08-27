@@ -1,6 +1,12 @@
 use super::client::SyncClient;
 use super::encryption;
+<<<<<<< HEAD
 use super::manifest::{compute_diff, generate_manifest, get_cache_path, HashCache, SyncManifest};
+=======
+use super::manifest::{
+  compute_diff_with_bias, generate_manifest, get_cache_path, DiffBias, HashCache, SyncManifest,
+};
+>>>>>>> v0.29.6
 use super::types::*;
 use crate::events;
 use crate::profile::types::{BrowserProfile, SyncMode};
@@ -20,6 +26,25 @@ use tokio::sync::{Mutex as TokioMutex, Semaphore};
 /// (last-write-wins) from a HEAD request without downloading the object body.
 const UPDATED_AT_META_KEY: &str = "updated-at";
 
+<<<<<<< HEAD
+=======
+/// What one profile reconcile actually did.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProfileSyncOutcome {
+  /// The local directory and the remote copy now agree.
+  Completed,
+  /// Nothing was transferred, and the reason is not an error. A caller waiting
+  /// on the remote copy has NOT got it and must try again.
+  Skipped(&'static str),
+}
+
+impl ProfileSyncOutcome {
+  pub fn is_completed(&self) -> bool {
+    matches!(self, Self::Completed)
+  }
+}
+
+>>>>>>> v0.29.6
 lazy_static::lazy_static! {
   static ref SYNC_CANCEL_FLAGS: StdMutex<HashMap<String, Arc<AtomicBool>>> =
     StdMutex::new(HashMap::new());
@@ -91,6 +116,40 @@ fn is_critical_file(path: &str) -> bool {
     .any(|pattern| path.contains(pattern))
 }
 
+<<<<<<< HEAD
+=======
+/// How many failed paths to name before collapsing the rest into a count.
+const MAX_LISTED_FAILURES: usize = 10;
+
+/// Aggregate a batch of failed transfers into the message the user sees.
+///
+/// Whatever breaks a sync usually breaks every file the same way — one
+/// unreachable storage host, one rejected signature — so the per-file causes
+/// were dropped and only the paths survived into the message. That left users
+/// staring at a list of filenames with nothing to act on. Carry the first
+/// cause through, and stop pasting hundreds of paths into a toast.
+fn critical_failure_message(action: &str, failures: &[(String, String)]) -> String {
+  let listed: Vec<&str> = failures
+    .iter()
+    .take(MAX_LISTED_FAILURES)
+    .map(|(path, _)| path.as_str())
+    .collect();
+  let hidden = failures.len().saturating_sub(listed.len());
+  let files = if hidden > 0 {
+    format!("{} (and {} more)", listed.join(", "), hidden)
+  } else {
+    listed.join(", ")
+  };
+
+  match failures.first() {
+    Some((_, cause)) => format!(
+      "Critical files failed to {action}: {files}. Cause: {cause}. Sync aborted to prevent data loss."
+    ),
+    None => format!("Critical files failed to {action}: {files}. Sync aborted to prevent data loss."),
+  }
+}
+
+>>>>>>> v0.29.6
 /// Validate that a manifest-supplied relative file path is safe to join onto a
 /// profile directory before writing/deleting. The manifest is remote-controlled
 /// (a self-hosted or compromised sync server, a MITM on a plaintext Regular-mode
@@ -313,7 +372,11 @@ impl SyncProgressTracker {
 /// Check if sync is configured (cloud or self-hosted)
 pub fn is_sync_configured() -> bool {
   // Cloud backup is a plan capability. Every paid plan (incl. the future
+<<<<<<< HEAD
   // "starter" tier) grants it, but gating on the capability — not just "is paid"
+=======
+  // "solo" tier) grants it, but gating on the capability — not just "is paid"
+>>>>>>> v0.29.6
   // — keeps this correct if a plan without cloud backup is ever added.
   if crate::cloud_auth::CLOUD_AUTH.can_use_cloud_backup_sync() {
     return true;
@@ -450,13 +513,42 @@ impl SyncEngine {
     app_handle: &tauri::AppHandle,
     profile: &BrowserProfile,
   ) -> SyncResult<()> {
+<<<<<<< HEAD
+=======
+    self
+      .sync_profile_with_bias(app_handle, profile, DiffBias::Auto)
+      .await
+      .map(|_| ())
+  }
+
+  /// Reconcile a profile, stating which side wins and whether anything happened.
+  ///
+  /// The outcome matters to exactly one caller: the pull that follows a remote
+  /// session. Every skip below returns `Ok(())` from `sync_profile`, so a caller
+  /// that treated success as "the profile is now current" would clear the local
+  /// launch gate without having downloaded a single byte — and the user would
+  /// then open a stale profile over the session's work. `Skipped` says so.
+  pub async fn sync_profile_with_bias(
+    &self,
+    app_handle: &tauri::AppHandle,
+    profile: &BrowserProfile,
+    bias: DiffBias,
+  ) -> SyncResult<ProfileSyncOutcome> {
+>>>>>>> v0.29.6
     if profile.is_cross_os() {
       log::info!(
         "Cross-OS profile: {} ({}) — syncing metadata only",
         profile.name,
         profile.id
       );
+<<<<<<< HEAD
       return self.sync_cross_os_metadata(app_handle, profile).await;
+=======
+      self.sync_cross_os_metadata(app_handle, profile).await?;
+      // The browser files are the thing a remote session changes, and a cross-OS
+      // profile syncs none of them here, so this is not a completed pull.
+      return Ok(ProfileSyncOutcome::Skipped("cross-OS profile"));
+>>>>>>> v0.29.6
     }
 
     // Skip team profiles for self-hosted sync
@@ -466,7 +558,13 @@ impl SyncEngine {
         profile.name,
         profile.id
       );
+<<<<<<< HEAD
       return Ok(());
+=======
+      return Ok(ProfileSyncOutcome::Skipped(
+        "team profile, self-hosted sync",
+      ));
+>>>>>>> v0.29.6
     }
 
     // Skip if profile is currently running locally
@@ -476,15 +574,24 @@ impl SyncEngine {
         profile.name,
         profile.id
       );
+<<<<<<< HEAD
       return Ok(());
     }
 
     // Skip if profile is locked by another team member
+=======
+      return Ok(ProfileSyncOutcome::Skipped("profile is running locally"));
+    }
+
+    // Skip if profile is locked by another team member, or by one of this
+    // user's own remote sessions.
+>>>>>>> v0.29.6
     if crate::team_lock::TEAM_LOCK
       .is_locked_by_another(&profile.id.to_string())
       .await
     {
       log::info!(
+<<<<<<< HEAD
         "Skipping sync for profile locked by another team member: {} ({})",
         profile.name,
         profile.id
@@ -492,6 +599,18 @@ impl SyncEngine {
       return Ok(());
     }
 
+=======
+        "Skipping sync for profile locked by another holder: {} ({})",
+        profile.name,
+        profile.id
+      );
+      return Ok(ProfileSyncOutcome::Skipped("profile is locked elsewhere"));
+    }
+
+    let reconciled_profile = self.reconcile_profile_metadata(profile).await?;
+    let profile = &reconciled_profile;
+
+>>>>>>> v0.29.6
     // Derive encryption key if encrypted sync
     let encryption_key = if profile.is_encrypted_sync() {
       let password = encryption::load_e2e_password()
@@ -588,7 +707,11 @@ impl SyncEngine {
       .await?;
 
     // Compute diff
+<<<<<<< HEAD
     let diff = compute_diff(&local_manifest, remote_manifest.as_ref());
+=======
+    let diff = compute_diff_with_bias(&local_manifest, remote_manifest.as_ref(), bias);
+>>>>>>> v0.29.6
 
     if diff.is_empty() {
       log::info!("Profile {} is already in sync", profile_id);
@@ -600,7 +723,13 @@ impl SyncEngine {
           "status": "synced"
         }),
       );
+<<<<<<< HEAD
       return Ok(());
+=======
+      // Nothing to transfer IS a completed reconcile: the local copy already
+      // matches what the host pushed, which is exactly what the caller waits for.
+      return Ok(ProfileSyncOutcome::Completed);
+>>>>>>> v0.29.6
     }
 
     let upload_bytes: u64 = diff.files_to_upload.iter().map(|f| f.size).sum();
@@ -697,11 +826,14 @@ impl SyncEngine {
       log::debug!("Deleted remote file: {}", path);
     }
 
+<<<<<<< HEAD
     // Upload metadata.json (sanitized profile)
     self
       .upload_profile_metadata(&profile_id, profile, &key_prefix)
       .await?;
 
+=======
+>>>>>>> v0.29.6
     // If this sync changed the local profile directory (downloaded files and/or
     // deleted local files), the manifest generated at the START of the sync is
     // now stale. Uploading it would advertise wrong hashes/mtimes for the files
@@ -747,6 +879,7 @@ impl SyncEngine {
       let _ = self.sync_vpn(vpn_id, Some(app_handle)).await;
     }
 
+<<<<<<< HEAD
     // Download remote metadata and merge changes (name, tags, notes, etc.)
     let remote_metadata_key = format!("{}profiles/{}/metadata.json", key_prefix, profile_id);
     if let Ok(remote_meta) = self.download_profile_metadata(&remote_metadata_key).await {
@@ -778,6 +911,20 @@ impl SyncEngine {
       );
       let _ = profile_manager.save_profile(&updated_profile);
     }
+=======
+    let mut updated_profile = profile.clone();
+    updated_profile.last_sync = Some(
+      std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs(),
+    );
+    profile_manager
+      .save_profile(&updated_profile)
+      .map_err(|e| {
+        SyncError::IoError(format!("Failed to save reconciled profile metadata: {e}"))
+      })?;
+>>>>>>> v0.29.6
     let _ = events::emit("profiles-changed", ());
 
     let _ = events::emit(
@@ -790,7 +937,11 @@ impl SyncEngine {
     );
 
     log::info!("Profile {} synced successfully", profile_id);
+<<<<<<< HEAD
     Ok(())
+=======
+    Ok(ProfileSyncOutcome::Completed)
+>>>>>>> v0.29.6
   }
 
   async fn download_manifest(
@@ -881,6 +1032,48 @@ impl SyncEngine {
     Ok(profile)
   }
 
+<<<<<<< HEAD
+=======
+  async fn reconcile_profile_metadata(
+    &self,
+    profile: &BrowserProfile,
+  ) -> SyncResult<BrowserProfile> {
+    let profile_id = profile.id.to_string();
+    let key_prefix = Self::get_team_key_prefix(profile).await;
+    let remote_key = format!("{key_prefix}profiles/{profile_id}/metadata.json");
+    let stat = self.client.stat(&remote_key).await?;
+
+    if !stat.exists {
+      self
+        .upload_profile_metadata(&profile_id, profile, &key_prefix)
+        .await?;
+      return Ok(profile.clone());
+    }
+
+    let local_updated = profile.updated_at.unwrap_or(0);
+    let remote_updated = self.remote_updated_at(&stat, &remote_key).await;
+    if local_updated > remote_updated {
+      self
+        .upload_profile_metadata(&profile_id, profile, &key_prefix)
+        .await?;
+      return Ok(profile.clone());
+    }
+    if remote_updated <= local_updated {
+      return Ok(profile.clone());
+    }
+
+    let mut remote = self.download_profile_metadata(&remote_key).await?;
+    // Process state is device-local and deliberately stripped from uploads.
+    remote.process_id = profile.process_id;
+    remote.last_launch = profile.last_launch;
+    remote.last_sync = profile.last_sync;
+    ProfileManager::instance()
+      .save_profile(&remote)
+      .map_err(|e| SyncError::IoError(format!("Failed to save remote profile metadata: {e}")))?;
+    Ok(remote)
+  }
+
+>>>>>>> v0.29.6
   /// Sync only metadata for cross-OS profiles (tags, notes, proxies, groups).
   /// No browser files are synced.
   async fn sync_cross_os_metadata(
@@ -889,6 +1082,7 @@ impl SyncEngine {
     profile: &BrowserProfile,
   ) -> SyncResult<()> {
     let profile_id = profile.id.to_string();
+<<<<<<< HEAD
     let key_prefix = Self::get_team_key_prefix(profile).await;
     let profile_manager = ProfileManager::instance();
 
@@ -917,6 +1111,10 @@ impl SyncEngine {
       );
       let _ = profile_manager.save_profile(&updated);
     }
+=======
+    let reconciled_profile = self.reconcile_profile_metadata(profile).await?;
+    let profile = &reconciled_profile;
+>>>>>>> v0.29.6
 
     // Sync associated entities
     if let Some(proxy_id) = &profile.proxy_id {
@@ -954,6 +1152,7 @@ impl SyncEngine {
     let json = serde_json::to_string_pretty(&sanitized)
       .map_err(|e| SyncError::SerializationError(format!("Failed to serialize profile: {e}")))?;
 
+<<<<<<< HEAD
     let (payload, content_type) = encryption::maybe_seal_for_upload(json.as_bytes())
       .map_err(|e| SyncError::InvalidData(format!("Failed to seal profile metadata: {e}")))?;
 
@@ -966,6 +1165,11 @@ impl SyncEngine {
     self
       .client
       .upload_bytes(&presign.url, &payload, Some(content_type))
+=======
+    let remote_key = format!("{}profiles/{}/metadata.json", key_prefix, profile_id);
+    self
+      .upload_config_json(&remote_key, &json, sanitized.updated_at.unwrap_or(0))
+>>>>>>> v0.29.6
       .await?;
 
     Ok(())
@@ -1255,10 +1459,16 @@ impl SyncEngine {
     }
 
     if !critical_failures.is_empty() {
+<<<<<<< HEAD
       let file_list: Vec<&str> = critical_failures.iter().map(|(p, _)| p.as_str()).collect();
       return Err(SyncError::IoError(format!(
         "Critical files failed to upload: {}. Sync aborted to prevent data loss.",
         file_list.join(", ")
+=======
+      return Err(SyncError::IoError(critical_failure_message(
+        "upload",
+        &critical_failures,
+>>>>>>> v0.29.6
       )));
     }
 
@@ -1531,10 +1741,16 @@ impl SyncEngine {
     }
 
     if !critical_failures.is_empty() {
+<<<<<<< HEAD
       let file_list: Vec<&str> = critical_failures.iter().map(|(p, _)| p.as_str()).collect();
       return Err(SyncError::IoError(format!(
         "Critical files failed to download: {}. Sync aborted to prevent data loss.",
         file_list.join(", ")
+=======
+      return Err(SyncError::IoError(critical_failure_message(
+        "download",
+        &critical_failures,
+>>>>>>> v0.29.6
       )));
     }
 
@@ -2027,6 +2243,16 @@ impl SyncEngine {
       manager.get_extension(ext_id).ok()
     };
 
+<<<<<<< HEAD
+=======
+    // A linked extension is an absolute path on this machine with no payload in
+    // the store. Uploading it would publish metadata another device could never
+    // resolve, so it stays local whatever queued this run.
+    if local_ext.as_ref().is_some_and(|e| e.is_linked()) {
+      return Ok(());
+    }
+
+>>>>>>> v0.29.6
     let remote_key = format!("extensions/{}.json", ext_id);
     let stat = self.client.stat(&remote_key).await?;
 
@@ -3194,7 +3420,13 @@ pub async fn enable_extension_group_sync_if_needed(extension_group_id: &str) -> 
       manager
         .get_extension(ext_id)
         .ok()
+<<<<<<< HEAD
         .map(|e| e.sync_enabled)
+=======
+        // A linked extension has no binary to hand the other device, only a
+        // path that means nothing there, so the cascade must not pick it up.
+        .map(|e| e.sync_enabled || e.is_linked())
+>>>>>>> v0.29.6
         .unwrap_or(true)
     };
     if !already_synced {
@@ -3338,6 +3570,15 @@ pub async fn set_profile_sync_mode(
     .save_profile(&profile)
     .map_err(|e| format!("Failed to save profile: {e}"))?;
 
+<<<<<<< HEAD
+=======
+  // The bot materialises the profile from donut-sync, so switching sync off (or
+  // to Encrypted, which the host cannot decrypt) is a refusal reason. The server
+  // holds only the copy this machine declared; without this, an enrolment keeps
+  // claiming a syncable profile every night after the user turned sync off.
+  crate::cookie_bot::report_profile_state(&profile);
+
+>>>>>>> v0.29.6
   let _ = events::emit("profiles-changed", ());
 
   // When (re-)enabling sync, clear any stale tombstone from a previous
@@ -3557,6 +3798,43 @@ pub async fn trigger_sync_for_profile(
   Ok(())
 }
 
+<<<<<<< HEAD
+=======
+/// Pull a profile back down after a remote session wrote to it.
+///
+/// Not `trigger_sync_for_profile` with a different name. Two things differ, and
+/// both of them are the reason the session's work used to be destroyed:
+///
+/// - The diff is biased to the remote copy. The host has just written the
+///   authoritative profile; local mtimes may nonetheless be newer, and under the
+///   ordinary rule that uploads the stale copy and deletes the host's files.
+/// - The outcome is reported. Every skip inside `sync_profile` returns success,
+///   so the caller could otherwise mark the profile current without a byte
+///   having moved.
+pub async fn pull_profile_after_remote_session(
+  app_handle: &tauri::AppHandle,
+  profile_id: &str,
+) -> Result<ProfileSyncOutcome, String> {
+  let engine = SyncEngine::create_from_settings(app_handle)
+    .await
+    .map_err(|e| format!("Failed to create sync engine: {e}"))?;
+
+  let profile_uuid =
+    uuid::Uuid::parse_str(profile_id).map_err(|_| format!("Invalid profile ID: {profile_id}"))?;
+  let profile = ProfileManager::instance()
+    .list_profiles()
+    .map_err(|e| format!("Failed to list profiles: {e}"))?
+    .into_iter()
+    .find(|p| p.id == profile_uuid)
+    .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
+
+  engine
+    .sync_profile_with_bias(app_handle, &profile, DiffBias::PreferRemote)
+    .await
+    .map_err(|e| format!("Sync failed: {e}"))
+}
+
+>>>>>>> v0.29.6
 #[tauri::command]
 pub async fn set_proxy_sync_enabled(
   app_handle: tauri::AppHandle,
@@ -3886,7 +4164,13 @@ pub async fn enable_sync_for_all_entities(app_handle: tauri::AppHandle) -> Resul
         .map_err(|e| format!("Failed to list extensions: {e}"))?
     };
     for ext in &exts {
+<<<<<<< HEAD
       if !ext.sync_enabled {
+=======
+      // Linked extensions are machine-local by definition and are skipped
+      // rather than reported as a failure on every sync setup.
+      if !ext.sync_enabled && !ext.is_linked() {
+>>>>>>> v0.29.6
         if let Err(e) = set_extension_sync_enabled(app_handle.clone(), ext.id.clone(), true).await {
           log::warn!("Failed to enable sync for extension {}: {e}", ext.id);
         }
@@ -3932,6 +4216,14 @@ pub async fn set_extension_sync_enabled(
   };
 
   if enabled {
+<<<<<<< HEAD
+=======
+    // A linked extension is a path on this machine and nothing else; there is
+    // no payload to upload and the path would be meaningless on another device.
+    if ext.is_linked() {
+      return Err(serde_json::json!({ "code": "EXTENSION_LINKED_CANNOT_SYNC" }).to_string());
+    }
+>>>>>>> v0.29.6
     ensure_sync_configured(&app_handle).await?;
   }
 
@@ -4023,16 +4315,30 @@ pub async fn rollover_encryption_for_all_entities(
 ) -> Result<(), String> {
   let _ = events::emit("e2e-rollover-started", ());
 
+<<<<<<< HEAD
   let profile_manager = ProfileManager::instance();
   let profiles = profile_manager
     .list_profiles()
     .map_err(|e| format!("Failed to list profiles: {e}"))?;
+=======
+  let internal_error = |detail: String| {
+    serde_json::json!({ "code": "INTERNAL_ERROR", "params": { "detail": detail } }).to_string()
+  };
+  let engine = SyncEngine::create_from_settings(&app_handle)
+    .await
+    .map_err(&internal_error)?;
+  let profile_manager = ProfileManager::instance();
+  let profiles = profile_manager
+    .list_profiles()
+    .map_err(|e| internal_error(format!("Failed to list profiles: {e}")))?;
+>>>>>>> v0.29.6
 
   let synced_profiles: Vec<_> = profiles
     .iter()
     .filter(|p| p.sync_mode != SyncMode::Disabled)
     .collect();
 
+<<<<<<< HEAD
   let total_profiles = synced_profiles.len();
   let mut running_profile_ids: std::collections::HashSet<uuid::Uuid> =
     std::collections::HashSet::new();
@@ -4045,6 +4351,41 @@ pub async fn rollover_encryption_for_all_entities(
     if let Err(e) = trigger_sync_for_profile(app_handle.clone(), id_str.clone()).await {
       log::warn!("Rollover: profile {} re-sync failed: {e}", id_str);
     }
+=======
+  if synced_profiles
+    .iter()
+    .any(|profile| profile.process_id.is_some())
+  {
+    return Err(serde_json::json!({ "code": "PROFILE_RUNNING" }).to_string());
+  }
+
+  let total_profiles = synced_profiles.len();
+  for (i, profile) in synced_profiles.iter().enumerate() {
+    let id_str = profile.id.to_string();
+    // The remote manifest may be encrypted with the previous password. Delete
+    // only that manifest so the normal sync path treats every local file as an
+    // upload and rewrites it with the current password. Existing remote files
+    // remain available until their replacements have uploaded.
+    let key_prefix = SyncEngine::get_team_key_prefix(profile).await;
+    engine
+      .upload_profile_metadata(&id_str, profile, &key_prefix)
+      .await
+      .map_err(|e| {
+        internal_error(format!(
+          "Failed to roll over profile metadata {id_str}: {e}"
+        ))
+      })?;
+    let manifest_key = format!("{key_prefix}profiles/{id_str}/manifest.json");
+    engine
+      .client
+      .delete(&manifest_key, None)
+      .await
+      .map_err(|e| internal_error(format!("Failed to reset profile manifest: {e}")))?;
+    engine
+      .sync_profile(&app_handle, profile)
+      .await
+      .map_err(|e| internal_error(format!("Failed to roll over profile {id_str}: {e}")))?;
+>>>>>>> v0.29.6
     let _ = events::emit(
       "e2e-rollover-progress",
       serde_json::json!({
@@ -4055,6 +4396,7 @@ pub async fn rollover_encryption_for_all_entities(
     );
   }
 
+<<<<<<< HEAD
   // Determine which entity ids are referenced by running profiles, so we can
   // defer their re-upload (changing their files mid-session would cause the
   // running browser to see a different proxy/extension config than what it
@@ -4086,6 +4428,16 @@ pub async fn rollover_encryption_for_all_entities(
     } else if let Some(scheduler) = super::get_global_scheduler() {
       scheduler.queue_proxy_sync(proxy.id.clone()).await;
     }
+=======
+  let proxies = crate::proxy_manager::PROXY_MANAGER.get_stored_proxies();
+  let synced_proxies: Vec<_> = proxies.iter().filter(|p| p.sync_enabled).collect();
+  let total_proxies = synced_proxies.len();
+  for (i, proxy) in synced_proxies.iter().enumerate() {
+    engine
+      .upload_proxy(proxy)
+      .await
+      .map_err(|e| internal_error(format!("Failed to roll over proxy {}: {e}", proxy.id)))?;
+>>>>>>> v0.29.6
     let _ = events::emit(
       "e2e-rollover-progress",
       serde_json::json!({"stage": "proxies", "done": i + 1, "total": total_proxies}),
@@ -4095,6 +4447,7 @@ pub async fn rollover_encryption_for_all_entities(
   let groups = {
     let gm = crate::group_manager::GROUP_MANAGER.lock().unwrap();
     gm.get_all_groups()
+<<<<<<< HEAD
       .map_err(|e| format!("Failed to get groups: {e}"))?
   };
   let synced_groups: Vec<_> = groups.iter().filter(|g| g.sync_enabled).collect();
@@ -4106,6 +4459,17 @@ pub async fn rollover_encryption_for_all_entities(
     } else if let Some(scheduler) = super::get_global_scheduler() {
       scheduler.queue_group_sync(group.id.clone()).await;
     }
+=======
+      .map_err(|e| internal_error(format!("Failed to get groups: {e}")))?
+  };
+  let synced_groups: Vec<_> = groups.iter().filter(|g| g.sync_enabled).collect();
+  let total_groups = synced_groups.len();
+  for (i, group) in synced_groups.iter().enumerate() {
+    engine
+      .upload_group(group)
+      .await
+      .map_err(|e| internal_error(format!("Failed to roll over group {}: {e}", group.id)))?;
+>>>>>>> v0.29.6
     let _ = events::emit(
       "e2e-rollover-progress",
       serde_json::json!({"stage": "groups", "done": i + 1, "total": total_groups}),
@@ -4116,6 +4480,7 @@ pub async fn rollover_encryption_for_all_entities(
     let storage = crate::vpn::VPN_STORAGE.lock().unwrap();
     storage
       .list_configs()
+<<<<<<< HEAD
       .map_err(|e| format!("Failed to list VPN configs: {e}"))?
   };
   let synced_vpns: Vec<_> = vpns.iter().filter(|v| v.sync_enabled).collect();
@@ -4127,6 +4492,17 @@ pub async fn rollover_encryption_for_all_entities(
     } else if let Some(scheduler) = super::get_global_scheduler() {
       scheduler.queue_vpn_sync(config.id.clone()).await;
     }
+=======
+      .map_err(|e| internal_error(format!("Failed to list VPN configs: {e}")))?
+  };
+  let synced_vpns: Vec<_> = vpns.iter().filter(|v| v.sync_enabled).collect();
+  let total_vpns = synced_vpns.len();
+  for (i, config) in synced_vpns.iter().enumerate() {
+    engine
+      .upload_vpn(config)
+      .await
+      .map_err(|e| internal_error(format!("Failed to roll over VPN {}: {e}", config.id)))?;
+>>>>>>> v0.29.6
     let _ = events::emit(
       "e2e-rollover-progress",
       serde_json::json!({"stage": "vpns", "done": i + 1, "total": total_vpns}),
@@ -4136,14 +4512,25 @@ pub async fn rollover_encryption_for_all_entities(
   let extensions = {
     let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     em.list_extensions()
+<<<<<<< HEAD
       .map_err(|e| format!("Failed to list extensions: {e}"))?
+=======
+      .map_err(|e| internal_error(format!("Failed to list extensions: {e}")))?
+>>>>>>> v0.29.6
   };
   let synced_exts: Vec<_> = extensions.iter().filter(|e| e.sync_enabled).collect();
   let total_exts = synced_exts.len();
   for (i, ext) in synced_exts.iter().enumerate() {
+<<<<<<< HEAD
     if let Some(scheduler) = super::get_global_scheduler() {
       scheduler.queue_extension_sync(ext.id.clone()).await;
     }
+=======
+    engine
+      .upload_extension(ext)
+      .await
+      .map_err(|e| internal_error(format!("Failed to roll over extension {}: {e}", ext.id)))?;
+>>>>>>> v0.29.6
     let _ = events::emit(
       "e2e-rollover-progress",
       serde_json::json!({"stage": "extensions", "done": i + 1, "total": total_exts}),
@@ -4153,20 +4540,34 @@ pub async fn rollover_encryption_for_all_entities(
   let ext_groups = {
     let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     em.list_groups()
+<<<<<<< HEAD
       .map_err(|e| format!("Failed to list extension groups: {e}"))?
+=======
+      .map_err(|e| internal_error(format!("Failed to list extension groups: {e}")))?
+>>>>>>> v0.29.6
   };
   let synced_ext_groups: Vec<_> = ext_groups.iter().filter(|g| g.sync_enabled).collect();
   let total_eg = synced_ext_groups.len();
   for (i, group) in synced_ext_groups.iter().enumerate() {
+<<<<<<< HEAD
     if let Some(scheduler) = super::get_global_scheduler() {
       scheduler.queue_extension_group_sync(group.id.clone()).await;
     }
+=======
+    engine.upload_extension_group(group).await.map_err(|e| {
+      internal_error(format!(
+        "Failed to roll over extension group {}: {e}",
+        group.id
+      ))
+    })?;
+>>>>>>> v0.29.6
     let _ = events::emit(
       "e2e-rollover-progress",
       serde_json::json!({"stage": "extension_groups", "done": i + 1, "total": total_eg}),
     );
   }
 
+<<<<<<< HEAD
   if !deferred.is_empty() || !deferred_groups.is_empty() || !deferred_vpns.is_empty() {
     tauri::async_runtime::spawn(async move {
       tokio::time::sleep(std::time::Duration::from_secs(5)).await;
@@ -4184,6 +4585,8 @@ pub async fn rollover_encryption_for_all_entities(
     });
   }
 
+=======
+>>>>>>> v0.29.6
   let _ = events::emit("e2e-rollover-completed", ());
   Ok(())
 }
@@ -4193,6 +4596,43 @@ mod tests {
   use super::*;
 
   #[test]
+<<<<<<< HEAD
+=======
+  fn test_critical_failure_message_carries_the_cause() {
+    // A self-hosted server that hands out unreachable presigned URLs fails
+    // every file with the same connect error. Naming only the files told the
+    // user nothing about why, which is what made this undiagnosable.
+    let failures = vec![
+      (
+        "Default/Cookies".to_string(),
+        "Failed to upload Default/Cookies after 3 retries: error sending request".to_string(),
+      ),
+      ("Local State".to_string(), "same".to_string()),
+    ];
+
+    let message = critical_failure_message("upload", &failures);
+    assert!(message.contains("Default/Cookies"));
+    assert!(message.contains("Local State"));
+    assert!(message.contains("Cause: Failed to upload Default/Cookies"));
+    assert!(message.contains("Sync aborted to prevent data loss."));
+  }
+
+  #[test]
+  fn test_critical_failure_message_collapses_long_lists() {
+    let failures: Vec<(String, String)> = (0..25)
+      .map(|i| (format!("file-{i}"), "connect error".to_string()))
+      .collect();
+
+    let message = critical_failure_message("download", &failures);
+    assert!(message.contains("file-0"));
+    assert!(message.contains(&format!("file-{}", MAX_LISTED_FAILURES - 1)));
+    assert!(!message.contains(&format!("file-{MAX_LISTED_FAILURES}")));
+    assert!(message.contains("(and 15 more)"));
+    assert!(message.contains("failed to download"));
+  }
+
+  #[test]
+>>>>>>> v0.29.6
   fn test_is_safe_manifest_path() {
     // Legitimate profile-relative paths are accepted.
     assert!(is_safe_manifest_path("Local State"));

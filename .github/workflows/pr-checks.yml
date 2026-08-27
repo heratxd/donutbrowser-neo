@@ -15,21 +15,31 @@ jobs:
   lint-js:
     name: Lint JavaScript/TypeScript
     uses: ./.github/workflows/lint-js.yml
+<<<<<<< HEAD
     secrets: inherit
+=======
+>>>>>>> v0.29.6
     permissions:
       contents: read
 
   lint-rust:
     name: Lint Rust
     uses: ./.github/workflows/lint-rs.yml
+<<<<<<< HEAD
     secrets: inherit
+=======
+>>>>>>> v0.29.6
     permissions:
       contents: read
 
   security-scan:
     name: Security Vulnerability Scan
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+<<<<<<< HEAD
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@9a498708959aeaef5ef730655706c5a1df1edbc2" # v2.3.8
+=======
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@8deb546fdb875b9996d27d4950be7312dac076a1" # v2.5.0
+>>>>>>> v0.29.6
     with:
       scan-args: |-
         -r
@@ -38,17 +48,27 @@ jobs:
         --lockfile=src-tauri/Cargo.lock
         ./
 
+<<<<<<< HEAD
   sync-e2e:
     name: Sync E2E Tests
     uses: ./.github/workflows/sync-e2e.yml
     secrets: inherit
     permissions:
       contents: read
+=======
+  # E2E suites deliberately do not run here. They need real credentials, Docker,
+  # and a desktop session, which CI could not supply reliably. They are run
+  # locally instead; see the E2E section of AGENTS.md.
+>>>>>>> v0.29.6
 
   pr-status:
     name: PR Status Check
     runs-on: ubuntu-latest
+<<<<<<< HEAD
     needs: [lint-js, lint-rust, security-scan, sync-e2e]
+=======
+    needs: [lint-js, lint-rust, security-scan]
+>>>>>>> v0.29.6
     if: always()
     steps:
       - name: Check all jobs succeeded
@@ -57,9 +77,12 @@ jobs:
             echo "One or more checks failed"
             exit 1
           fi
+<<<<<<< HEAD
           # sync-e2e is optional (only runs when sync-related files change)
           if [[ "${{ needs.sync-e2e.result }}" == "failure" ]]; then
             echo "Sync E2E tests failed"
             exit 1
           fi
+=======
+>>>>>>> v0.29.6
           echo "All checks passed!"

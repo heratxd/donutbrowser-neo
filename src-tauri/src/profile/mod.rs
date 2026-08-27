@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+pub mod clear_on_close;
+>>>>>>> v0.29.6
 pub mod encryption;
 pub mod manager;
 pub mod password;

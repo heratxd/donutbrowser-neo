@@ -168,7 +168,11 @@ impl SynchronizerManager {
     );
 
     // Launch leader first so it gets focus
+<<<<<<< HEAD
     crate::browser_runner::launch_browser_profile(app_handle.clone(), leader.clone(), None)
+=======
+    crate::browser_runner::launch_browser_profile(app_handle.clone(), leader.clone(), None, None)
+>>>>>>> v0.29.6
       .await
       .map_err(|e| format!("Failed to launch leader: {e}"))?;
 
@@ -179,7 +183,11 @@ impl SynchronizerManager {
         let ah = app_handle.clone();
         let fp = fp.clone();
         set.spawn(async move {
+<<<<<<< HEAD
           crate::browser_runner::launch_browser_profile(ah, fp.clone(), None)
+=======
+          crate::browser_runner::launch_browser_profile(ah, fp.clone(), None, None)
+>>>>>>> v0.29.6
             .await
             .map_err(|e| (fp.name.clone(), e.to_string()))
         });
@@ -359,7 +367,11 @@ impl SynchronizerManager {
     log::info!("Synchronizer: leader CDP port = {leader_port}, getting WS URL");
     let leader_ws_url = Self::get_page_ws_url(leader_port).await?;
 
+<<<<<<< HEAD
     log::info!("Synchronizer: connecting to leader page at {leader_ws_url}");
+=======
+    log::info!("Synchronizer: connecting to leader page");
+>>>>>>> v0.29.6
 
     let (mut ws_stream, _) = connect_async(&leader_ws_url)
       .await
@@ -504,7 +516,11 @@ impl SynchronizerManager {
             Ok(url) => {
               match tokio_tungstenite::connect_async(&url).await {
                 Ok((ws, _)) => {
+<<<<<<< HEAD
                   log::info!("Synchronizer: follower {} connected at {}", fp.name, url);
+=======
+                  log::info!("Synchronizer: follower connected");
+>>>>>>> v0.29.6
                   let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<CapturedEvent>();
                   follower_senders.insert(fid.clone(), tx);
 
@@ -674,7 +690,11 @@ impl SynchronizerManager {
           if is_top {
             if let Some(url) = frame.get("url").and_then(|v| v.as_str()) {
               if !url.starts_with("about:") && !url.starts_with("chrome://") {
+<<<<<<< HEAD
                 log::info!("Synchronizer: replaying address-bar navigation to {url}");
+=======
+                log::info!("Synchronizer: replaying address-bar navigation");
+>>>>>>> v0.29.6
                 let nav_event = CapturedEvent {
                   event_type: "navigate".to_string(),
                   url: Some(url.to_string()),

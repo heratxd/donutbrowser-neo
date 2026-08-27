@@ -1,6 +1,10 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
+<<<<<<< HEAD
+=======
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+>>>>>>> v0.29.6
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FiWifi } from "react-icons/fi";
@@ -16,6 +20,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+<<<<<<< HEAD
+=======
+import { MOTION_EASE_OUT } from "@/lib/motion";
+>>>>>>> v0.29.6
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 
 interface UnsyncedEntityCounts {
@@ -33,6 +41,10 @@ interface SyncAllDialogProps {
 
 export function SyncAllDialog({ isOpen, onClose }: SyncAllDialogProps) {
   const { t } = useTranslation();
+<<<<<<< HEAD
+=======
+  const reduceMotion = useReducedMotion();
+>>>>>>> v0.29.6
   const [counts, setCounts] = useState<UnsyncedEntityCounts | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabling, setIsEnabling] = useState(false);
@@ -127,6 +139,7 @@ export function SyncAllDialog({ isOpen, onClose }: SyncAllDialogProps) {
           <DialogDescription>{t("syncAll.description")}</DialogDescription>
         </DialogHeader>
 
+<<<<<<< HEAD
         {isLoading ? (
           <div className="flex justify-center py-8">
             <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -154,6 +167,63 @@ export function SyncAllDialog({ isOpen, onClose }: SyncAllDialogProps) {
             ))}
           </div>
         )}
+=======
+        <AnimatePresence initial={false} mode="wait">
+          {isLoading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: reduceMotion ? 0.15 : 0.12,
+                ease: MOTION_EASE_OUT,
+              }}
+              className="flex justify-center py-8"
+            >
+              <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                duration: reduceMotion ? 0.15 : 0.16,
+                ease: MOTION_EASE_OUT,
+              }}
+              className="grid grid-cols-2 gap-2 py-2"
+            >
+              {items.map(({ key, count, label, Icon }, index) => (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: reduceMotion ? 0 : 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0.15 : 0.16,
+                    delay: reduceMotion ? 0 : Math.min(index * 0.03, 0.12),
+                    ease: MOTION_EASE_OUT,
+                  }}
+                  className="flex items-center gap-3 rounded-lg border border-border/60 bg-card/50 p-3 transition-colors hover:bg-card"
+                >
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary-text">
+                    <Icon className="size-4" />
+                  </div>
+                  <div className="min-w-0 flex-1 truncate text-sm font-medium">
+                    {label}
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="shrink-0 px-2 tabular-nums"
+                  >
+                    {count}
+                  </Badge>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+>>>>>>> v0.29.6
 
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onClose} disabled={isEnabling}>

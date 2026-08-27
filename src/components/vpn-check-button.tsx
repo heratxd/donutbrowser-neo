@@ -1,6 +1,10 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
+<<<<<<< HEAD
+=======
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+>>>>>>> v0.29.6
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { FiCheck } from "react-icons/fi";
@@ -12,6 +16,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatRelativeTime } from "@/lib/flag-utils";
+<<<<<<< HEAD
+=======
+import { MOTION_EASE_OUT } from "@/lib/motion";
+>>>>>>> v0.29.6
 import type { ProxyCheckResult } from "@/types";
 
 interface VpnCheckButtonProps {
@@ -30,6 +38,10 @@ export function VpnCheckButton({
   disabled = false,
 }: VpnCheckButtonProps) {
   const { t } = useTranslation();
+<<<<<<< HEAD
+=======
+  const reduceMotion = useReducedMotion();
+>>>>>>> v0.29.6
   const [result, setResult] = React.useState<ProxyCheckResult | undefined>();
 
   const handleCheck = React.useCallback(async () => {
@@ -63,6 +75,16 @@ export function VpnCheckButton({
   }, [vpnId, vpnName, checkingVpnId, setCheckingVpnId, t]);
 
   const isCurrentlyChecking = checkingVpnId === vpnId;
+<<<<<<< HEAD
+=======
+  const statusKey = isCurrentlyChecking
+    ? "checking"
+    : result?.is_valid
+      ? "valid"
+      : result && !result.is_valid
+        ? "invalid"
+        : "idle";
+>>>>>>> v0.29.6
 
   return (
     <Tooltip>
@@ -74,6 +96,7 @@ export function VpnCheckButton({
           onClick={handleCheck}
           disabled={isCurrentlyChecking || disabled}
         >
+<<<<<<< HEAD
           {isCurrentlyChecking ? (
             <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
           ) : result?.is_valid ? (
@@ -83,6 +106,41 @@ export function VpnCheckButton({
           ) : (
             <FiCheck className="size-3" />
           )}
+=======
+          <AnimatePresence initial={false} mode="wait">
+            <motion.span
+              key={statusKey}
+              initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.9 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                transition: {
+                  duration: reduceMotion ? 0.15 : 0.16,
+                  ease: MOTION_EASE_OUT,
+                },
+              }}
+              exit={{
+                opacity: 0,
+                scale: reduceMotion ? 1 : 0.9,
+                transition: {
+                  duration: reduceMotion ? 0.15 : 0.1,
+                  ease: MOTION_EASE_OUT,
+                },
+              }}
+              className="inline-flex size-3 items-center justify-center"
+            >
+              {isCurrentlyChecking ? (
+                <span className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+              ) : result?.is_valid ? (
+                <FiCheck className="size-3 text-success-text" />
+              ) : result && !result.is_valid ? (
+                <span className="text-sm text-destructive-text">✕</span>
+              ) : (
+                <FiCheck className="size-3" />
+              )}
+            </motion.span>
+          </AnimatePresence>
+>>>>>>> v0.29.6
         </Button>
       </TooltipTrigger>
       <TooltipContent>
@@ -91,7 +149,11 @@ export function VpnCheckButton({
         ) : result?.is_valid ? (
           <div className="space-y-1">
             <p>{t("vpnCheck.tooltipValid")}</p>
+<<<<<<< HEAD
             <p className="text-xs text-primary-foreground/70">
+=======
+            <p className="text-xs text-primary-foreground">
+>>>>>>> v0.29.6
               {t("vpnCheck.tooltipChecked", {
                 time: formatRelativeTime(result.timestamp),
               })}
@@ -100,7 +162,11 @@ export function VpnCheckButton({
         ) : result && !result.is_valid ? (
           <div>
             <p>{t("vpnCheck.tooltipInvalid")}</p>
+<<<<<<< HEAD
             <p className="text-xs text-primary-foreground/70">
+=======
+            <p className="text-xs text-primary-foreground">
+>>>>>>> v0.29.6
               {t("vpnCheck.tooltipChecked", {
                 time: formatRelativeTime(result.timestamp),
               })}

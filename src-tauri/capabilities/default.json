@@ -5,11 +5,15 @@
   "windows": ["main"],
   "webviews": ["main"],
   "permissions": [
+<<<<<<< HEAD
     "core:default",
+=======
+>>>>>>> v0.29.6
     "core:event:allow-listen",
     "core:event:allow-emit",
     "core:event:allow-emit-to",
     "core:event:allow-unlisten",
+<<<<<<< HEAD
     "core:image:default",
     "core:menu:default",
     "core:path:default",
@@ -21,10 +25,27 @@
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
     "opener:default",
+=======
+    "core:window:allow-start-dragging",
+    "core:window:allow-start-resize-dragging",
+    "core:window:allow-close",
+    "core:window:allow-is-maximized",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+>>>>>>> v0.29.6
     {
       "identifier": "opener:allow-open-url",
       "allow": [
         {
+<<<<<<< HEAD
+=======
+          "url": "https://*"
+        },
+        {
+          "url": "http://*"
+        },
+        {
+>>>>>>> v0.29.6
           "url": "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone"
         },
         {
@@ -32,6 +53,7 @@
         }
       ]
     },
+<<<<<<< HEAD
     "fs:default",
     "shell:allow-execute",
     "shell:allow-kill",
@@ -48,12 +70,22 @@
     "dialog:allow-save",
     "fs:allow-write-text-file",
     "macos-permissions:default",
+=======
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "deep-link:allow-get-current",
+    "dialog:allow-open",
+    "dialog:allow-save",
+>>>>>>> v0.29.6
     "macos-permissions:allow-request-microphone-permission",
     "macos-permissions:allow-request-camera-permission",
     "macos-permissions:allow-check-microphone-permission",
     "macos-permissions:allow-check-camera-permission",
     "log:default",
+<<<<<<< HEAD
     "clipboard-manager:default",
+=======
+>>>>>>> v0.29.6
     "clipboard-manager:allow-write-text"
   ]
 }

@@ -7,7 +7,11 @@ mod common;
 mod test_harness;
 
 use common::TestUtils;
+<<<<<<< HEAD
 use neodonutbrowser_lib::vpn::{
+=======
+use donutbrowser_lib::vpn::{
+>>>>>>> v0.29.6
   detect_vpn_type, parse_wireguard_config, VpnConfig, VpnStorage, VpnType, WireGuardConfig,
 };
 use serde_json::Value;
@@ -292,18 +296,30 @@ fn create_test_storage(temp_dir: &tempfile::TempDir) -> VpnStorage {
 #[serial]
 async fn test_wireguard_tunnel_init() {
   let config = WireGuardConfig {
+<<<<<<< HEAD
     private_key: "YEocP0e2o1WT5GlvBvQzVF7EeR6z9aCk+ZdZ5NKEuXA=".to_string(),
     address: "10.0.0.2/24".to_string(),
     dns: Some("1.1.1.1".to_string()),
     mtu: None,
     peer_public_key: "aGnF7JlG+U5t0BqB1PVf1yOuELHrWLGGcUJb0eCK9Aw=".to_string(),
+=======
+    private_key: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=".to_string(),
+    address: "10.0.0.2/24".to_string(),
+    dns: Some("1.1.1.1".to_string()),
+    mtu: None,
+    peer_public_key: "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=".to_string(),
+>>>>>>> v0.29.6
     peer_endpoint: "127.0.0.1:51820".to_string(),
     allowed_ips: vec!["0.0.0.0/0".to_string()],
     persistent_keepalive: Some(25),
     preshared_key: None,
   };
 
+<<<<<<< HEAD
   use neodonutbrowser_lib::vpn::{VpnTunnel, WireGuardTunnel};
+=======
+  use donutbrowser_lib::vpn::{VpnTunnel, WireGuardTunnel};
+>>>>>>> v0.29.6
 
   let tunnel = WireGuardTunnel::new("test-wg".to_string(), config);
   assert_eq!(tunnel.vpn_id(), "test-wg");
@@ -315,7 +331,11 @@ async fn test_wireguard_tunnel_init() {
 #[tokio::test]
 #[serial]
 async fn test_tunnel_manager() {
+<<<<<<< HEAD
   use neodonutbrowser_lib::vpn::{TunnelManager, VpnStatus, VpnTunnel};
+=======
+  use donutbrowser_lib::vpn::{TunnelManager, VpnStatus, VpnTunnel};
+>>>>>>> v0.29.6
 
   // Create a mock tunnel for testing the manager
   struct MockTunnel {
@@ -325,12 +345,20 @@ async fn test_tunnel_manager() {
 
   #[async_trait::async_trait]
   impl VpnTunnel for MockTunnel {
+<<<<<<< HEAD
     async fn connect(&mut self) -> Result<(), neodonutbrowser_lib::vpn::VpnError> {
+=======
+    async fn connect(&mut self) -> Result<(), donutbrowser_lib::vpn::VpnError> {
+>>>>>>> v0.29.6
       self.connected = true;
       Ok(())
     }
 
+<<<<<<< HEAD
     async fn disconnect(&mut self) -> Result<(), neodonutbrowser_lib::vpn::VpnError> {
+=======
+    async fn disconnect(&mut self) -> Result<(), donutbrowser_lib::vpn::VpnError> {
+>>>>>>> v0.29.6
       self.connected = false;
       Ok(())
     }
@@ -392,7 +420,11 @@ impl TestEnvGuard {
 
     let root = TEST_RUNTIME_ROOT
       .get_or_init(|| {
+<<<<<<< HEAD
         std::env::temp_dir().join(format!("neodonutbrowser-vpn-e2e-{}", std::process::id()))
+=======
+        std::env::temp_dir().join(format!("donutbrowser-vpn-e2e-{}", std::process::id()))
+>>>>>>> v0.29.6
       })
       .clone();
     let data_dir = root.join("data");
@@ -405,11 +437,19 @@ impl TestEnvGuard {
     std::fs::create_dir_all(&data_dir)?;
     std::fs::create_dir_all(&cache_dir)?;
 
+<<<<<<< HEAD
     let previous_data_dir = std::env::var("NEODONUT_DATA_DIR").ok();
     let previous_cache_dir = std::env::var("NEODONUT_CACHE_DIR").ok();
 
     std::env::set_var("NEODONUT_DATA_DIR", &data_dir);
     std::env::set_var("NEODONUT_CACHE_DIR", &cache_dir);
+=======
+    let previous_data_dir = std::env::var("DONUTBROWSER_DATA_DIR").ok();
+    let previous_cache_dir = std::env::var("DONUTBROWSER_CACHE_DIR").ok();
+
+    std::env::set_var("DONUTBROWSER_DATA_DIR", &data_dir);
+    std::env::set_var("DONUTBROWSER_CACHE_DIR", &cache_dir);
+>>>>>>> v0.29.6
 
     Ok(Self {
       _root: root,
@@ -422,6 +462,7 @@ impl TestEnvGuard {
 impl Drop for TestEnvGuard {
   fn drop(&mut self) {
     if let Some(value) = &self.previous_data_dir {
+<<<<<<< HEAD
       std::env::set_var("NEODONUT_DATA_DIR", value);
     } else {
       std::env::remove_var("NEODONUT_DATA_DIR");
@@ -431,6 +472,17 @@ impl Drop for TestEnvGuard {
       std::env::set_var("NEODONUT_CACHE_DIR", value);
     } else {
       std::env::remove_var("NEODONUT_CACHE_DIR");
+=======
+      std::env::set_var("DONUTBROWSER_DATA_DIR", value);
+    } else {
+      std::env::remove_var("DONUTBROWSER_DATA_DIR");
+    }
+
+    if let Some(value) = &self.previous_cache_dir {
+      std::env::set_var("DONUTBROWSER_CACHE_DIR", value);
+    } else {
+      std::env::remove_var("DONUTBROWSER_CACHE_DIR");
+>>>>>>> v0.29.6
     }
   }
 }
@@ -622,11 +674,50 @@ async fn raw_http_request_via_proxy(
 }
 
 async fn cleanup_runtime() {
+<<<<<<< HEAD
   let _ = neodonutbrowser_lib::proxy_runner::stop_all_proxy_processes().await;
   let _ = neodonutbrowser_lib::vpn_worker_runner::stop_all_vpn_workers().await;
   test_harness::stop_vpn_servers().await;
 }
 
+=======
+  let _ = donutbrowser_lib::proxy_runner::stop_all_proxy_processes().await;
+  let _ = donutbrowser_lib::vpn_worker_runner::stop_all_vpn_workers().await;
+  test_harness::stop_vpn_servers().await;
+}
+
+/// Request through the proxy until the tunnel behind it actually carries the
+/// traffic, or the deadline passes.
+///
+/// Returns the last response either way, so a genuine failure still asserts
+/// against the real body rather than a timeout message.
+async fn wait_for_tunnel(
+  local_port: u16,
+  url: &str,
+  host_header: &str,
+  timeout: Duration,
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+  let deadline = tokio::time::Instant::now() + timeout;
+
+  loop {
+    let last = match raw_http_request_via_proxy(local_port, url, host_header).await {
+      Ok(response) => {
+        if response.contains("WG-TUNNEL-OK") {
+          return Ok(response);
+        }
+        response
+      }
+      Err(e) => format!("request error: {e}"),
+    };
+
+    if tokio::time::Instant::now() >= deadline {
+      return Ok(last);
+    }
+    sleep(Duration::from_millis(250)).await;
+  }
+}
+
+>>>>>>> v0.29.6
 async fn wait_for_file(
   path: &std::path::Path,
   timeout: Duration,
@@ -649,7 +740,11 @@ async fn run_proxy_feature_suite(
   vpn_id: &str,
   server_tunnel_ip: &str,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+<<<<<<< HEAD
   let vpn_worker = neodonutbrowser_lib::vpn_worker_runner::start_vpn_worker(vpn_id)
+=======
+  let vpn_worker = donutbrowser_lib::vpn_worker_runner::start_vpn_worker(vpn_id)
+>>>>>>> v0.29.6
     .await
     .map_err(|error| error.to_string())?;
   let vpn_upstream = vpn_worker
@@ -661,19 +756,42 @@ async fn run_proxy_feature_suite(
   let proxy =
     start_proxy_with_upstream(binary_path, &vpn_upstream, &[], None, Some(&profile_id)).await?;
 
+<<<<<<< HEAD
   sleep(Duration::from_millis(500)).await;
 
   let internal_url = format!("http://{}:8080/", server_tunnel_ip);
   let internal_host = format!("{}:8080", server_tunnel_ip);
   let http_response =
     raw_http_request_via_proxy(proxy.local_port, &internal_url, &internal_host).await?;
+=======
+  let internal_url = format!("http://{}:8080/", server_tunnel_ip);
+  let internal_host = format!("{}:8080", server_tunnel_ip);
+
+  // The proxy answers as soon as it is listening, but the route behind it is
+  // not ready until the WireGuard handshake completes and the in-tunnel server
+  // accepts. A fixed sleep raced that on a loaded runner and came back
+  // `502 Bad Gateway`, which is the tunnel not being up yet rather than
+  // anything under test being wrong. Poll to a deadline instead, the same way
+  // `wait_for_file` does below.
+  let http_response = wait_for_tunnel(
+    proxy.local_port,
+    &internal_url,
+    &internal_host,
+    Duration::from_secs(20),
+  )
+  .await?;
+>>>>>>> v0.29.6
   assert!(
     http_response.contains("WG-TUNNEL-OK"),
     "HTTP traffic through donut-proxy+VPN tunnel should succeed, got: {}",
     &http_response[..http_response.len().min(300)]
   );
 
+<<<<<<< HEAD
   let stats_file = neodonutbrowser_lib::app_dirs::cache_dir()
+=======
+  let stats_file = donutbrowser_lib::app_dirs::cache_dir()
+>>>>>>> v0.29.6
     .join("traffic_stats")
     .join(format!("{}.json", profile_id));
   wait_for_file(&stats_file, Duration::from_secs(8)).await?;
@@ -761,7 +879,11 @@ async fn run_proxy_feature_suite(
   stop_proxy(binary_path, &bypass_proxy.id).await?;
   bypass_server.abort();
 
+<<<<<<< HEAD
   neodonutbrowser_lib::vpn_worker_runner::stop_vpn_worker(&vpn_worker.id)
+=======
+  donutbrowser_lib::vpn_worker_runner::stop_vpn_worker(&vpn_worker.id)
+>>>>>>> v0.29.6
     .await
     .map_err(|error| error.to_string())?;
   Ok(())
@@ -775,11 +897,16 @@ async fn test_wireguard_traffic_flows_through_donut_proxy(
 
   cleanup_runtime().await;
   if !test_harness::is_docker_available() {
+<<<<<<< HEAD
     eprintln!("skipping WireGuard e2e test because Docker is unavailable");
+=======
+    eprintln!("skipping WireGuard e2e test because Docker cannot run Linux containers");
+>>>>>>> v0.29.6
     return Ok(());
   }
 
   let binary_path = ensure_donut_proxy_binary().await?;
+<<<<<<< HEAD
   let wg_config = match test_harness::start_wireguard_server().await {
     Ok(config) => config,
     Err(error) => {
@@ -787,6 +914,11 @@ async fn test_wireguard_traffic_flows_through_donut_proxy(
       return Ok(());
     }
   };
+=======
+  let wg_config = test_harness::start_wireguard_server()
+    .await
+    .map_err(|error| format!("failed to start Docker WireGuard fixture: {error}"))?;
+>>>>>>> v0.29.6
 
   let vpn_config = new_test_vpn_config(
     "WireGuard E2E",
@@ -794,7 +926,11 @@ async fn test_wireguard_traffic_flows_through_donut_proxy(
     build_wireguard_config(&wg_config),
   );
   {
+<<<<<<< HEAD
     let storage = neodonutbrowser_lib::vpn::VPN_STORAGE.lock().unwrap();
+=======
+    let storage = donutbrowser_lib::vpn::VPN_STORAGE.lock().unwrap();
+>>>>>>> v0.29.6
     storage.save_config(&vpn_config)?;
   }
 

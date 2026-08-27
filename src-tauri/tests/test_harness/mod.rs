@@ -24,6 +24,7 @@ fn has_external_wireguard_service() -> bool {
   std::env::var("VPN_TEST_WG_HOST").is_ok()
 }
 
+<<<<<<< HEAD
 /// Check if Docker is available
 pub fn is_docker_available() -> bool {
   Command::new("docker")
@@ -31,6 +32,11 @@ pub fn is_docker_available() -> bool {
     .output()
     .map(|o| o.status.success())
     .unwrap_or(false)
+=======
+/// Check if Docker can run the Linux fixtures this harness needs
+pub fn is_docker_available() -> bool {
+  crate::common::docker_supports_linux_containers()
+>>>>>>> v0.29.6
 }
 
 /// Start a WireGuard test server and return client config

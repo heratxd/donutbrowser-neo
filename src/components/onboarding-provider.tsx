@@ -57,7 +57,12 @@ export function OnboardingProvider({
         cardComponent={OnboardingCard}
         interact
         shadowRgb="0,0,0"
+<<<<<<< HEAD
         shadowOpacity="0.6"
+=======
+        shadowOpacity="0.55"
+        cardTransition={{ type: "spring", bounce: 0, duration: 0.35 }}
+>>>>>>> v0.29.6
       >
         {children}
       </Onborda>

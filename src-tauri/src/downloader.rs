@@ -231,7 +231,11 @@ impl Downloader {
     let download_url = self
       .resolve_download_url(browser_type.clone(), version, download_info)
       .await?;
+<<<<<<< HEAD
     log::info!("Download URL resolved: {}", download_url);
+=======
+    log::info!("Download URL resolved");
+>>>>>>> v0.29.6
 
     // In-session resume: a large (~1GB) download over a flaky connection can
     // drop mid-stream. Rather than surfacing the first stall/chunk error as a
@@ -879,6 +883,20 @@ pub fn is_downloading(browser: &str, version: &str) -> bool {
   downloading.contains(&download_key)
 }
 
+<<<<<<< HEAD
+=======
+/// Test-only: mark a browser-version pair as in flight so guards that consult
+/// `is_downloading` can be exercised without running a real download. Clear it
+/// again with `clear_download_state_for_browser`.
+#[cfg(test)]
+pub fn mark_downloading_for_test(browser: &str, version: &str) {
+  DOWNLOADING_BROWSERS
+    .lock()
+    .unwrap()
+    .insert(format!("{browser}-{version}"));
+}
+
+>>>>>>> v0.29.6
 /// Clear all in-progress download bookkeeping for a browser.
 ///
 /// Used as a last-resort cleanup when a download future is abandoned (e.g. dropped

@@ -557,7 +557,11 @@ export function GroupManagementDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose} subPage={subPage}>
+<<<<<<< HEAD
         <DialogContent className="flex max-h-[90vh] max-w-[min(60rem,calc(100%-4rem))] flex-col">
+=======
+        <DialogContent className="flex max-h-[85vh] max-w-[min(80rem,calc(100%-4rem))] flex-col">
+>>>>>>> v0.29.6
           {!subPage && (
             <DialogHeader>
               <DialogTitle>{t("groups.management")}</DialogTitle>
@@ -567,6 +571,7 @@ export function GroupManagementDialog({
             </DialogHeader>
           )}
 
+<<<<<<< HEAD
           <div className="flex min-h-0 w-full flex-1 flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col gap-1">
@@ -576,6 +581,21 @@ export function GroupManagementDialog({
                 <p className="text-xs text-muted-foreground">
                   {t("groups.pageDescription")}
                 </p>
+=======
+          <div className="@container flex min-h-0 w-full flex-1 flex-col">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
+              <div
+                data-slot="group-summary-pill"
+                className="inline-flex h-7 items-center justify-center gap-1.5 rounded-md bg-accent px-3 text-sm font-medium whitespace-nowrap text-accent-foreground"
+              >
+                <span>{t("groups.pageTitle")}</span>
+                <span
+                  data-slot="group-summary-count"
+                  className="text-xs tabular-nums"
+                >
+                  {groups.length}
+                </span>
+>>>>>>> v0.29.6
               </div>
               <RippleButton
                 size="sm"
@@ -583,31 +603,56 @@ export function GroupManagementDialog({
                   setCreateDialogOpen(true);
                 }}
                 className="flex shrink-0 items-center gap-2"
+<<<<<<< HEAD
               >
                 <GoPlus className="size-4" />
                 {t("proxies.management.create")}
+=======
+                aria-label={t("common.buttons.create")}
+              >
+                <GoPlus className="size-4" />
+                <span className="hidden @2xl:inline">
+                  {t("common.buttons.create")}
+                </span>
+>>>>>>> v0.29.6
               </RippleButton>
             </div>
 
             {error && (
+<<<<<<< HEAD
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+=======
+              <div className="mt-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive-text">
+>>>>>>> v0.29.6
                 {error}
               </div>
             )}
 
             {/* Groups list */}
             {isLoading ? (
+<<<<<<< HEAD
               <div className="text-sm text-muted-foreground">
                 {t("common.buttons.loading")}
               </div>
             ) : groups.length === 0 ? (
               <div className="text-sm text-muted-foreground">
+=======
+              <div className="mt-4 text-sm text-muted-foreground">
+                {t("common.buttons.loading")}
+              </div>
+            ) : groups.length === 0 ? (
+              <div className="mt-4 text-sm text-muted-foreground">
+>>>>>>> v0.29.6
                 {t("groups.noGroupsDescription")}
               </div>
             ) : (
               <FadingScrollArea
                 className={cn(
+<<<<<<< HEAD
                   "min-h-0 flex-1",
+=======
+                  "mt-4 min-h-0 flex-1",
+>>>>>>> v0.29.6
                   selectedGroupsForBulk.length > 0 && "pb-16",
                 )}
                 style={
@@ -707,7 +752,11 @@ export function GroupManagementDialog({
             onClick={() => setBulkDeleteOpen(true)}
             size="icon"
             variant="destructive"
+<<<<<<< HEAD
             className="border-destructive bg-destructive/50 hover:bg-destructive/70"
+=======
+            className="border-destructive bg-destructive hover:bg-destructive"
+>>>>>>> v0.29.6
           >
             <LuTrash2 />
           </DataTableActionBarAction>

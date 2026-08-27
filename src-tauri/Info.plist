@@ -3,6 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
+<<<<<<< HEAD
 	<string>NeoDonut Browser needs camera access to enable camera functionality in web browsers. Each website will still ask for your permission individually.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>NeoDonut Browser needs microphone access to enable microphone functionality in web browsers. Each website will still ask for your permission individually.</string>
@@ -28,6 +29,15 @@
 	<string>public.app-category.productivity</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 NeoDonut Browser contributors</string>
+=======
+	<string>Donut needs camera access to enable camera functionality in web browsers. Each website will still ask for your permission individually.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Donut needs microphone access to enable microphone functionality in web browsers. Each website will still ask for your permission individually.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Donut has proxy functionality that requires local network access. You can deny this functionality if you don't plan on setting proxies for browser profiles.</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Donut</string>
+>>>>>>> v0.29.6
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -57,4 +67,8 @@
 		</dict>
 	</array>
 </dict>
-</plist> 
+<<<<<<< HEAD
+</plist>
+=======
+</plist>
+>>>>>>> v0.29.6

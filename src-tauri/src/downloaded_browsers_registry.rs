@@ -26,6 +26,32 @@ pub struct DownloadedBrowsersRegistry {
   geoip_downloader: &'static GeoIPDownloader,
 }
 
+<<<<<<< HEAD
+=======
+/// Filename suffixes that identify a *downloaded artifact* — the container we
+/// fetched from the network — rather than a file belonging to the extracted
+/// install. Cleanup preserves these so a manually placed archive survives.
+///
+/// `.exe` and `.AppImage` are deliberately absent even though both can be
+/// downloaded. On Windows the extracted Wayfern payload is flat at the version
+/// root (`extraction::ensure_correct_directory_structure` returns early rather
+/// than nesting it), so preserving `.exe` kept `chrome.exe` while deleting every
+/// sibling `.dll`, the `.manifest`, `.pak` and `locales/` — a gutted install
+/// that then failed to launch with os error 14001. On Linux the `.AppImage`
+/// *is* the extracted payload. Cleanup must never leave behind something that
+/// still reads as an installed browser; the archive is deleted right after a
+/// successful download anyway, so nothing of value is lost.
+const DOWNLOAD_ARTIFACT_SUFFIXES: [&str; 7] =
+  ["zip", "dmg", "tar.xz", "tar.gz", "tar.bz2", "pkg", "msi"];
+
+fn is_download_artifact(file_name: &str) -> bool {
+  let lowered = file_name.to_lowercase();
+  DOWNLOAD_ARTIFACT_SUFFIXES
+    .iter()
+    .any(|suffix| lowered.ends_with(suffix))
+}
+
+>>>>>>> v0.29.6
 impl DownloadedBrowsersRegistry {
   fn new() -> Self {
     Self {
@@ -174,15 +200,30 @@ impl DownloadedBrowsersRegistry {
     browser: &str,
     version: &str,
   ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+<<<<<<< HEAD
+=======
+    // Never delete files out from under a live download or extraction. Both the
+    // detached task that runs the moment a download completes and the periodic
+    // maintenance task land here, and a freshly downloaded version is referenced
+    // by no persisted profile while profile creation is still in flight.
+    if crate::downloader::is_downloading(browser, version) {
+      log::info!("Skipping cleanup of {browser} {version}: a download is in progress");
+      return Ok(());
+    }
+
+>>>>>>> v0.29.6
     if let Some(info) = self.remove_browser(browser, version) {
       // Clean up extracted binaries but preserve downloaded archives
       if info.file_path.exists() {
         if info.file_path.is_dir() {
+<<<<<<< HEAD
           // Allowed archive extensions to preserve
           let archive_exts = [
             "zip", "dmg", "tar.xz", "tar.gz", "tar.bz2", "AppImage", "exe", "pkg", "msi",
           ];
 
+=======
+>>>>>>> v0.29.6
           for entry in fs::read_dir(&info.file_path)? {
             let entry = entry?;
             let path = entry.path();
@@ -192,6 +233,7 @@ impl DownloadedBrowsersRegistry {
               continue;
             }
 
+<<<<<<< HEAD
             // For files, preserve if they look like downloaded archives/installers
             let keep = path
               .file_name()
@@ -202,6 +244,13 @@ impl DownloadedBrowsersRegistry {
                   .iter()
                   .any(|ext| name.to_lowercase().ends_with(&ext.to_lowercase()))
               })
+=======
+            // For files, preserve only genuine downloaded archives/installers
+            let keep = path
+              .file_name()
+              .and_then(|n| n.to_str())
+              .map(is_download_artifact)
+>>>>>>> v0.29.6
               .unwrap_or(false);
 
             if !keep {
@@ -215,6 +264,7 @@ impl DownloadedBrowsersRegistry {
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("");
+<<<<<<< HEAD
           let archive_exts = [
             "zip", "dmg", "tar.xz", "tar.gz", "tar.bz2", "AppImage", "exe", "pkg", "msi",
           ];
@@ -222,6 +272,9 @@ impl DownloadedBrowsersRegistry {
             .iter()
             .any(|ext| file_name.to_lowercase().ends_with(&ext.to_lowercase()));
           if !is_archive {
+=======
+          if !is_download_artifact(file_name) {
+>>>>>>> v0.29.6
             fs::remove_file(&info.file_path)?;
           }
         }
@@ -1230,6 +1283,133 @@ mod tests {
     );
   }
 
+<<<<<<< HEAD
+=======
+  /// The Windows payload is extracted flat at the version root, so preserving
+  /// every `*.exe` used to leave `chrome.exe` behind while deleting the `.dll`
+  /// files and the `.manifest` next to it. That gutted directory still passed
+  /// the "is it downloaded?" check, was re-registered as healthy, and launching
+  /// it failed in the Windows loader with os error 14001.
+  #[test]
+  fn test_cleanup_removes_the_browser_executable_not_just_its_libraries() {
+    use tempfile::TempDir;
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("wayfern").join("140.0");
+    std::fs::create_dir_all(&version_dir).unwrap();
+
+    for name in [
+      "chrome.exe",
+      "wayfern.exe",
+      "notification_helper.exe",
+      "chrome.dll",
+      "chrome_elf.dll",
+      "chrome.exe.manifest",
+      "resources.pak",
+    ] {
+      std::fs::File::create(version_dir.join(name)).unwrap();
+    }
+    std::fs::create_dir_all(version_dir.join("locales")).unwrap();
+
+    let registry = DownloadedBrowsersRegistry::new();
+    registry.add_browser(DownloadedBrowserInfo {
+      browser: "wayfern".to_string(),
+      version: "140.0".to_string(),
+      file_path: version_dir.clone(),
+    });
+
+    registry
+      .cleanup_failed_download("wayfern", "140.0")
+      .expect("cleanup should succeed");
+
+    let leftovers: Vec<String> = std::fs::read_dir(&version_dir)
+      .unwrap()
+      .flatten()
+      .map(|e| e.file_name().to_string_lossy().into_owned())
+      .collect();
+    assert!(
+      leftovers.is_empty(),
+      "cleanup must not leave a half-deleted install behind, found: {leftovers:?}"
+    );
+  }
+
+  /// The preserve rule still exists for its actual purpose: a downloaded
+  /// archive (including one placed there by hand) survives the cleanup.
+  #[test]
+  fn test_cleanup_preserves_a_downloaded_archive() {
+    use tempfile::TempDir;
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("wayfern").join("141.0");
+    std::fs::create_dir_all(&version_dir).unwrap();
+
+    std::fs::File::create(version_dir.join("wayfern-win64.zip")).unwrap();
+    std::fs::File::create(version_dir.join("wayfern-mac.tar.xz")).unwrap();
+    std::fs::File::create(version_dir.join("chrome.exe")).unwrap();
+    std::fs::File::create(version_dir.join("chrome.dll")).unwrap();
+
+    let registry = DownloadedBrowsersRegistry::new();
+    registry.add_browser(DownloadedBrowserInfo {
+      browser: "wayfern".to_string(),
+      version: "141.0".to_string(),
+      file_path: version_dir.clone(),
+    });
+
+    registry
+      .cleanup_failed_download("wayfern", "141.0")
+      .expect("cleanup should succeed");
+
+    assert!(
+      version_dir.join("wayfern-win64.zip").exists(),
+      "a downloaded archive must be preserved"
+    );
+    assert!(
+      version_dir.join("wayfern-mac.tar.xz").exists(),
+      "multi-part archive extensions must still be recognised"
+    );
+    assert!(
+      !version_dir.join("chrome.exe").exists(),
+      "the extracted executable must be removed"
+    );
+    assert!(
+      !version_dir.join("chrome.dll").exists(),
+      "the extracted libraries must be removed"
+    );
+  }
+
+  /// Cleanup runs on a detached task the moment a download completes and again
+  /// on a periodic timer, either of which can land while an install is still
+  /// being written. It must stand down instead of deleting live files.
+  #[test]
+  fn test_cleanup_stands_down_while_a_download_is_in_progress() {
+    use tempfile::TempDir;
+    let temp = TempDir::new().unwrap();
+    let version_dir = temp.path().join("wayfern").join("142.0");
+    std::fs::create_dir_all(&version_dir).unwrap();
+    std::fs::File::create(version_dir.join("chrome.exe")).unwrap();
+    std::fs::File::create(version_dir.join("chrome.dll")).unwrap();
+
+    let registry = DownloadedBrowsersRegistry::new();
+    registry.add_browser(DownloadedBrowserInfo {
+      browser: "wayfern".to_string(),
+      version: "142.0".to_string(),
+      file_path: version_dir.clone(),
+    });
+
+    crate::downloader::mark_downloading_for_test("wayfern", "142.0");
+    let result = registry.cleanup_failed_download("wayfern", "142.0");
+    crate::downloader::clear_download_state_for_browser("wayfern");
+    result.expect("cleanup should succeed");
+
+    assert!(
+      version_dir.join("chrome.exe").exists() && version_dir.join("chrome.dll").exists(),
+      "an in-flight download must not be deleted out from under itself"
+    );
+    assert!(
+      registry.is_browser_registered("wayfern", "142.0"),
+      "the registry entry must survive too, the version is still being installed"
+    );
+  }
+
+>>>>>>> v0.29.6
   #[test]
   fn test_is_browser_registered_vs_downloaded() {
     let registry = DownloadedBrowsersRegistry::new();
@@ -1261,6 +1441,17 @@ mod tests {
 pub async fn ensure_active_browsers_downloaded(
   app_handle: tauri::AppHandle,
 ) -> Result<Vec<String>, String> {
+<<<<<<< HEAD
+=======
+  #[cfg(feature = "e2e")]
+  if crate::e2e_automation_enabled()
+    && std::env::var_os("DONUT_E2E_DISABLE_STARTUP_NETWORK").is_some()
+  {
+    log::info!("E2E: skipping proactive browser download");
+    return Ok(Vec::new());
+  }
+
+>>>>>>> v0.29.6
   let registry = DownloadedBrowsersRegistry::instance();
   let version_manager = crate::browser_version_manager::BrowserVersionManager::instance();
   let mut downloaded = Vec::new();
@@ -1410,6 +1601,17 @@ pub async fn check_missing_binaries() -> Result<Vec<(String, String, String)>, S
 pub async fn ensure_all_binaries_exist(
   app_handle: tauri::AppHandle,
 ) -> Result<Vec<String>, String> {
+<<<<<<< HEAD
+=======
+  #[cfg(feature = "e2e")]
+  if crate::e2e_automation_enabled()
+    && std::env::var_os("DONUT_E2E_DISABLE_STARTUP_NETWORK").is_some()
+  {
+    log::info!("E2E: skipping proactive binary and GeoIP downloads");
+    return Ok(Vec::new());
+  }
+
+>>>>>>> v0.29.6
   let registry = DownloadedBrowsersRegistry::instance();
   registry
     .ensure_all_binaries_exist(&app_handle)

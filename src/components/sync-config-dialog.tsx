@@ -17,6 +17,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+<<<<<<< HEAD
+=======
+import { ProBadge } from "@/components/ui/pro-badge";
+>>>>>>> v0.29.6
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -79,6 +83,7 @@ export function SyncConfigDialog({
   const [connectionStatus, setConnectionStatus] = useState<
     "unknown" | "testing" | "connected" | "error"
   >("unknown");
+<<<<<<< HEAD
   const hasConfig = Boolean(serverUrl && token);
 
   const testConnection = useCallback(async (url: string) => {
@@ -92,6 +97,51 @@ export function SyncConfigDialog({
     }
   }, []);
 
+=======
+  const [storageEndpoint, setStorageEndpoint] = useState<string | null>(null);
+  const hasConfig = Boolean(serverUrl && token);
+
+  // `/health` is a bare liveness probe: it answers ok on a server whose storage
+  // is unreachable or misconfigured, which is how a green "connected" could sit
+  // next to a sync where every single file failed. `/readyz` checks storage and
+  // reports the endpoint clients are handed in presigned URLs, so surface that
+  // too — when transfers fail, it is the value worth checking first.
+  const probeServer = useCallback(async (url: string) => {
+    const base = url.replace(/\/$/, "");
+    const response = await fetch(`${base}/readyz`);
+
+    // A server old enough to predate /readyz is still a working server, so
+    // fall back rather than reporting a healthy setup as broken.
+    if (response.status === 404) {
+      const health = await fetch(`${base}/health`);
+      return { ok: health.ok, storageEndpoint: undefined };
+    }
+
+    if (!response.ok) {
+      return { ok: false as const, storageEndpoint: undefined };
+    }
+    const body = (await response.json()) as {
+      storageEndpoint?: string;
+    } | null;
+    return { ok: true as const, storageEndpoint: body?.storageEndpoint };
+  }, []);
+
+  const testConnection = useCallback(
+    async (url: string) => {
+      setConnectionStatus("testing");
+      try {
+        const result = await probeServer(url);
+        setStorageEndpoint(result.storageEndpoint ?? null);
+        setConnectionStatus(result.ok ? "connected" : "error");
+      } catch {
+        setStorageEndpoint(null);
+        setConnectionStatus("error");
+      }
+    },
+    [probeServer],
+  );
+
+>>>>>>> v0.29.6
   const loadSettings = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -141,9 +191,15 @@ export function SyncConfigDialog({
     setIsTesting(true);
     setConnectionStatus("testing");
     try {
+<<<<<<< HEAD
       const healthUrl = `${serverUrl.replace(/\/$/, "")}/health`;
       const response = await fetch(healthUrl);
       if (response.ok) {
+=======
+      const result = await probeServer(serverUrl);
+      setStorageEndpoint(result.storageEndpoint ?? null);
+      if (result.ok) {
+>>>>>>> v0.29.6
         setConnectionStatus("connected");
         showSuccessToast(t("sync.config.connectionSuccess"));
       } else {
@@ -151,12 +207,20 @@ export function SyncConfigDialog({
         showErrorToast(t("sync.config.serverError"));
       }
     } catch {
+<<<<<<< HEAD
+=======
+      setStorageEndpoint(null);
+>>>>>>> v0.29.6
       setConnectionStatus("error");
       showErrorToast(t("sync.config.connectFailed"));
     } finally {
       setIsTesting(false);
     }
+<<<<<<< HEAD
   }, [serverUrl, t]);
+=======
+  }, [serverUrl, t, probeServer]);
+>>>>>>> v0.29.6
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -333,14 +397,28 @@ export function SyncConfigDialog({
                 className="flex-1"
                 disabled={cloudBlocked}
               >
+<<<<<<< HEAD
                 <span>{t("sync.cloud.tabLabel")}</span>
+=======
+                <span className="flex items-center gap-2">
+                  {t("sync.cloud.tabLabel")}
+                  {cloudBlocked && <ProBadge />}
+                </span>
+>>>>>>> v0.29.6
               </TabsTrigger>
               <TabsTrigger
                 value="self-hosted"
                 className="flex-1"
                 disabled={selfHostedBlocked}
               >
+<<<<<<< HEAD
                 <span>{t("sync.cloud.selfHostedTabLabel")}</span>
+=======
+                <span className="flex items-center gap-2">
+                  {t("sync.cloud.selfHostedTabLabel")}
+                  {selfHostedBlocked && <ProBadge />}
+                </span>
+>>>>>>> v0.29.6
               </TabsTrigger>
             </TabsList>
 
@@ -405,7 +483,11 @@ export function SyncConfigDialog({
                             onClick={() => {
                               setShowToken(!showToken);
                             }}
+<<<<<<< HEAD
                             className="absolute top-1/2 right-3 -translate-y-1/2 transform rounded-sm p-1 transition-colors hover:bg-accent"
+=======
+                            className="absolute top-1/2 right-3 -translate-y-1/2 transform rounded-sm p-1 transition-colors hover:bg-accent hover:text-accent-foreground"
+>>>>>>> v0.29.6
                             aria-label={
                               showToken
                                 ? t("common.aria.hideToken")
@@ -433,9 +515,24 @@ export function SyncConfigDialog({
                     </div>
                   )}
                   {connectionStatus === "connected" && (
+<<<<<<< HEAD
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="size-2 rounded-full bg-success" />
                       {t("sync.status.connected")}
+=======
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="size-2 rounded-full bg-success" />
+                        {t("sync.status.connected")}
+                      </div>
+                      {storageEndpoint && (
+                        <span className="text-xs text-muted-foreground break-all">
+                          {t("sync.config.storageEndpoint", {
+                            endpoint: storageEndpoint,
+                          })}
+                        </span>
+                      )}
+>>>>>>> v0.29.6
                     </div>
                   )}
                   {connectionStatus === "error" && (

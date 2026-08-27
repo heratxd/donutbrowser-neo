@@ -51,7 +51,11 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo -e "${BLUE}========================================${NC}"
+<<<<<<< HEAD
 echo -e "${BLUE}  NeoDonut Browser Development Environment${NC}"
+=======
+echo -e "${BLUE}  Donut Browser Development Environment${NC}"
+>>>>>>> v0.29.6
 echo -e "${BLUE}========================================${NC}"
 echo ""
 

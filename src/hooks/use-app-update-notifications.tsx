@@ -106,7 +106,11 @@ export function useAppUpdateNotifications() {
       showToast({
         type: "error",
         title: t("appUpdate.toast.restartFailed"),
+<<<<<<< HEAD
         description: String(error),
+=======
+        description: translateBackendError(t, error),
+>>>>>>> v0.29.6
         duration: 6000,
       });
     }

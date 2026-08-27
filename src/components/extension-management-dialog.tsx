@@ -11,6 +11,10 @@ import {
 } from "@tanstack/react-table";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+<<<<<<< HEAD
+=======
+import { open } from "@tauri-apps/plugin-dialog";
+>>>>>>> v0.29.6
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaChrome } from "react-icons/fa";
@@ -19,6 +23,11 @@ import {
   LuChevronDown,
   LuChevronUp,
   LuExternalLink,
+<<<<<<< HEAD
+=======
+  LuFolderOpen,
+  LuLink,
+>>>>>>> v0.29.6
   LuPencil,
   LuPuzzle,
   LuRefreshCw,
@@ -51,6 +60,10 @@ import {
 import { FadingScrollArea } from "@/components/ui/fading-scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+<<<<<<< HEAD
+=======
+import { ProBadge } from "@/components/ui/pro-badge";
+>>>>>>> v0.29.6
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -81,6 +94,21 @@ import { RippleButton } from "./ui/ripple";
 
 type SyncStatus = "disabled" | "syncing" | "synced" | "error" | "waiting";
 
+<<<<<<< HEAD
+=======
+/** A payload staged in the UI, before it is handed to the backend. */
+type PendingSource =
+  | { kind: "archive"; fileName: string; data: number[] }
+  | { kind: "folder"; path: string };
+
+const ARCHIVE_EXTENSIONS = [".crx", ".zip"];
+
+function pathBaseName(path: string): string {
+  const segments = path.split(/[/\\]/).filter(Boolean);
+  return segments[segments.length - 1] ?? path;
+}
+
+>>>>>>> v0.29.6
 function getSyncStatusDot(
   item: { sync_enabled?: boolean; last_sync?: number },
   liveStatus: SyncStatus | undefined,
@@ -129,6 +157,10 @@ function getSyncStatusDot(
 interface ExtensionManagementDialogProps {
   isOpen: boolean;
   onClose: () => void;
+<<<<<<< HEAD
+=======
+  limitedMode: boolean;
+>>>>>>> v0.29.6
   subPage?: boolean;
   /** Which tab is displayed when the dialog mounts; defaults to "extensions". */
   initialTab?: "extensions" | "groups";
@@ -137,6 +169,10 @@ interface ExtensionManagementDialogProps {
 export function ExtensionManagementDialog({
   isOpen,
   onClose,
+<<<<<<< HEAD
+=======
+  limitedMode,
+>>>>>>> v0.29.6
   subPage,
   initialTab = "extensions",
 }: ExtensionManagementDialogProps) {
@@ -145,6 +181,7 @@ export function ExtensionManagementDialog({
   const [extensionGroups, setExtensionGroups] = useState<ExtensionGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+<<<<<<< HEAD
   // Extension upload state
   const [isUploading, setIsUploading] = useState(false);
   const [extensionName, setExtensionName] = useState("");
@@ -153,6 +190,15 @@ export function ExtensionManagementDialog({
     name: string;
     data: number[];
   } | null>(null);
+=======
+  // Extension import state
+  const [isUploading, setIsUploading] = useState(false);
+  const [extensionName, setExtensionName] = useState("");
+  const [pendingSource, setPendingSource] = useState<PendingSource | null>(
+    null,
+  );
+  const [linkFolder, setLinkFolder] = useState(false);
+>>>>>>> v0.29.6
 
   // Group state
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -189,10 +235,16 @@ export function ExtensionManagementDialog({
     null,
   );
   const [editExtensionName, setEditExtensionName] = useState("");
+<<<<<<< HEAD
   const [pendingUpdateFile, setPendingUpdateFile] = useState<{
     name: string;
     data: number[];
   } | null>(null);
+=======
+  const [pendingUpdateSource, setPendingUpdateSource] =
+    useState<PendingSource | null>(null);
+  const [editLinkFolder, setEditLinkFolder] = useState(false);
+>>>>>>> v0.29.6
 
   // Extension icons
   const [extensionIcons, setExtensionIcons] = useState<Record<string, string>>(
@@ -217,6 +269,10 @@ export function ExtensionManagementDialog({
   );
 
   const loadData = useCallback(async () => {
+<<<<<<< HEAD
+=======
+    if (limitedMode) return;
+>>>>>>> v0.29.6
     setIsLoading(true);
     try {
       const [exts, groups] = await Promise.all([
@@ -226,12 +282,20 @@ export function ExtensionManagementDialog({
       setExtensions(exts);
       setExtensionGroups(groups);
     } catch {
+<<<<<<< HEAD
+=======
+      // User may not have pro subscription
+>>>>>>> v0.29.6
       setExtensions([]);
       setExtensionGroups([]);
     } finally {
       setIsLoading(false);
     }
+<<<<<<< HEAD
   }, []);
+=======
+  }, [limitedMode]);
+>>>>>>> v0.29.6
 
   const loadIcons = useCallback(async (exts: Extension[]) => {
     const icons: Record<string, string> = {};
@@ -290,6 +354,33 @@ export function ExtensionManagementDialog({
     };
   }, []);
 
+<<<<<<< HEAD
+=======
+  /** Structured backend codes win; anything else falls back to a local message
+   * so the user never sees a raw Rust string. */
+  const showActionError = useCallback(
+    (err: unknown, fallback: string) => {
+      showErrorToast(
+        parseBackendError(err) ? translateBackendError(t, err) : fallback,
+      );
+    },
+    [t],
+  );
+
+  const resetImportForm = useCallback(() => {
+    setPendingSource(null);
+    setExtensionName("");
+    setLinkFolder(false);
+  }, []);
+
+  const closeEditExtension = useCallback(() => {
+    setEditingExtension(null);
+    setEditExtensionName("");
+    setPendingUpdateSource(null);
+    setEditLinkFolder(false);
+  }, []);
+
+>>>>>>> v0.29.6
   const handleToggleExtSync = useCallback(
     async (ext: Extension) => {
       setIsTogglingExtSync((prev) => ({ ...prev, [ext.id]: true }));
@@ -305,16 +396,24 @@ export function ExtensionManagementDialog({
         );
         void loadData();
       } catch (err) {
+<<<<<<< HEAD
         showErrorToast(
           parseBackendError(err)
             ? translateBackendError(t, err)
             : t("proxies.management.updateSyncFailed"),
         );
+=======
+        showActionError(err, t("proxies.management.updateSyncFailed"));
+>>>>>>> v0.29.6
       } finally {
         setIsTogglingExtSync((prev) => ({ ...prev, [ext.id]: false }));
       }
     },
+<<<<<<< HEAD
     [loadData, t],
+=======
+    [loadData, showActionError, t],
+>>>>>>> v0.29.6
   );
 
   const handleToggleGroupSync = useCallback(
@@ -332,21 +431,30 @@ export function ExtensionManagementDialog({
         );
         void loadData();
       } catch (err) {
+<<<<<<< HEAD
         showErrorToast(
           parseBackendError(err)
             ? translateBackendError(t, err)
             : t("proxies.management.updateSyncFailed"),
         );
+=======
+        showActionError(err, t("proxies.management.updateSyncFailed"));
+>>>>>>> v0.29.6
       } finally {
         setIsTogglingGroupSync((prev) => ({ ...prev, [group.id]: false }));
       }
     },
+<<<<<<< HEAD
     [loadData, t],
+=======
+    [loadData, showActionError, t],
+>>>>>>> v0.29.6
   );
 
   const handleUpdateExtension = useCallback(async () => {
     if (!editingExtension || !editExtensionName.trim()) return;
     try {
+<<<<<<< HEAD
       await invoke("update_extension", {
         extensionId: editingExtension.id,
         name: editExtensionName.trim(),
@@ -370,10 +478,50 @@ export function ExtensionManagementDialog({
 
       const validExtensions = [".xpi", ".crx", ".zip"];
       const isValid = validExtensions.some((ext) =>
+=======
+      if (pendingUpdateSource?.kind === "folder") {
+        await invoke("update_extension_from_path", {
+          extensionId: editingExtension.id,
+          name: editExtensionName.trim(),
+          path: pendingUpdateSource.path,
+          link: editLinkFolder,
+        });
+      } else {
+        await invoke("update_extension", {
+          extensionId: editingExtension.id,
+          name: editExtensionName.trim(),
+          fileName: pendingUpdateSource?.fileName ?? null,
+          fileData: pendingUpdateSource?.data ?? null,
+        });
+      }
+      showSuccessToast(t("extensions.updateSuccess"));
+      closeEditExtension();
+      void loadData();
+    } catch (err) {
+      showActionError(err, t("extensions.updateFailed"));
+    }
+  }, [
+    editingExtension,
+    editExtensionName,
+    pendingUpdateSource,
+    editLinkFolder,
+    closeEditExtension,
+    loadData,
+    showActionError,
+    t,
+  ]);
+
+  /** Reads a picked archive into memory, shared by the import and the replace
+   * flows. Resolves to null when the file is rejected or unreadable. */
+  const readArchiveFile = useCallback(
+    (file: File): Promise<PendingSource | null> => {
+      const isValid = ARCHIVE_EXTENSIONS.some((ext) =>
+>>>>>>> v0.29.6
         file.name.toLowerCase().endsWith(ext),
       );
       if (!isValid) {
         showErrorToast(t("extensions.invalidFileType"));
+<<<<<<< HEAD
         return;
       }
 
@@ -385,10 +533,32 @@ export function ExtensionManagementDialog({
       };
       reader.readAsArrayBuffer(file);
       e.target.value = "";
+=======
+        return Promise.resolve(null);
+      }
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const arrayBuffer = event.target?.result as ArrayBuffer;
+          resolve({
+            kind: "archive",
+            fileName: file.name,
+            data: Array.from(new Uint8Array(arrayBuffer)),
+          });
+        };
+        reader.onerror = () => {
+          showErrorToast(t("extensions.readError"));
+          resolve(null);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+>>>>>>> v0.29.6
     },
     [t],
   );
 
+<<<<<<< HEAD
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -445,6 +615,105 @@ export function ExtensionManagementDialog({
       setIsUploading(false);
     }
   }, [pendingFile, extensionName, loadData, t]);
+=======
+  const handleEditFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+
+      void readArchiveFile(file).then((source) => {
+        if (!source) return;
+        setPendingUpdateSource(source);
+        setEditLinkFolder(false);
+      });
+    },
+    [readArchiveFile],
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+
+      void readArchiveFile(file).then((source) => {
+        if (!source) return;
+        setExtensionName(
+          file.name.replace(/\.(crx|zip)$/i, "").replace(/[-_]/g, " "),
+        );
+        setLinkFolder(false);
+        setPendingSource(source);
+      });
+    },
+    [readArchiveFile],
+  );
+
+  /** Native directory picker, the "Load unpacked" entry point. */
+  const pickExtensionFolder = useCallback(async (): Promise<string | null> => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: t("extensions.selectFolderTitle"),
+      });
+      return typeof selected === "string" ? selected : null;
+    } catch (err) {
+      console.error("Failed to open folder dialog:", err);
+      showErrorToast(t("importProfile.folderDialogFailed"));
+      return null;
+    }
+  }, [t]);
+
+  const handleLoadUnpacked = useCallback(async () => {
+    const folder = await pickExtensionFolder();
+    if (!folder) return;
+    setExtensionName(pathBaseName(folder).replace(/[-_]/g, " "));
+    setLinkFolder(false);
+    setPendingSource({ kind: "folder", path: folder });
+  }, [pickExtensionFolder]);
+
+  const handleEditFolderSelect = useCallback(async () => {
+    const folder = await pickExtensionFolder();
+    if (!folder) return;
+    setPendingUpdateSource({ kind: "folder", path: folder });
+  }, [pickExtensionFolder]);
+
+  const handleUpload = useCallback(async () => {
+    if (!pendingSource || !extensionName.trim()) return;
+    setIsUploading(true);
+    try {
+      if (pendingSource.kind === "folder") {
+        await invoke("add_unpacked_extension", {
+          name: extensionName.trim(),
+          path: pendingSource.path,
+          link: linkFolder,
+        });
+      } else {
+        await invoke("add_extension", {
+          name: extensionName.trim(),
+          fileName: pendingSource.fileName,
+          fileData: pendingSource.data,
+        });
+      }
+      showSuccessToast(t("extensions.uploadSuccess"));
+      resetImportForm();
+      void loadData();
+    } catch (err) {
+      showActionError(err, t("extensions.uploadFailed"));
+    } finally {
+      setIsUploading(false);
+    }
+  }, [
+    pendingSource,
+    extensionName,
+    linkFolder,
+    resetImportForm,
+    loadData,
+    showActionError,
+    t,
+  ]);
+>>>>>>> v0.29.6
 
   const handleDeleteExtension = useCallback(async () => {
     if (!extensionToDelete) return;
@@ -455,11 +724,19 @@ export function ExtensionManagementDialog({
       setExtensionToDelete(null);
       void loadData();
     } catch (err) {
+<<<<<<< HEAD
       showErrorToast(err instanceof Error ? err.message : String(err));
     } finally {
       setIsDeleting(false);
     }
   }, [extensionToDelete, loadData, t]);
+=======
+      showActionError(err, t("extensions.deleteFailed"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [extensionToDelete, loadData, showActionError, t]);
+>>>>>>> v0.29.6
 
   const handleCreateGroup = useCallback(async () => {
     if (!newGroupName.trim()) return;
@@ -470,9 +747,15 @@ export function ExtensionManagementDialog({
       setNewGroupName("");
       void loadData();
     } catch (err) {
+<<<<<<< HEAD
       showErrorToast(err instanceof Error ? err.message : String(err));
     }
   }, [newGroupName, loadData, t]);
+=======
+      showActionError(err, t("extensions.groupCreateFailed"));
+    }
+  }, [newGroupName, loadData, showActionError, t]);
+>>>>>>> v0.29.6
 
   const handleSaveGroupEdits = useCallback(async () => {
     if (!editingGroup || !editGroupName.trim()) return;
@@ -513,9 +796,22 @@ export function ExtensionManagementDialog({
       setEditGroupExtensionIds([]);
       void loadData();
     } catch (err) {
+<<<<<<< HEAD
       showErrorToast(err instanceof Error ? err.message : String(err));
     }
   }, [editingGroup, editGroupName, editGroupExtensionIds, loadData, t]);
+=======
+      showActionError(err, t("extensions.groupUpdateFailed"));
+    }
+  }, [
+    editingGroup,
+    editGroupName,
+    editGroupExtensionIds,
+    loadData,
+    showActionError,
+    t,
+  ]);
+>>>>>>> v0.29.6
 
   const handleDeleteGroup = useCallback(async () => {
     if (!groupToDelete) return;
@@ -526,11 +822,19 @@ export function ExtensionManagementDialog({
       setGroupToDelete(null);
       void loadData();
     } catch (err) {
+<<<<<<< HEAD
       showErrorToast(err instanceof Error ? err.message : String(err));
     } finally {
       setIsDeleting(false);
     }
   }, [groupToDelete, loadData, t]);
+=======
+      showActionError(err, t("extensions.groupDeleteFailed"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [groupToDelete, loadData, showActionError, t]);
+>>>>>>> v0.29.6
 
   const selectedExtensions = useMemo(
     () => extensions.filter((ext) => extRowSelection[ext.id]),
@@ -556,11 +860,19 @@ export function ExtensionManagementDialog({
       setExtRowSelection({});
       void loadData();
     } catch (err) {
+<<<<<<< HEAD
       showErrorToast(err instanceof Error ? err.message : String(err));
     } finally {
       setIsDeleting(false);
     }
   }, [selectedExtensions, loadData, t]);
+=======
+      showActionError(err, t("extensions.deleteFailed"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [selectedExtensions, loadData, showActionError, t]);
+>>>>>>> v0.29.6
 
   const handleBulkDeleteGroups = useCallback(async () => {
     if (selectedGroups.length === 0) return;
@@ -576,18 +888,40 @@ export function ExtensionManagementDialog({
       setGroupRowSelection({});
       void loadData();
     } catch (err) {
+<<<<<<< HEAD
       showErrorToast(err instanceof Error ? err.message : String(err));
     } finally {
       setIsDeleting(false);
     }
   }, [selectedGroups, loadData, t]);
+=======
+      showActionError(err, t("extensions.groupDeleteFailed"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [selectedGroups, loadData, showActionError, t]);
+>>>>>>> v0.29.6
 
   const handleBulkToggleExtSync = useCallback(async () => {
     if (selectedExtensions.length === 0) return;
     const allOn = selectedExtensions.every((e) => e.sync_enabled);
     const targetEnabled = !allOn;
+<<<<<<< HEAD
     const results = await Promise.allSettled(
       selectedExtensions.map((ext) =>
+=======
+    // A linked extension has no payload to upload, so enabling sync on one is
+    // refused by the backend. Skip them instead of failing the whole batch.
+    const targets = targetEnabled
+      ? selectedExtensions.filter((ext) => !ext.linked_path)
+      : selectedExtensions;
+    if (targets.length === 0) {
+      showErrorToast(t("extensions.linkedNoSync"));
+      return;
+    }
+    const results = await Promise.allSettled(
+      targets.map((ext) =>
+>>>>>>> v0.29.6
         invoke("set_extension_sync_enabled", {
           extensionId: ext.id,
           enabled: targetEnabled,
@@ -598,10 +932,16 @@ export function ExtensionManagementDialog({
       | PromiseRejectedResult
       | undefined;
     if (firstRejection) {
+<<<<<<< HEAD
       showErrorToast(
         parseBackendError(firstRejection.reason)
           ? translateBackendError(t, firstRejection.reason)
           : t("proxies.management.updateSyncFailed"),
+=======
+      showActionError(
+        firstRejection.reason,
+        t("proxies.management.updateSyncFailed"),
+>>>>>>> v0.29.6
       );
     } else {
       showSuccessToast(
@@ -611,7 +951,11 @@ export function ExtensionManagementDialog({
       );
     }
     void loadData();
+<<<<<<< HEAD
   }, [selectedExtensions, loadData, t]);
+=======
+  }, [selectedExtensions, loadData, showActionError, t]);
+>>>>>>> v0.29.6
 
   const handleBulkToggleGroupSync = useCallback(async () => {
     if (selectedGroups.length === 0) return;
@@ -629,10 +973,16 @@ export function ExtensionManagementDialog({
       | PromiseRejectedResult
       | undefined;
     if (firstRejection) {
+<<<<<<< HEAD
       showErrorToast(
         parseBackendError(firstRejection.reason)
           ? translateBackendError(t, firstRejection.reason)
           : t("proxies.management.updateSyncFailed"),
+=======
+      showActionError(
+        firstRejection.reason,
+        t("proxies.management.updateSyncFailed"),
+>>>>>>> v0.29.6
       );
     } else {
       showSuccessToast(
@@ -642,7 +992,11 @@ export function ExtensionManagementDialog({
       );
     }
     void loadData();
+<<<<<<< HEAD
   }, [selectedGroups, loadData, t]);
+=======
+  }, [selectedGroups, loadData, showActionError, t]);
+>>>>>>> v0.29.6
 
   const renderCompatIcons = useCallback(
     (compat: string[]) => {
@@ -686,6 +1040,45 @@ export function ExtensionManagementDialog({
     [extensionIcons],
   );
 
+<<<<<<< HEAD
+=======
+  /** What the extension actually is: a stored archive, a folder packed into
+   * the store, or a folder loaded in place from the user's disk. */
+  const renderSource = useCallback(
+    (ext: Extension) => {
+      if (ext.linked_path) {
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                <LuLink className="size-3 shrink-0" />
+                <span className="truncate">
+                  {t("extensions.source.linked")}
+                </span>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs break-all">
+                {t("extensions.source.linkedTooltip", {
+                  path: ext.linked_path,
+                })}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        );
+      }
+      return (
+        <span className="block min-w-0 truncate text-xs text-muted-foreground">
+          {ext.source_kind === "unpacked"
+            ? t("extensions.source.unpacked")
+            : t("extensions.source.archive")}
+        </span>
+      );
+    },
+    [t],
+  );
+
+>>>>>>> v0.29.6
   const MAX_VISIBLE_ICONS = 3;
 
   const extensionColumns = useMemo<ColumnDef<Extension>[]>(
@@ -758,6 +1151,16 @@ export function ExtensionManagementDialog({
           renderCompatIcons(row.original.browser_compatibility),
       },
       {
+<<<<<<< HEAD
+=======
+        id: "source",
+        size: 128,
+        enableSorting: false,
+        header: () => null,
+        cell: ({ row }) => renderSource(row.original),
+      },
+      {
+>>>>>>> v0.29.6
         id: "sync",
         size: 88,
         enableSorting: false,
@@ -765,6 +1168,10 @@ export function ExtensionManagementDialog({
         cell: ({ row }) => {
           const ext = row.original;
           const syncDot = getSyncStatusDot(ext, extSyncStatus[ext.id], t);
+<<<<<<< HEAD
+=======
+          const isLinked = Boolean(ext.linked_path);
+>>>>>>> v0.29.6
           return (
             <div className="flex shrink-0 items-center gap-2">
               <Tooltip>
@@ -785,15 +1192,27 @@ export function ExtensionManagementDialog({
                     <AnimatedSwitch
                       checked={ext.sync_enabled}
                       onCheckedChange={() => void handleToggleExtSync(ext)}
+<<<<<<< HEAD
                       disabled={isTogglingExtSync[ext.id]}
+=======
+                      disabled={isLinked || isTogglingExtSync[ext.id]}
+>>>>>>> v0.29.6
                     />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
+<<<<<<< HEAD
                     {ext.sync_enabled
                       ? t("syncTooltips.disable")
                       : t("syncTooltips.enable")}
+=======
+                    {isLinked
+                      ? t("extensions.linkedNoSync")
+                      : ext.sync_enabled
+                        ? t("syncTooltips.disable")
+                        : t("syncTooltips.enable")}
+>>>>>>> v0.29.6
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -819,7 +1238,12 @@ export function ExtensionManagementDialog({
                     onClick={() => {
                       setEditingExtension(ext);
                       setEditExtensionName(ext.name);
+<<<<<<< HEAD
                       setPendingUpdateFile(null);
+=======
+                      setPendingUpdateSource(null);
+                      setEditLinkFolder(Boolean(ext.linked_path));
+>>>>>>> v0.29.6
                     }}
                   >
                     <LuPencil className="size-3.5" />
@@ -854,6 +1278,10 @@ export function ExtensionManagementDialog({
       handleToggleExtSync,
       renderExtensionIcon,
       renderCompatIcons,
+<<<<<<< HEAD
+=======
+      renderSource,
+>>>>>>> v0.29.6
     ],
   );
 
@@ -863,7 +1291,11 @@ export function ExtensionManagementDialog({
     state: { sorting: extSorting, rowSelection: extRowSelection },
     onSortingChange: setExtSorting,
     onRowSelectionChange: setExtRowSelection,
+<<<<<<< HEAD
     enableRowSelection: true,
+=======
+    enableRowSelection: () => !limitedMode,
+>>>>>>> v0.29.6
     getSortedRowModel: getSortedRowModel(),
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
@@ -1087,7 +1519,11 @@ export function ExtensionManagementDialog({
     state: { sorting: groupSorting, rowSelection: groupRowSelection },
     onSortingChange: setGroupSorting,
     onRowSelectionChange: setGroupRowSelection,
+<<<<<<< HEAD
     enableRowSelection: true,
+=======
+    enableRowSelection: () => !limitedMode,
+>>>>>>> v0.29.6
     getSortedRowModel: getSortedRowModel(),
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
@@ -1096,12 +1532,20 @@ export function ExtensionManagementDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose} subPage={subPage}>
+<<<<<<< HEAD
         <DialogContent className="flex max-h-[90vh] max-w-[min(80rem,calc(100%-4rem))] flex-col">
+=======
+        <DialogContent className="flex max-h-[85vh] max-w-[min(80rem,calc(100%-4rem))] flex-col">
+>>>>>>> v0.29.6
           {!subPage && (
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <LuPuzzle className="size-5" />
                 {t("extensions.title")}
+<<<<<<< HEAD
+=======
+                {limitedMode && <ProBadge />}
+>>>>>>> v0.29.6
               </DialogTitle>
               <DialogDescription>
                 {t("extensions.description")}
@@ -1110,6 +1554,27 @@ export function ExtensionManagementDialog({
           )}
 
           <div className="@container relative flex min-h-0 w-full flex-1 flex-col">
+<<<<<<< HEAD
+=======
+            {limitedMode && (
+              <>
+                <div className="absolute inset-0 z-1 bg-background/30 backdrop-blur-[6px]" />
+                <div className="absolute inset-y-0 left-0 z-2 w-6 bg-linear-to-r from-background to-transparent" />
+                <div className="absolute inset-y-0 right-0 z-2 w-6 bg-linear-to-l from-background to-transparent" />
+                <div className="absolute inset-x-0 top-0 z-2 h-6 bg-linear-to-b from-background to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 z-2 h-6 bg-linear-to-t from-background to-transparent" />
+                <div className="absolute inset-0 z-3 flex items-center justify-center">
+                  <div className="flex items-center gap-2 rounded-md bg-background/80 px-3 py-1.5">
+                    <ProBadge />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t("extensions.proRequired")}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
+
+>>>>>>> v0.29.6
             <AnimatedTabs
               key={initialTab}
               value={activeTab}
@@ -1118,6 +1583,7 @@ export function ExtensionManagementDialog({
             >
               <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
                 <AnimatedTabsList>
+<<<<<<< HEAD
                   <AnimatedTabsTrigger value="extensions">
                     <span>{t("extensions.extensionsTab")}</span>
                     <span className="text-xs text-muted-foreground tabular-nums">
@@ -1127,12 +1593,27 @@ export function ExtensionManagementDialog({
                   <AnimatedTabsTrigger value="groups">
                     <span>{t("extensions.groupsTab")}</span>
                     <span className="text-xs text-muted-foreground tabular-nums">
+=======
+                  <AnimatedTabsTrigger
+                    value="extensions"
+                    disabled={limitedMode}
+                  >
+                    <span>{t("extensions.extensionsTab")}</span>
+                    <span className="text-xs tabular-nums">
+                      {extensions.length}
+                    </span>
+                  </AnimatedTabsTrigger>
+                  <AnimatedTabsTrigger value="groups" disabled={limitedMode}>
+                    <span>{t("extensions.groupsTab")}</span>
+                    <span className="text-xs tabular-nums">
+>>>>>>> v0.29.6
                       {extensionGroups.length}
                     </span>
                   </AnimatedTabsTrigger>
                 </AnimatedTabsList>
                 <div className="flex items-center gap-2">
                   {activeTab === "extensions" && (
+<<<<<<< HEAD
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <RippleButton
@@ -1151,12 +1632,60 @@ export function ExtensionManagementDialog({
                       </TooltipTrigger>
                       <TooltipContent>{t("extensions.upload")}</TooltipContent>
                     </Tooltip>
+=======
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <RippleButton
+                            size="sm"
+                            variant="outline"
+                            disabled={limitedMode}
+                            onClick={() =>
+                              document.getElementById("ext-file-input")?.click()
+                            }
+                            aria-label={t("extensions.upload")}
+                          >
+                            <LuUpload className="size-4" />
+                            <span className="hidden @2xl:inline">
+                              {t("extensions.upload")}
+                            </span>
+                          </RippleButton>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t("extensions.upload")}
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <RippleButton
+                            size="sm"
+                            variant="outline"
+                            disabled={limitedMode}
+                            onClick={() => void handleLoadUnpacked()}
+                            aria-label={t("extensions.loadUnpacked")}
+                          >
+                            <LuFolderOpen className="size-4" />
+                            <span className="hidden @2xl:inline">
+                              {t("extensions.loadUnpacked")}
+                            </span>
+                          </RippleButton>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t("extensions.loadUnpackedTooltip")}
+                        </TooltipContent>
+                      </Tooltip>
+                    </>
+>>>>>>> v0.29.6
                   )}
                   {activeTab === "groups" && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <RippleButton
                           size="sm"
+<<<<<<< HEAD
+=======
+                          disabled={limitedMode}
+>>>>>>> v0.29.6
                           onClick={() => setShowCreateGroup(true)}
                           aria-label={t("extensions.newGroup")}
                         >
@@ -1187,6 +1716,7 @@ export function ExtensionManagementDialog({
                   <Input
                     id="ext-file-input"
                     type="file"
+<<<<<<< HEAD
                     accept=".xpi,.crx,.zip"
                     className="hidden"
                     onChange={handleFileSelect}
@@ -1201,6 +1731,53 @@ export function ExtensionManagementDialog({
                           {pendingFile.name}
                         </span>
                       </div>
+=======
+                    accept=".crx,.zip"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                    disabled={limitedMode}
+                  />
+
+                  {/* Import form */}
+                  {pendingSource && (
+                    <div className="space-y-3 rounded-md border p-3">
+                      <div className="text-sm text-muted-foreground">
+                        {pendingSource.kind === "folder"
+                          ? t("extensions.selectedFolder")
+                          : t("extensions.selectedFile")}
+                        :{" "}
+                        <span className="font-medium break-all text-foreground">
+                          {pendingSource.kind === "folder"
+                            ? pendingSource.path
+                            : pendingSource.fileName}
+                        </span>
+                      </div>
+                      {pendingSource.kind === "folder" && (
+                        <div className="flex items-start gap-2">
+                          <Checkbox
+                            id="ext-link-folder"
+                            checked={linkFolder}
+                            onCheckedChange={(value) => {
+                              setLinkFolder(value === true);
+                            }}
+                            className="mt-0.5"
+                          />
+                          <div className="space-y-0.5">
+                            <Label
+                              htmlFor="ext-link-folder"
+                              className="text-sm font-normal"
+                            >
+                              {t("extensions.linkFolder")}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              {linkFolder
+                                ? t("extensions.linkFolderOn")
+                                : t("extensions.linkFolderOff")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+>>>>>>> v0.29.6
                       <div className="flex gap-2">
                         <Input
                           value={extensionName}
@@ -1222,11 +1799,15 @@ export function ExtensionManagementDialog({
                         <Button
                           size="sm"
                           variant="outline"
+<<<<<<< HEAD
                           onClick={() => {
                             setShowUploadForm(false);
                             setPendingFile(null);
                             setExtensionName("");
                           }}
+=======
+                          onClick={resetImportForm}
+>>>>>>> v0.29.6
                         >
                           {t("common.buttons.cancel")}
                         </Button>
@@ -1581,11 +2162,15 @@ export function ExtensionManagementDialog({
       <Dialog
         open={editingExtension !== null}
         onOpenChange={(open) => {
+<<<<<<< HEAD
           if (!open) {
             setEditingExtension(null);
             setEditExtensionName("");
             setPendingUpdateFile(null);
           }
+=======
+          if (!open) closeEditExtension();
+>>>>>>> v0.29.6
         }}
       >
         <DialogContent className="flex max-h-[90vh] max-w-lg flex-col">
@@ -1654,9 +2239,41 @@ export function ExtensionManagementDialog({
                       )}
                     </div>
                     <span className="text-muted-foreground">
+<<<<<<< HEAD
                       {t("common.labels.type")}
                     </span>
                     <span>.{editingExtension.file_type}</span>
+=======
+                      {t("extensions.source.label")}
+                    </span>
+                    <span>
+                      {editingExtension.linked_path
+                        ? t("extensions.source.linked")
+                        : editingExtension.source_kind === "unpacked"
+                          ? t("extensions.source.unpacked")
+                          : t("extensions.source.archive")}
+                    </span>
+                    {editingExtension.linked_path ? (
+                      <>
+                        <span className="text-muted-foreground">
+                          {t("extensions.source.folderLabel")}
+                        </span>
+                        <span className="break-all">
+                          {editingExtension.linked_path}
+                        </span>
+                        <p className="col-span-2 text-xs text-muted-foreground">
+                          {t("extensions.linkFolderOn")}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-muted-foreground">
+                          {t("common.labels.type")}
+                        </span>
+                        <span>.{editingExtension.file_type}</span>
+                      </>
+                    )}
+>>>>>>> v0.29.6
                     {editingExtension.homepage_url && (
                       <>
                         <span className="text-muted-foreground">
@@ -1666,7 +2283,11 @@ export function ExtensionManagementDialog({
                           href={editingExtension.homepage_url}
                           target="_blank"
                           rel="noopener noreferrer"
+<<<<<<< HEAD
                           className="flex min-w-0 items-center gap-1 text-primary hover:underline"
+=======
+                          className="flex min-w-0 items-center gap-1 text-primary-text hover:underline"
+>>>>>>> v0.29.6
                         >
                           <span className="truncate">
                             {editingExtension.homepage_url}
@@ -1686,10 +2307,17 @@ export function ExtensionManagementDialog({
                   </div>
                 </div>
 
+<<<<<<< HEAD
                 {/* Re-upload */}
                 <div className="space-y-2">
                   <Label>{t("extensions.reupload")}</Label>
                   <div className="flex items-center gap-2">
+=======
+                {/* Replace the payload with another archive or folder */}
+                <div className="space-y-2">
+                  <Label>{t("extensions.replaceSource")}</Label>
+                  <div className="flex flex-wrap items-center gap-2">
+>>>>>>> v0.29.6
                     <RippleButton
                       size="sm"
                       variant="outline"
@@ -1703,6 +2331,7 @@ export function ExtensionManagementDialog({
                     <input
                       id="ext-edit-file-input"
                       type="file"
+<<<<<<< HEAD
                       accept=".xpi,.crx,.zip"
                       className="hidden"
                       onChange={handleEditFileSelect}
@@ -1713,12 +2342,60 @@ export function ExtensionManagementDialog({
                       </span>
                     )}
                   </div>
+=======
+                      accept=".crx,.zip"
+                      className="hidden"
+                      onChange={handleEditFileSelect}
+                    />
+                    <RippleButton
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void handleEditFolderSelect()}
+                    >
+                      <LuFolderOpen className="mr-1 size-3" />
+                      {t("extensions.selectFolder")}
+                    </RippleButton>
+                    {pendingUpdateSource && (
+                      <span className="max-w-[200px] truncate text-xs text-muted-foreground">
+                        {pendingUpdateSource.kind === "folder"
+                          ? pendingUpdateSource.path
+                          : pendingUpdateSource.fileName}
+                      </span>
+                    )}
+                  </div>
+                  {pendingUpdateSource?.kind === "folder" && (
+                    <div className="flex items-start gap-2 pt-1">
+                      <Checkbox
+                        id="ext-edit-link-folder"
+                        checked={editLinkFolder}
+                        onCheckedChange={(value) => {
+                          setEditLinkFolder(value === true);
+                        }}
+                        className="mt-0.5"
+                      />
+                      <div className="space-y-0.5">
+                        <Label
+                          htmlFor="ext-edit-link-folder"
+                          className="text-sm font-normal"
+                        >
+                          {t("extensions.linkFolder")}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {editLinkFolder
+                            ? t("extensions.linkFolderOn")
+                            : t("extensions.linkFolderOff")}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+>>>>>>> v0.29.6
                 </div>
               </div>
             )}
           </ScrollArea>
 
           <DialogFooter>
+<<<<<<< HEAD
             <Button
               variant="outline"
               onClick={() => {
@@ -1727,6 +2404,9 @@ export function ExtensionManagementDialog({
                 setPendingUpdateFile(null);
               }}
             >
+=======
+            <Button variant="outline" onClick={closeEditExtension}>
+>>>>>>> v0.29.6
               {t("common.buttons.cancel")}
             </Button>
             <RippleButton
@@ -1819,7 +2499,11 @@ export function ExtensionManagementDialog({
             tooltip={t("common.buttons.delete")}
             variant="destructive"
             size="icon"
+<<<<<<< HEAD
             className="border-destructive bg-destructive/50 hover:bg-destructive/70"
+=======
+            className="border-destructive bg-destructive hover:bg-destructive"
+>>>>>>> v0.29.6
             onClick={() => {
               setBulkExtDeleteOpen(true);
             }}
@@ -1845,7 +2529,11 @@ export function ExtensionManagementDialog({
             tooltip={t("common.buttons.delete")}
             variant="destructive"
             size="icon"
+<<<<<<< HEAD
             className="border-destructive bg-destructive/50 hover:bg-destructive/70"
+=======
+            className="border-destructive bg-destructive hover:bg-destructive"
+>>>>>>> v0.29.6
             onClick={() => {
               setBulkGroupDeleteOpen(true);
             }}

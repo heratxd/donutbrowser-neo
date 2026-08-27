@@ -2,7 +2,11 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
+<<<<<<< HEAD
 import { useCallback, useEffect, useState } from "react";
+=======
+import { useCallback, useEffect, useReducer, useState } from "react";
+>>>>>>> v0.29.6
 import { useTranslation } from "react-i18next";
 import { LuShield, LuUpload } from "react-icons/lu";
 import { toast } from "sonner";
@@ -19,6 +23,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RippleButton } from "@/components/ui/ripple";
 import { ScrollArea } from "@/components/ui/scroll-area";
+<<<<<<< HEAD
+=======
+import { StepTransition } from "@/components/ui/step-transition";
+>>>>>>> v0.29.6
 import { getCurrentOS } from "@/lib/browser-utils";
 import type { VpnImportResult, VpnType } from "@/types";
 
@@ -29,6 +37,27 @@ interface VpnImportDialogProps {
 
 type ImportStep = "dropzone" | "vpn-preview" | "vpn-result";
 
+<<<<<<< HEAD
+=======
+const STEP_ORDER: Record<ImportStep, number> = {
+  dropzone: 0,
+  "vpn-preview": 1,
+  "vpn-result": 2,
+};
+
+interface StepState {
+  step: ImportStep;
+  direction: 1 | -1;
+}
+
+function transitionStep(current: StepState, next: ImportStep): StepState {
+  return {
+    step: next,
+    direction: STEP_ORDER[next] >= STEP_ORDER[current.step] ? 1 : -1,
+  };
+}
+
+>>>>>>> v0.29.6
 interface VpnPreviewData {
   content: string;
   filename: string;
@@ -58,14 +87,24 @@ const detectVpnType = (
 
 export function VpnImportDialog({ isOpen, onClose }: VpnImportDialogProps) {
   const { t } = useTranslation();
+<<<<<<< HEAD
   const [step, setStep] = useState<ImportStep>("dropzone");
+=======
+  const [{ step, direction: stepDirection }, setStep] = useReducer(
+    transitionStep,
+    { step: "dropzone", direction: 1 },
+  );
+>>>>>>> v0.29.6
   const [isDragOver, setIsDragOver] = useState(false);
   const [vpnPreview, setVpnPreview] = useState<VpnPreviewData | null>(null);
   const [vpnName, setVpnName] = useState("");
   const [vpnImportResult, setVpnImportResult] =
     useState<VpnImportResult | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+<<<<<<< HEAD
 
+=======
+>>>>>>> v0.29.6
   const os = getCurrentOS();
   const modKey = os === "macos" ? "⌘" : "Ctrl";
 
@@ -190,6 +229,7 @@ export function VpnImportDialog({ isOpen, onClose }: VpnImportDialogProps) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("vpns.import.title")}</DialogTitle>
+<<<<<<< HEAD
           <DialogDescription>
             {step === "dropzone" && t("vpns.import.descDropzone")}
             {step === "vpn-preview" && t("vpns.import.descPreview")}
@@ -343,6 +383,181 @@ export function VpnImportDialog({ isOpen, onClose }: VpnImportDialogProps) {
             </RippleButton>
           )}
         </DialogFooter>
+=======
+          <StepTransition
+            transitionKey={`description-${step}`}
+            direction={stepDirection}
+          >
+            <DialogDescription>
+              {step === "dropzone" && t("vpns.import.descDropzone")}
+              {step === "vpn-preview" && t("vpns.import.descPreview")}
+              {step === "vpn-result" && t("vpns.import.descResult")}
+            </DialogDescription>
+          </StepTransition>
+        </DialogHeader>
+
+        <StepTransition
+          transitionKey={step}
+          direction={stepDirection}
+          className="grid gap-4"
+        >
+          {step === "dropzone" && (
+            <div className="space-y-4">
+              <div
+                role="button"
+                tabIndex={0}
+                className={`
+                  flex flex-col items-center justify-center
+                  border-2 border-dashed rounded-lg p-8
+                  cursor-pointer transition-[color,background-color,border-color,transform]
+                  duration-[160ms] ease-[var(--ease-out)] motion-reduce:transform-none
+                  ${isDragOver ? "scale-[1.005] border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-muted-foreground/50"}
+                `}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onClick={() =>
+                  document.getElementById("vpn-file-input")?.click()
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    document.getElementById("vpn-file-input")?.click();
+                  }
+                }}
+              >
+                <LuUpload
+                  className={`mb-4 size-10 text-muted-foreground transition-transform duration-[160ms] ease-[var(--ease-out)] motion-reduce:transform-none ${
+                    isDragOver ? "-translate-y-0.5 scale-105" : ""
+                  }`}
+                />
+                <p className="text-center text-sm text-muted-foreground">
+                  {t("vpns.import.dropzonePrompt")}
+                </p>
+                <input
+                  id="vpn-file-input"
+                  type="file"
+                  accept=".conf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileRead(file);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                {t("vpns.import.pasteHint", { modKey })}
+              </p>
+            </div>
+          )}
+
+          {step === "vpn-preview" && vpnPreview && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 rounded-lg bg-muted/30 p-4">
+                <LuShield className="size-8 text-primary-text" />
+                <div>
+                  <div className="font-medium">
+                    {t("vpns.import.configurationLabel", {
+                      type: vpnPreview.detectedType,
+                    })}
+                  </div>
+                  {vpnPreview.endpoint && (
+                    <div className="text-sm text-muted-foreground">
+                      {t("vpns.import.endpointLabel", {
+                        endpoint: vpnPreview.endpoint,
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="vpn-name">
+                  {t("vpns.import.vpnNameLabel")}
+                </Label>
+                <Input
+                  id="vpn-name"
+                  placeholder={t("vpns.import.vpnNamePlaceholder")}
+                  value={vpnName}
+                  onChange={(e) => {
+                    setVpnName(e.target.value);
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t("vpns.import.configPreview")}</Label>
+                <ScrollArea className="h-[min(150px,25vh)] rounded-md border">
+                  <pre className="p-2 font-mono text-xs break-all whitespace-pre-wrap">
+                    {vpnPreview.content.slice(0, 1000)}
+                    {vpnPreview.content.length > 1000 && "..."}
+                  </pre>
+                </ScrollArea>
+              </div>
+            </div>
+          )}
+
+          {step === "vpn-result" && vpnImportResult && (
+            <div className="space-y-4">
+              <div
+                className={`p-4 rounded-lg ${vpnImportResult.success ? "bg-success/10" : "bg-destructive/10"}`}
+              >
+                {vpnImportResult.success ? (
+                  <div className="flex items-center gap-3">
+                    <LuShield className="size-8 text-success-text" />
+                    <div>
+                      <div className="font-medium text-success-text">
+                        {t("vpns.import.importedSuccess")}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {vpnImportResult.name} ({vpnImportResult.vpn_type})
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="font-medium text-destructive-text">
+                      {t("vpns.import.importFailed")}
+                    </div>
+                    <div className="text-sm text-destructive-text">
+                      {vpnImportResult.error}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            {step === "dropzone" && (
+              <RippleButton variant="outline" onClick={handleClose}>
+                {t("common.buttons.cancel")}
+              </RippleButton>
+            )}
+
+            {step === "vpn-preview" && (
+              <>
+                <RippleButton variant="outline" onClick={resetState}>
+                  {t("common.buttons.back")}
+                </RippleButton>
+                <LoadingButton
+                  isLoading={isImporting}
+                  onClick={() => void handleImport()}
+                >
+                  {t("vpns.import.importButton")}
+                </LoadingButton>
+              </>
+            )}
+
+            {step === "vpn-result" && (
+              <RippleButton onClick={handleClose}>
+                {t("vpns.import.doneButton")}
+              </RippleButton>
+            )}
+          </DialogFooter>
+        </StepTransition>
+>>>>>>> v0.29.6
       </DialogContent>
     </Dialog>
   );

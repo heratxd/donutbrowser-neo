@@ -275,7 +275,11 @@ pub mod macos {
     // The Chromium `--user-data-dir=<path> <url>` remote command failed.
     // We intentionally do NOT fall back to an AppleScript `System Events`
     // keystroke path: that would send Apple Events to another application
+<<<<<<< HEAD
     // and trigger the macOS TCC "<NeoDonut Browser> wants control of <Browser>" /
+=======
+    // and trigger the macOS TCC "<Donut> wants control of <Browser>" /
+>>>>>>> v0.29.6
     // "prevented from modifying other apps" prompts. Donut must never touch
     // other apps on the user's Mac.
     Err(

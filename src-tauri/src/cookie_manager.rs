@@ -1057,6 +1057,26 @@ impl CookieManager {
 mod tests {
   use super::*;
 
+<<<<<<< HEAD
+=======
+  #[cfg(target_os = "macos")]
+  const SYNTHETIC_COOKIE_HOST: &str = ".example.test";
+  #[cfg(target_os = "macos")]
+  const SYNTHETIC_COOKIE_VALUE: &str = "synthetic-cookie-value";
+  #[cfg(target_os = "macos")]
+  const SYNTHETIC_OS_CRYPT_PASSWORD: &[u8] = b"donut-synthetic-cookie-key";
+  #[cfg(target_os = "macos")]
+  const SYNTHETIC_ENCRYPTED_COOKIE_HEX: &str = "763130d83b9fd3e6d1b1c793769f55251f5e9d1193be72c0c08ea32e2cf068a85d9d0b97d8b2e6deca93a2b3c290e98e1a851f83d5566f9aa9314befe56dc6bdbd423d";
+
+  #[cfg(target_os = "macos")]
+  fn synthetic_encrypted_cookie() -> Vec<u8> {
+    (0..SYNTHETIC_ENCRYPTED_COOKIE_HEX.len())
+      .step_by(2)
+      .map(|i| u8::from_str_radix(&SYNTHETIC_ENCRYPTED_COOKIE_HEX[i..i + 2], 16).unwrap())
+      .collect()
+  }
+
+>>>>>>> v0.29.6
   #[test]
   fn test_parse_netscape_cookies_valid() {
     let content = "# Netscape HTTP Cookie File\n\
@@ -1482,6 +1502,7 @@ mod tests {
     let _ = std::fs::remove_file(&tmp);
   }
 
+<<<<<<< HEAD
   /// Regression: decrypting a real v10-encrypted Chromium cookie with the
   /// correct PBKDF2 iterations and the `SHA-256(host_key)` integrity-prefix
   /// strip. Captured from a real Wayfern profile:
@@ -1497,18 +1518,28 @@ mod tests {
   #[test]
   #[cfg(target_os = "macos")]
   fn test_decrypt_v10_cookie_with_real_vector() {
+=======
+  #[test]
+  #[cfg(target_os = "macos")]
+  fn test_decrypt_v10_cookie_with_synthetic_vector() {
+>>>>>>> v0.29.6
     let profile_dir =
       std::env::temp_dir().join(format!("donut_decrypt_vector_{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&profile_dir).unwrap();
     std::fs::write(
       profile_dir.join("os_crypt_key"),
+<<<<<<< HEAD
       b"OSfgzI5GUqy/pK4ANrYugw==",
+=======
+      SYNTHETIC_OS_CRYPT_PASSWORD,
+>>>>>>> v0.29.6
     )
     .unwrap();
 
     let key = chrome_decrypt::get_encryption_key(&profile_dir)
       .expect("should derive key from os_crypt_key file");
 
+<<<<<<< HEAD
     let encrypted_hex = "76313077ad5b27e78f685a6ccc7b92a8a242e279e54b8d2ba8e55b433ca7e2421bec52369e29a57b593c02c839f50962245da3ed8617dce142fff67778950a271d2c07";
     let encrypted: Vec<u8> = (0..encrypted_hex.len())
       .step_by(2)
@@ -1518,14 +1549,23 @@ mod tests {
     let decrypted = chrome_decrypt::decrypt(&encrypted, ".github.com", &key)
       .expect("decryption must succeed with correct key and host");
     assert_eq!(decrypted, "GH1.1.2077424036.1774792325");
+=======
+    let decrypted =
+      chrome_decrypt::decrypt(&synthetic_encrypted_cookie(), SYNTHETIC_COOKIE_HOST, &key)
+        .expect("decryption must succeed with correct key and host");
+    assert_eq!(decrypted, SYNTHETIC_COOKIE_VALUE);
+>>>>>>> v0.29.6
 
     let _ = std::fs::remove_dir_all(&profile_dir);
   }
 
+<<<<<<< HEAD
   /// Sanity: decrypting with the wrong host_key (hash mismatch) must not
   /// return a half-garbage value — it should fall back to the full
   /// decrypted bytes, which for a modern cookie includes the 32-byte hash
   /// prefix and therefore won't be valid UTF-8 → `None`.
+=======
+>>>>>>> v0.29.6
   #[test]
   #[cfg(target_os = "macos")]
   fn test_decrypt_with_wrong_host_returns_none_or_raw() {
@@ -1534,11 +1574,16 @@ mod tests {
     std::fs::create_dir_all(&profile_dir).unwrap();
     std::fs::write(
       profile_dir.join("os_crypt_key"),
+<<<<<<< HEAD
       b"OSfgzI5GUqy/pK4ANrYugw==",
+=======
+      SYNTHETIC_OS_CRYPT_PASSWORD,
+>>>>>>> v0.29.6
     )
     .unwrap();
 
     let key = chrome_decrypt::get_encryption_key(&profile_dir).unwrap();
+<<<<<<< HEAD
     let encrypted_hex = "76313077ad5b27e78f685a6ccc7b92a8a242e279e54b8d2ba8e55b433ca7e2421bec52369e29a57b593c02c839f50962245da3ed8617dce142fff67778950a271d2c07";
     let encrypted: Vec<u8> = (0..encrypted_hex.len())
       .step_by(2)
@@ -1553,6 +1598,13 @@ mod tests {
     assert!(
       result.as_deref() != Some("GH1.1.2077424036.1774792325"),
       "decrypt must not return the real cookie value when host_key is wrong"
+=======
+    let result =
+      chrome_decrypt::decrypt(&synthetic_encrypted_cookie(), ".wrong.example.test", &key);
+    assert!(
+      result.as_deref() != Some(SYNTHETIC_COOKIE_VALUE),
+      "decrypt must not return the cookie value when host_key is wrong"
+>>>>>>> v0.29.6
     );
 
     let _ = std::fs::remove_dir_all(&profile_dir);

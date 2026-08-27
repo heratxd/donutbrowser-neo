@@ -1,5 +1,9 @@
 use crate::proxy_storage::ProxyConfig;
+<<<<<<< HEAD
 use crate::traffic_stats::{get_traffic_tracker, init_traffic_tracker};
+=======
+use crate::traffic_stats::{get_traffic_tracker, init_traffic_tracker, LiveTrafficTracker};
+>>>>>>> v0.29.6
 use http_body_util::{BodyExt, Full};
 use hyper::body::Bytes;
 use hyper::server::conn::http1;
@@ -61,6 +65,12 @@ impl BypassMatcher {
 #[derive(Clone)]
 pub struct BlocklistMatcher {
   domains: Arc<HashSet<String>>,
+<<<<<<< HEAD
+=======
+  /// When true the `domains` set is an ALLOW list: a host is blocked unless it
+  /// (or a parent domain) is present. When false it's a block list (default).
+  allowlist_mode: bool,
+>>>>>>> v0.29.6
 }
 
 impl Default for BlocklistMatcher {
@@ -73,16 +83,31 @@ impl BlocklistMatcher {
   pub fn new() -> Self {
     Self {
       domains: Arc::new(HashSet::new()),
+<<<<<<< HEAD
+=======
+      allowlist_mode: false,
+>>>>>>> v0.29.6
     }
   }
 
   pub fn from_file(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
+<<<<<<< HEAD
+=======
+    Self::from_file_with_mode(path, false)
+  }
+
+  pub fn from_file_with_mode(
+    path: &str,
+    allowlist_mode: bool,
+  ) -> Result<Self, Box<dyn std::error::Error>> {
+>>>>>>> v0.29.6
     let content = std::fs::read_to_string(path)?;
     let domains: HashSet<String> = content
       .lines()
       .filter(|line| !line.starts_with('#') && !line.trim().is_empty())
       .map(|line| line.trim().to_lowercase())
       .collect();
+<<<<<<< HEAD
     log::info!("[blocklist] Loaded {} domains from {}", domains.len(), path);
     Ok(Self {
       domains: Arc::new(domains),
@@ -96,6 +121,23 @@ impl BlocklistMatcher {
     let host_lower = host.to_lowercase();
     // Exact match
     if self.domains.contains(host_lower.as_str()) {
+=======
+    log::info!(
+      "[blocklist] Loaded {} domains from {} (mode={})",
+      domains.len(),
+      path,
+      if allowlist_mode { "allow" } else { "block" }
+    );
+    Ok(Self {
+      domains: Arc::new(domains),
+      allowlist_mode,
+    })
+  }
+
+  /// True if `host` (or any parent domain) is in the set.
+  fn set_contains(&self, host_lower: &str) -> bool {
+    if self.domains.contains(host_lower) {
+>>>>>>> v0.29.6
       return true;
     }
     // Suffix matching: check parent domains (like uBlock)
@@ -108,6 +150,7 @@ impl BlocklistMatcher {
     }
     false
   }
+<<<<<<< HEAD
 }
 
 /// Wrapper stream that counts bytes read and written
@@ -123,6 +166,49 @@ impl<S> CountingStream<S> {
       inner,
       bytes_read: Arc::new(AtomicU64::new(0)),
       bytes_written: Arc::new(AtomicU64::new(0)),
+=======
+
+  pub fn is_blocked(&self, host: &str) -> bool {
+    // Empty set = no filtering in either mode. In allowlist mode an empty list
+    // would otherwise block everything and brick the browser, so fail open.
+    if self.domains.is_empty() {
+      return false;
+    }
+    let host_lower = host.to_lowercase();
+    let in_set = self.set_contains(&host_lower);
+    if self.allowlist_mode {
+      // Allow only listed domains; block everything else.
+      !in_set
+    } else {
+      in_set
+    }
+  }
+}
+
+#[derive(Clone, Copy)]
+enum TrafficDirection {
+  Sent,
+  Received,
+}
+
+/// Wrapper stream that counts bytes successfully relayed to its destination.
+struct CountingStream<S> {
+  inner: S,
+  bytes_written: Arc<AtomicU64>,
+  write_direction: TrafficDirection,
+  // Resolved once per stream: the global tracker is fixed after init, so the
+  // hot poll paths avoid taking the global RwLock on every packet
+  tracker: Option<Arc<LiveTrafficTracker>>,
+}
+
+impl<S> CountingStream<S> {
+  fn new(inner: S, write_direction: TrafficDirection) -> Self {
+    Self {
+      inner,
+      bytes_written: Arc::new(AtomicU64::new(0)),
+      write_direction,
+      tracker: get_traffic_tracker(),
+>>>>>>> v0.29.6
     }
   }
 }
@@ -133,6 +219,7 @@ impl<S: AsyncRead + Unpin> AsyncRead for CountingStream<S> {
     cx: &mut Context<'_>,
     buf: &mut ReadBuf<'_>,
   ) -> Poll<io::Result<()>> {
+<<<<<<< HEAD
     let filled_before = buf.filled().len();
     let result = Pin::new(&mut self.inner).poll_read(cx, buf);
     if let Poll::Ready(Ok(())) = &result {
@@ -148,6 +235,9 @@ impl<S: AsyncRead + Unpin> AsyncRead for CountingStream<S> {
       }
     }
     result
+=======
+    Pin::new(&mut self.inner).poll_read(cx, buf)
+>>>>>>> v0.29.6
   }
 }
 
@@ -160,9 +250,17 @@ impl<S: AsyncWrite + Unpin> AsyncWrite for CountingStream<S> {
     let result = Pin::new(&mut self.inner).poll_write(cx, buf);
     if let Poll::Ready(Ok(n)) = &result {
       self.bytes_written.fetch_add(*n as u64, Ordering::Relaxed);
+<<<<<<< HEAD
       // Update global tracker - count as sent (data going out of proxy)
       if let Some(tracker) = get_traffic_tracker() {
         tracker.add_bytes_sent(*n as u64);
+=======
+      if let Some(tracker) = &self.tracker {
+        match self.write_direction {
+          TrafficDirection::Sent => tracker.add_bytes_sent(*n as u64),
+          TrafficDirection::Received => tracker.add_bytes_received(*n as u64),
+        }
+>>>>>>> v0.29.6
       }
     }
     result
@@ -228,15 +326,34 @@ async fn handle_request(
   bypass_matcher: BypassMatcher,
   blocklist_matcher: BlocklistMatcher,
 ) -> Result<Response<Full<Bytes>>, Infallible> {
+<<<<<<< HEAD
   // Handle CONNECT method for HTTPS tunneling
   if req.method() == Method::CONNECT {
     return handle_connect(req, upstream_url, bypass_matcher, blocklist_matcher).await;
+=======
+  // CONNECT cannot be tunneled on the hyper path: hyper owns the connection
+  // and would keep parsing the post-200 tunnel bytes (TLS) as HTTP. This is
+  // only reachable when a kept-alive connection that started as plain HTTP
+  // later sends CONNECT — refuse and close so the browser retries on a fresh
+  // connection, which the peek path classifies as CONNECT and tunnels.
+  if req.method() == Method::CONNECT {
+    let mut response = Response::new(Full::new(Bytes::from(
+      "CONNECT is not supported on a reused connection",
+    )));
+    *response.status_mut() = StatusCode::NOT_IMPLEMENTED;
+    response.headers_mut().insert(
+      hyper::header::CONNECTION,
+      hyper::header::HeaderValue::from_static("close"),
+    );
+    return Ok(response);
+>>>>>>> v0.29.6
   }
 
   // Handle regular HTTP requests
   handle_http(req, upstream_url, bypass_matcher, blocklist_matcher).await
 }
 
+<<<<<<< HEAD
 async fn handle_connect(
   req: Request<hyper::body::Incoming>,
   upstream_url: Option<String>,
@@ -411,6 +528,8 @@ async fn connect_via_http_proxy(
   }
 }
 
+=======
+>>>>>>> v0.29.6
 /// Extract percent-decoded (username, password) from the upstream URL.
 ///
 /// `url::Url::username()` / `Url::password()` return percent-encoded ASCII
@@ -601,6 +720,135 @@ async fn connect_via_socks(
   }
 }
 
+<<<<<<< HEAD
+=======
+/// A buffered HTTP response read off a raw upstream stream.
+struct BufferedHttpResponse {
+  bytes: Vec<u8>,
+  /// True when the read stopped at `MAX_HTTP_HEADER_BUFFER` /
+  /// `MAX_HTTP_RESPONSE_BUFFER` rather than at the end of the response, so
+  /// `bytes` holds only a prefix. Callers must fail the request instead of
+  /// forwarding it: hyper derives a fresh Content-Length from whatever body it
+  /// is handed, so a truncated response reaches the browser as a well-formed,
+  /// self-consistent short one and silently corrupts the download.
+  truncated: bool,
+}
+
+/// Read a full HTTP response from `stream` into a buffer: headers first
+/// (capped at `MAX_HTTP_HEADER_BUFFER` — a peer streaming data that never
+/// contains CRLFCRLF must not grow memory unboundedly), then the body per
+/// Content-Length or until close, with the total capped at
+/// `MAX_HTTP_RESPONSE_BUFFER`. Hitting either cap sets `truncated`.
+async fn read_http_response_buffer<S: AsyncRead + Unpin>(stream: &mut S) -> BufferedHttpResponse {
+  let mut response_buffer = Vec::with_capacity(8192);
+  let mut temp_buf = [0u8; 4096];
+  let mut content_length: Option<usize> = None;
+  let mut is_chunked = false;
+  let mut truncated = false;
+
+  // Read until we have complete headers
+  loop {
+    if response_buffer.len() > MAX_HTTP_HEADER_BUFFER {
+      log::warn!(
+        "HTTP response headers exceeded {} bytes without terminating; aborting read",
+        MAX_HTTP_HEADER_BUFFER
+      );
+      truncated = true;
+      break;
+    }
+    match stream.read(&mut temp_buf).await {
+      Ok(0) => break, // Connection closed
+      Ok(n) => {
+        response_buffer.extend_from_slice(&temp_buf[..n]);
+        // Check for end of headers (\r\n\r\n)
+        if let Some(pos) = response_buffer.windows(4).position(|w| w == b"\r\n\r\n") {
+          // Parse headers
+          let headers_str = String::from_utf8_lossy(&response_buffer[..pos + 4]);
+          for line in headers_str.lines() {
+            let line_lower = line.to_lowercase();
+            if line_lower.starts_with("content-length:") {
+              if let Some(len_str) = line.split(':').nth(1) {
+                if let Ok(len) = len_str.trim().parse::<usize>() {
+                  content_length = Some(len);
+                }
+              }
+            } else if line_lower.starts_with("transfer-encoding:") && line_lower.contains("chunked")
+            {
+              is_chunked = true;
+            }
+          }
+          // Read body if Content-Length is specified and we don't have it all
+          if let Some(cl) = content_length {
+            let body_start = pos + 4;
+            let body_received = response_buffer.len() - body_start;
+            if body_received < cl {
+              // Read remaining body (but don't use read_exact as connection might close)
+              let remaining = cl - body_received;
+              let mut read_so_far = 0;
+              while read_so_far < remaining {
+                if response_buffer.len() >= MAX_HTTP_RESPONSE_BUFFER {
+                  log::warn!(
+                    "HTTP response body exceeded {} bytes; refusing to forward a truncated response",
+                    MAX_HTTP_RESPONSE_BUFFER
+                  );
+                  truncated = true;
+                  break;
+                }
+                match stream.read(&mut temp_buf).await {
+                  Ok(0) => break, // Connection closed
+                  Ok(m) => {
+                    let to_read = (remaining - read_so_far).min(m);
+                    response_buffer.extend_from_slice(&temp_buf[..to_read]);
+                    read_so_far += to_read;
+                    if to_read < m {
+                      // More data than needed, might be next response - stop here
+                      break;
+                    }
+                  }
+                  Err(_) => break,
+                }
+              }
+            }
+          } else if !is_chunked {
+            // No Content-Length and not chunked - read until connection closes
+            // But limit to reasonable size to avoid memory issues
+            loop {
+              if response_buffer.len() >= MAX_HTTP_RESPONSE_BUFFER {
+                log::warn!(
+                  "HTTP response exceeded {} bytes; refusing to forward a truncated response",
+                  MAX_HTTP_RESPONSE_BUFFER
+                );
+                truncated = true;
+                break;
+              }
+              match stream.read(&mut temp_buf).await {
+                Ok(0) => break, // Connection closed
+                Ok(n) => {
+                  response_buffer.extend_from_slice(&temp_buf[..n]);
+                }
+                Err(_) => break,
+              }
+            }
+          }
+          // Note: Chunked encoding is complex to parse manually, so we'll read what we can
+          // For full chunked support, we'd need a proper HTTP parser
+          break;
+        }
+      }
+      Err(e) => {
+        log::error!("Error reading HTTP response: {}", e);
+        break;
+      }
+    }
+  }
+
+  BufferedHttpResponse {
+    bytes: response_buffer,
+    truncated,
+  }
+}
+
+>>>>>>> v0.29.6
 async fn handle_http_via_socks4(
   req: Request<hyper::body::Incoming>,
   upstream_url: &str,
@@ -633,6 +881,7 @@ async fn handle_http_via_socks4(
   let target_port = target_uri.port_u16().unwrap_or(80);
 
   // Connect to SOCKS4 proxy
+<<<<<<< HEAD
   let mut socks_stream = match TcpStream::connect(&socks_addr).await {
     Ok(stream) => stream,
     Err(e) => {
@@ -645,6 +894,28 @@ async fn handle_http_via_socks4(
       return Ok(response);
     }
   };
+=======
+  let mut socks_stream =
+    match tokio::time::timeout(UPSTREAM_DIAL_TIMEOUT, TcpStream::connect(&socks_addr)).await {
+      Ok(Ok(stream)) => stream,
+      Ok(Err(e)) => {
+        log::error!("Failed to connect to SOCKS4 proxy {}: {}", socks_addr, e);
+        let mut response = Response::new(Full::new(Bytes::from(format!(
+          "Failed to connect to SOCKS4 proxy: {}",
+          e
+        ))));
+        *response.status_mut() = StatusCode::BAD_GATEWAY;
+        return Ok(response);
+      }
+      Err(_) => {
+        log::error!("Connect to SOCKS4 proxy {} timed out", socks_addr);
+        let mut response =
+          Response::new(Full::new(Bytes::from("Connect to SOCKS4 proxy timed out")));
+        *response.status_mut() = StatusCode::GATEWAY_TIMEOUT;
+        return Ok(response);
+      }
+    };
+>>>>>>> v0.29.6
 
   // Build a SOCKS4a CONNECT request. We deliberately do NOT resolve the target
   // hostname locally: tokio::net::lookup_host would call the HOST resolver
@@ -674,6 +945,7 @@ async fn handle_http_via_socks4(
 
   // Read SOCKS4 response
   let mut socks_response = [0u8; 8];
+<<<<<<< HEAD
   if let Err(e) = socks_stream.read_exact(&mut socks_response).await {
     log::error!("Failed to read SOCKS4 response: {}", e);
     let mut response = Response::new(Full::new(Bytes::from(format!(
@@ -682,6 +954,32 @@ async fn handle_http_via_socks4(
     ))));
     *response.status_mut() = StatusCode::BAD_GATEWAY;
     return Ok(response);
+=======
+  match tokio::time::timeout(
+    UPSTREAM_DIAL_TIMEOUT,
+    socks_stream.read_exact(&mut socks_response),
+  )
+  .await
+  {
+    Ok(Ok(_)) => {}
+    Ok(Err(e)) => {
+      log::error!("Failed to read SOCKS4 response: {}", e);
+      let mut response = Response::new(Full::new(Bytes::from(format!(
+        "Failed to read SOCKS4 response: {}",
+        e
+      ))));
+      *response.status_mut() = StatusCode::BAD_GATEWAY;
+      return Ok(response);
+    }
+    Err(_) => {
+      log::error!("SOCKS4 handshake response timed out");
+      let mut response = Response::new(Full::new(Bytes::from(
+        "SOCKS4 handshake response timed out",
+      )));
+      *response.status_mut() = StatusCode::GATEWAY_TIMEOUT;
+      return Ok(response);
+    }
+>>>>>>> v0.29.6
   }
 
   // Check SOCKS4 response (second byte should be 0x5A for success)
@@ -776,6 +1074,7 @@ async fn handle_http_via_socks4(
     }
   }
 
+<<<<<<< HEAD
   // Read HTTP response
   let mut response_buffer = Vec::with_capacity(8192);
   let mut temp_buf = [0u8; 4096];
@@ -854,6 +1153,39 @@ async fn handle_http_via_socks4(
       }
     }
   }
+=======
+  // Read HTTP response, bounded in both size and time so a stalled or
+  // never-terminating upstream cannot pin this task (and its connection
+  // permit) forever.
+  let buffered = match tokio::time::timeout(
+    PLAIN_HTTP_EXCHANGE_TIMEOUT,
+    read_http_response_buffer(&mut socks_stream),
+  )
+  .await
+  {
+    Ok(buffer) => buffer,
+    Err(_) => {
+      log::error!("HTTP response via SOCKS4 timed out");
+      let mut response = Response::new(Full::new(Bytes::from("Upstream response timed out")));
+      *response.status_mut() = StatusCode::GATEWAY_TIMEOUT;
+      return Ok(response);
+    }
+  };
+
+  // A capped read holds only a prefix of the body. Forwarding it would hand the
+  // browser a complete-looking short response, so fail the request instead.
+  if buffered.truncated {
+    log::error!(
+      "HTTP response via SOCKS4 for {domain} exceeded the buffer cap; refusing to forward a truncated body"
+    );
+    let mut response = Response::new(Full::new(Bytes::from(
+      "Upstream response too large to buffer",
+    )));
+    *response.status_mut() = StatusCode::BAD_GATEWAY;
+    return Ok(response);
+  }
+  let response_buffer = buffered.bytes;
+>>>>>>> v0.29.6
 
   // Parse HTTP response
   let response_str = String::from_utf8_lossy(&response_buffer);
@@ -1057,6 +1389,7 @@ async fn handle_http(
   }
 
   // Use reqwest for HTTP/HTTPS/SOCKS5 proxies
+<<<<<<< HEAD
   use reqwest::Client;
 
   let client_builder = Client::builder();
@@ -1068,6 +1401,15 @@ async fn handle_http(
     } else {
       // Build reqwest client with proxy
       match build_reqwest_client_with_proxy(upstream) {
+=======
+  let client = if should_bypass {
+    direct_http_client()
+  } else if let Some(ref upstream) = upstream_url {
+    if upstream == "DIRECT" {
+      direct_http_client()
+    } else {
+      match proxied_http_client(upstream) {
+>>>>>>> v0.29.6
         Ok(c) => c,
         Err(e) => {
           log::error!("Failed to create proxy client: {}", e);
@@ -1081,7 +1423,11 @@ async fn handle_http(
       }
     }
   } else {
+<<<<<<< HEAD
     client_builder.build().unwrap_or_default()
+=======
+    direct_http_client()
+>>>>>>> v0.29.6
   };
 
   // Convert hyper request to reqwest request
@@ -1132,7 +1478,24 @@ async fn handle_http(
     Ok(response) => {
       let status = response.status();
       let headers = response.headers().clone();
+<<<<<<< HEAD
       let body = response.bytes().await.unwrap_or_default();
+=======
+      // Never swallow a body error into an empty body: the status and headers
+      // are already captured, so an empty `Full` would be forwarded as a
+      // well-formed short 200 that the browser cannot distinguish from a real
+      // one (hyper drops the mismatched Content-Length and writes 0).
+      let body = match response.bytes().await {
+        Ok(b) => b,
+        Err(e) => {
+          log::warn!("Failed to read response body from {domain}: {e}");
+          let mut error_response =
+            Response::new(Full::new(Bytes::from(format!("Response body failed: {e}"))));
+          *error_response.status_mut() = StatusCode::BAD_GATEWAY;
+          return Ok(error_response);
+        }
+      };
+>>>>>>> v0.29.6
 
       // Record request in traffic tracker
       let response_size = body.len() as u64;
@@ -1163,12 +1526,52 @@ async fn handle_http(
   }
 }
 
+<<<<<<< HEAD
+=======
+/// Shared reqwest client for direct (no-upstream / bypass) plain-HTTP
+/// forwarding. reqwest clients hold a connection pool, TLS config and
+/// resolver state — building one per request would redo full TCP+TLS setup
+/// every time and never reuse upstream connections.
+fn direct_http_client() -> reqwest::Client {
+  static CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
+  CLIENT
+    .get_or_init(|| {
+      reqwest::Client::builder()
+        .connect_timeout(UPSTREAM_DIAL_TIMEOUT)
+        .read_timeout(PLAIN_HTTP_EXCHANGE_TIMEOUT)
+        .build()
+        .unwrap_or_default()
+    })
+    .clone()
+}
+
+/// Shared per-upstream reqwest clients. A worker serves exactly one upstream,
+/// so this normally holds a single entry.
+fn proxied_http_client(upstream_url: &str) -> Result<reqwest::Client, Box<dyn std::error::Error>> {
+  static CLIENTS: OnceLock<Mutex<HashMap<String, reqwest::Client>>> = OnceLock::new();
+  let map = CLIENTS.get_or_init(|| Mutex::new(HashMap::new()));
+  let mut guard = map.lock().unwrap();
+  if let Some(client) = guard.get(upstream_url) {
+    return Ok(client.clone());
+  }
+  let client = build_reqwest_client_with_proxy(upstream_url)?;
+  guard.insert(upstream_url.to_string(), client.clone());
+  Ok(client)
+}
+
+>>>>>>> v0.29.6
 fn build_reqwest_client_with_proxy(
   upstream_url: &str,
 ) -> Result<reqwest::Client, Box<dyn std::error::Error>> {
   use reqwest::Proxy;
 
+<<<<<<< HEAD
   let client_builder = reqwest::Client::builder();
+=======
+  let client_builder = reqwest::Client::builder()
+    .connect_timeout(UPSTREAM_DIAL_TIMEOUT)
+    .read_timeout(PLAIN_HTTP_EXCHANGE_TIMEOUT);
+>>>>>>> v0.29.6
 
   // Parse the upstream URL
   let url = Url::parse(upstream_url)?;
@@ -1221,11 +1624,39 @@ pub async fn handle_proxy_connection(
     return;
   }
 
+<<<<<<< HEAD
   let mut peek_buffer = [0u8; 16];
   match stream.read(&mut peek_buffer).await {
     Ok(0) => {}
     Ok(n) => {
       let request_start_upper = String::from_utf8_lossy(&peek_buffer[..n.min(7)]).to_uppercase();
+=======
+  // Classify the connection by its request line. One read is not enough: TCP
+  // may deliver fewer than the 7 bytes needed to recognise "CONNECT", and a
+  // misclassified CONNECT goes to hyper, which refuses it with 501 rather than
+  // tunneling it. Accumulate until the verb is decidable.
+  let mut peek_buffer = [0u8; 16];
+  let mut peeked = 0usize;
+  const CONNECT_VERB_LEN: usize = 7;
+  loop {
+    match stream.read(&mut peek_buffer[peeked..]).await {
+      Ok(0) => break,
+      Ok(m) => {
+        peeked += m;
+        if peeked >= CONNECT_VERB_LEN {
+          break;
+        }
+      }
+      Err(_) => return,
+    }
+  }
+
+  match peeked {
+    0 => {}
+    n => {
+      let request_start_upper =
+        String::from_utf8_lossy(&peek_buffer[..n.min(CONNECT_VERB_LEN)]).to_uppercase();
+>>>>>>> v0.29.6
       let is_connect = request_start_upper.starts_with("CONNECT");
 
       if is_connect {
@@ -1310,15 +1741,23 @@ pub async fn handle_proxy_connection(
 
       let _ = http1::Builder::new().serve_connection(io, service).await;
     }
+<<<<<<< HEAD
     Err(_) => {}
+=======
+>>>>>>> v0.29.6
   }
 }
 
 /// Render an upstream proxy URL for logging with any embedded credentials
 /// stripped. `config.upstream_url` carries `scheme://user:pass@host:port`, and
+<<<<<<< HEAD
 /// these logs land in a world-readable file under the system temp dir, so the
 /// userinfo must never be emitted.
 fn redacted_upstream(upstream: &str) -> String {
+=======
+/// diagnostic logs and command responses must never expose the userinfo.
+pub fn redacted_upstream(upstream: &str) -> String {
+>>>>>>> v0.29.6
   if upstream.is_empty() {
     return "none".to_string();
   }
@@ -1449,12 +1888,30 @@ pub async fn run_proxy_server(config: ProxyConfig) -> Result<(), Box<dyn std::er
     tokio::spawn(async move {
       let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(2));
       interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+<<<<<<< HEAD
 
       loop {
         interval.tick().await;
         // Write lightweight session snapshot (only current counters, ~100 bytes)
         if let Err(e) = tracker_clone.write_session_snapshot() {
           log::debug!("Failed to write session snapshot: {}", e);
+=======
+      // The snapshot content is derived entirely from these counters, so an
+      // unchanged tuple means the on-disk session file is already current —
+      // skip the write instead of rewriting identical bytes every 2s.
+      let mut last_written: Option<(u64, u64, u64)> = None;
+
+      loop {
+        interval.tick().await;
+        let snapshot = tracker_clone.get_snapshot();
+        if last_written == Some(snapshot) {
+          continue;
+        }
+        // Write lightweight session snapshot (only current counters, ~100 bytes)
+        match tracker_clone.write_session_snapshot() {
+          Ok(()) => last_written = Some(snapshot),
+          Err(e) => log::debug!("Failed to write session snapshot: {}", e),
+>>>>>>> v0.29.6
         }
       }
     });
@@ -1525,11 +1982,20 @@ pub async fn run_proxy_server(config: ProxyConfig) -> Result<(), Box<dyn std::er
 
   // Self-reaping supervisor. The worker is a detached process that outlives the
   // GUI, so it cannot rely on the GUI's in-memory death-monitor (which is lost
+<<<<<<< HEAD
   // when the GUI restarts). Once the GUI records the browser PID this worker
   // serves, poll it and exit when that browser is gone — never while it is
   // alive, and never before a PID is recorded (covers the launch window and
   // pre-upgrade configs lacking the field). A 2-miss debounce avoids exiting on
   // a transient sysinfo false-negative under load / sleep-wake.
+=======
+  // when the GUI restarts). Once the GUI records the browser PID and start time
+  // this worker serves, poll that exact process identity and exit when it is
+  // gone — never while it is alive. A 2-miss debounce avoids exiting on a
+  // transient sysinfo false-negative under load / sleep-wake. The decision table
+  // itself lives in `proxy_storage::supervisor_verdict` so every branch is unit
+  // tested without spawning browsers.
+>>>>>>> v0.29.6
   //
   // This runs on a DEDICATED OS THREAD, not a tokio task. If the worker's
   // accept/dial path ever busy-loops (e.g. a client retry-storm against a
@@ -1541,6 +2007,7 @@ pub async fn run_proxy_server(config: ProxyConfig) -> Result<(), Box<dyn std::er
   // reaps itself. Every call here is synchronous and safe off the runtime.
   {
     let watch_id = config.id.clone();
+<<<<<<< HEAD
     std::thread::spawn(move || {
       let mut consecutive_misses: u32 = 0;
       loop {
@@ -1564,6 +2031,41 @@ pub async fn run_proxy_server(config: ProxyConfig) -> Result<(), Box<dyn std::er
           },
           // Our own config was removed (e.g. GUI stopped us): nothing to serve.
           None => {
+=======
+    let poll_interval = watchdog_poll_interval();
+    std::thread::spawn(move || {
+      use crate::proxy_storage::SupervisorVerdict;
+
+      let mut consecutive_misses: u32 = 0;
+      loop {
+        std::thread::sleep(poll_interval);
+        let cfg = crate::proxy_storage::get_proxy_config(&watch_id);
+        let verdict = crate::proxy_storage::supervisor_verdict(
+          cfg.as_ref(),
+          crate::proxy_storage::proxy_config_age_secs(&watch_id),
+          crate::proxy_storage::browser_owner_is_alive,
+        );
+
+        match verdict {
+          SupervisorVerdict::Keep => consecutive_misses = 0,
+          SupervisorVerdict::ExitOwnerGone => {
+            consecutive_misses += 1;
+            if consecutive_misses >= 2 {
+              let owner = cfg.as_ref().and_then(|c| c.browser_pid).unwrap_or(0);
+              log::info!("Browser PID {owner} for config {watch_id} is gone; worker exiting");
+              crate::proxy_storage::delete_proxy_config(&watch_id);
+              std::process::exit(0);
+            }
+          }
+          SupervisorVerdict::ExitNeverClaimed => {
+            log::info!(
+              "Config {watch_id} was never claimed by a browser within the launch window; worker exiting"
+            );
+            crate::proxy_storage::delete_proxy_config(&watch_id);
+            std::process::exit(0);
+          }
+          SupervisorVerdict::ExitConfigRemoved => {
+>>>>>>> v0.29.6
             log::info!("Proxy config {watch_id} was removed; worker exiting");
             std::process::exit(0);
           }
@@ -1574,7 +2076,11 @@ pub async fn run_proxy_server(config: ProxyConfig) -> Result<(), Box<dyn std::er
 
   let bypass_matcher = BypassMatcher::new(&config.bypass_rules);
   let blocklist_matcher = if let Some(ref path) = config.blocklist_file {
+<<<<<<< HEAD
     match BlocklistMatcher::from_file(path) {
+=======
+    match BlocklistMatcher::from_file_with_mode(path, config.dns_allowlist_mode) {
+>>>>>>> v0.29.6
       Ok(m) => m,
       Err(e) => {
         log::error!("[blocklist] Failed to load from {}: {}", path, e);
@@ -1714,6 +2220,25 @@ async fn handle_connect_from_buffer(
   Ok(())
 }
 
+<<<<<<< HEAD
+=======
+/// How often the self-reaping supervisor re-checks its owner. Overridable via
+/// `DONUT_PROXY_WATCHDOG_INTERVAL_MS` so lifecycle tests can observe a real
+/// worker reaping itself in seconds instead of a minute; the floor keeps a
+/// mistyped value from turning the supervisor into a spin loop.
+const WATCHDOG_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_secs(15);
+const WATCHDOG_POLL_INTERVAL_FLOOR: std::time::Duration = std::time::Duration::from_millis(100);
+
+fn watchdog_poll_interval() -> std::time::Duration {
+  std::env::var("DONUT_PROXY_WATCHDOG_INTERVAL_MS")
+    .ok()
+    .and_then(|raw| raw.trim().parse::<u64>().ok())
+    .map(std::time::Duration::from_millis)
+    .map(|interval| interval.max(WATCHDOG_POLL_INTERVAL_FLOOR))
+    .unwrap_or(WATCHDOG_POLL_INTERVAL)
+}
+
+>>>>>>> v0.29.6
 /// Upper bound on concurrent connection handlers per worker. A real browser
 /// never holds anywhere near this many simultaneous tunnels; the cap stops a
 /// client retry-storm from spawning unbounded tasks (each of which parks a
@@ -1731,7 +2256,30 @@ const DIRECT_CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_se
 /// load (e.g. two profiles sharing one proxy) the slots exhaust and the browser
 /// sees `ERR_PROXY_CONNECTION_FAILED` until the profile is restarted. A
 /// bounded dial fails fast and releases the slot.
+<<<<<<< HEAD
 const UPSTREAM_DIAL_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
+=======
+pub(crate) const UPSTREAM_DIAL_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
+
+/// Cap on bytes buffered while waiting for the end of the HTTP response
+/// headers on the manual plain-HTTP forwarding path.
+const MAX_HTTP_HEADER_BUFFER: usize = 64 * 1024;
+
+/// Cap on the total buffered HTTP response on the manual plain-HTTP
+/// forwarding path.
+const MAX_HTTP_RESPONSE_BUFFER: usize = 10 * 1024 * 1024;
+
+/// Budget for a proxied plain-HTTP exchange on the manual (SOCKS4/Shadowsocks)
+/// forwarding paths, which buffer the whole response themselves.
+///
+/// On the reqwest paths this is applied as a *read* timeout, not a total one:
+/// it bounds the gap between successive reads, so a stalled upstream still
+/// fails fast and releases its connection-semaphore permit, while a legitimately
+/// slow transfer — a large download, an SSE stream, a long-poll — is not killed
+/// mid-flight. `ClientBuilder::timeout` would cap the whole exchange including
+/// the body and break all three.
+const PLAIN_HTTP_EXCHANGE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
+>>>>>>> v0.29.6
 
 /// Per-host failure state (last failure instant, consecutive failure count) for
 /// the direct dial path. Process-global — each worker is its own process.
@@ -1853,6 +2401,51 @@ pub(crate) fn log_throttle(key: &str) -> Option<u64> {
   }
 }
 
+<<<<<<< HEAD
+=======
+/// Read an upstream proxy's response to our CONNECT request.
+///
+/// TCP is a stream, not a sequence of messages, so a single `read` is wrong in
+/// both directions: the status line can arrive split from the rest of the
+/// headers (a lone `read` would reject a tunnel the upstream actually granted),
+/// and the terminating CRLFCRLF can arrive with destination payload appended
+/// (those bytes belong to the tunnel). Reads until the header terminator and
+/// returns `(headers, bytes_after_headers)`.
+async fn read_upstream_connect_response(
+  stream: &mut TcpStream,
+) -> Result<(String, Vec<u8>), Box<dyn std::error::Error>> {
+  let mut buffer = Vec::with_capacity(1024);
+  let mut chunk = [0u8; 4096];
+  // Only the terminator needs finding, so rescanning can resume from just
+  // before the previous tail rather than restarting at 0 each read.
+  let mut scanned = 0usize;
+
+  loop {
+    if buffer.len() > MAX_HTTP_HEADER_BUFFER {
+      return Err("upstream proxy CONNECT response headers too large".into());
+    }
+    let n = tokio::time::timeout(UPSTREAM_DIAL_TIMEOUT, stream.read(&mut chunk))
+      .await
+      .map_err(|_| "upstream proxy CONNECT response timed out")??;
+    if n == 0 {
+      return Err("upstream proxy closed the connection during CONNECT".into());
+    }
+    buffer.extend_from_slice(&chunk[..n]);
+
+    if let Some(pos) = buffer[scanned..]
+      .windows(4)
+      .position(|w| w == b"\r\n\r\n")
+      .map(|p| p + scanned)
+    {
+      let header_end = pos + 4;
+      let headers = String::from_utf8_lossy(&buffer[..header_end]).to_string();
+      return Ok((headers, buffer[header_end..].to_vec()));
+    }
+    scanned = buffer.len().saturating_sub(3);
+  }
+}
+
+>>>>>>> v0.29.6
 /// Establish a stream to `target_host:target_port`, either directly or through
 /// the configured upstream proxy. Shared by the HTTP CONNECT path and the
 /// local SOCKS5 server so every upstream type (direct, HTTP/HTTPS CONNECT,
@@ -1906,6 +2499,7 @@ pub(crate) async fn connect_to_target_via_upstream(
 
           proxy_stream.write_all(connect_req.as_bytes()).await?;
 
+<<<<<<< HEAD
           let mut buffer = [0u8; 4096];
           let n = tokio::time::timeout(UPSTREAM_DIAL_TIMEOUT, proxy_stream.read(&mut buffer))
             .await
@@ -1915,6 +2509,14 @@ pub(crate) async fn connect_to_target_via_upstream(
 
           if !response_full.starts_with("HTTP/1.1 200")
             && !response_full.starts_with("HTTP/1.0 200")
+=======
+          let (response_headers, coalesced) =
+            read_upstream_connect_response(&mut proxy_stream).await?;
+          let status_line = response_headers.lines().next().unwrap_or("").to_string();
+
+          if !response_headers.starts_with("HTTP/1.1 200")
+            && !response_headers.starts_with("HTTP/1.0 200")
+>>>>>>> v0.29.6
           {
             log::warn!(
               "Upstream CONNECT to {}:{} via {}:{} rejected: {}",
@@ -1924,6 +2526,7 @@ pub(crate) async fn connect_to_target_via_upstream(
               proxy_port,
               status_line
             );
+<<<<<<< HEAD
             return Err(format!("Upstream proxy CONNECT failed: {response_full}").into());
           }
 
@@ -1939,6 +2542,9 @@ pub(crate) async fn connect_to_target_via_upstream(
                 n - end
               );
             }
+=======
+            return Err(format!("Upstream proxy CONNECT failed: {status_line}").into());
+>>>>>>> v0.29.6
           }
 
           log::info!(
@@ -1950,7 +2556,28 @@ pub(crate) async fn connect_to_target_via_upstream(
             status_line
           );
 
+<<<<<<< HEAD
           Box::new(proxy_stream)
+=======
+          if coalesced.is_empty() {
+            Box::new(proxy_stream)
+          } else {
+            // The upstream packed the destination's first bytes into the same
+            // segment as its 200. They are tunnel payload, not proxy protocol:
+            // replay them ahead of the socket so the client sees an unbroken
+            // stream. Server-speaks-first protocols (SMTP/IMAP/SSH banners)
+            // reach this reliably.
+            log::debug!(
+              "Upstream CONNECT response coalesced {} byte(s) of payload; forwarding",
+              coalesced.len()
+            );
+            Box::new(PrependReader {
+              prepended: coalesced,
+              prepended_pos: 0,
+              inner: proxy_stream,
+            })
+          }
+>>>>>>> v0.29.6
         }
         "socks4" | "socks5" => {
           let socks_host = upstream.host_str().unwrap_or("127.0.0.1");
@@ -2041,6 +2668,7 @@ pub(crate) async fn tunnel_streams(
   target_stream: BoxedAsyncStream,
   domain: String,
 ) {
+<<<<<<< HEAD
   // Wrap streams to count bytes transferred
   let counting_client = CountingStream::new(client_stream);
   let counting_target = CountingStream::new(target_stream);
@@ -2089,14 +2717,39 @@ pub(crate) async fn tunnel_streams(
     }
     _ = target_to_client => {
       log::trace!("Target->client tunnel closed");
+=======
+  // Count each payload byte once, when it is successfully written to its
+  // destination. Writes to the target are uploads; writes to the client are
+  // downloads.
+  let mut counting_client = CountingStream::new(client_stream, TrafficDirection::Received);
+  let mut counting_target = CountingStream::new(target_stream, TrafficDirection::Sent);
+
+  log::trace!("Starting bidirectional tunnel");
+
+  // Relay both directions in this single task. Spawning one task per
+  // direction and returning when the first finishes would detach the
+  // surviving copy, leaving it (and both underlying sockets) alive
+  // indefinitely when a peer dies without FIN.
+  match tokio::io::copy_bidirectional(&mut counting_client, &mut counting_target).await {
+    Ok((to_target, to_client)) => {
+      log::trace!("Tunneled {to_target} bytes client->target, {to_client} bytes target->client");
+    }
+    Err(e) => {
+      log::debug!("Tunnel ended with error: {e:?}");
+>>>>>>> v0.29.6
     }
   }
 
   // Log final byte counts and update domain stats
+<<<<<<< HEAD
   let final_sent =
     client_read_counter.load(Ordering::Relaxed) + target_write_counter.load(Ordering::Relaxed);
   let final_recv =
     target_read_counter.load(Ordering::Relaxed) + client_write_counter.load(Ordering::Relaxed);
+=======
+  let final_sent = counting_target.bytes_written.load(Ordering::Relaxed);
+  let final_recv = counting_client.bytes_written.load(Ordering::Relaxed);
+>>>>>>> v0.29.6
   log::trace!("Tunnel closed - sent: {final_sent} bytes, received: {final_recv} bytes");
 
   // Update domain-specific byte counts now that tunnel is complete
@@ -2166,6 +2819,19 @@ mod tests {
   }
 
   #[test]
+<<<<<<< HEAD
+=======
+  fn upstream_log_value_never_contains_credentials() {
+    assert_eq!(
+      redacted_upstream("http://user:p%40ss@example.com:8080"),
+      "http://example.com:8080"
+    );
+    assert_eq!(redacted_upstream("not a URL"), "<redacted>");
+    assert_eq!(redacted_upstream(""), "none");
+  }
+
+  #[test]
+>>>>>>> v0.29.6
   fn test_blocklist_exact_match() {
     let mut matcher = BlocklistMatcher::new();
     let mut domains = HashSet::new();
@@ -2212,6 +2878,36 @@ mod tests {
   }
 
   #[test]
+<<<<<<< HEAD
+=======
+  fn test_allowlist_mode_blocks_everything_not_listed() {
+    let mut matcher = BlocklistMatcher::new();
+    let mut domains = HashSet::new();
+    domains.insert("example.com".to_string());
+    domains.insert("api.trusted.io".to_string());
+    matcher.domains = Arc::new(domains);
+    matcher.allowlist_mode = true;
+
+    // Listed domains (and their subdomains) are allowed.
+    assert!(!matcher.is_blocked("example.com"));
+    assert!(!matcher.is_blocked("cdn.example.com"));
+    assert!(!matcher.is_blocked("api.trusted.io"));
+    // Everything else is blocked.
+    assert!(matcher.is_blocked("evil.com"));
+    assert!(matcher.is_blocked("trusted.io")); // parent of api.trusted.io is NOT allowed
+    assert!(matcher.is_blocked("google.com"));
+  }
+
+  #[test]
+  fn test_allowlist_mode_empty_fails_open() {
+    let mut matcher = BlocklistMatcher::new();
+    matcher.allowlist_mode = true;
+    // Empty allowlist would block everything and brick the browser — fail open.
+    assert!(!matcher.is_blocked("anything.com"));
+  }
+
+  #[test]
+>>>>>>> v0.29.6
   fn test_blocklist_case_insensitive() {
     let mut matcher = BlocklistMatcher::new();
     let mut domains = HashSet::new();
@@ -2245,6 +2941,286 @@ mod tests {
     assert_eq!(matcher.domains.len(), 3);
   }
 
+<<<<<<< HEAD
+=======
+  /// Serve one canned upstream CONNECT reply, written as the given segments so
+  /// the reader is forced to cope with real TCP framing.
+  async fn serve_connect_reply(
+    segments: Vec<&'static [u8]>,
+  ) -> (TcpStream, tokio::task::JoinHandle<()>) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+      let (mut s, _) = listener.accept().await.unwrap();
+      let _ = s.set_nodelay(true);
+      for seg in segments {
+        if s.write_all(seg).await.is_err() {
+          return;
+        }
+        let _ = s.flush().await;
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+      }
+      // Hold the connection open so the reader never sees a premature EOF.
+      tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+    });
+    let client = TcpStream::connect(addr).await.unwrap();
+    (client, server)
+  }
+
+  #[tokio::test]
+  async fn read_upstream_connect_response_forwards_coalesced_payload() {
+    // The upstream packs the destination's first bytes into the same segment as
+    // its 200. Dropping them corrupts the tunnel for any server-speaks-first
+    // protocol, so they must come back as leftover for the caller to replay.
+    let (mut client, server) = serve_connect_reply(vec![
+      b"HTTP/1.1 200 Connection Established\r\n\r\nSSH-2.0-OpenSSH_9.6",
+    ])
+    .await;
+
+    let (headers, leftover) = read_upstream_connect_response(&mut client).await.unwrap();
+    assert!(headers.starts_with("HTTP/1.1 200"));
+    assert_eq!(leftover, b"SSH-2.0-OpenSSH_9.6");
+    server.abort();
+  }
+
+  #[tokio::test]
+  async fn read_upstream_connect_response_accepts_split_status_line() {
+    // A single read would see only "HTTP/1.1 " here and reject a tunnel the
+    // upstream actually granted.
+    let (mut client, server) = serve_connect_reply(vec![
+      b"HTTP/1.1 ",
+      b"200 Connection Established\r\n",
+      b"Proxy-Agent: squid\r\n\r\n",
+    ])
+    .await;
+
+    let (headers, leftover) = read_upstream_connect_response(&mut client).await.unwrap();
+    assert!(headers.starts_with("HTTP/1.1 200"));
+    assert!(headers.contains("Proxy-Agent: squid"));
+    assert!(
+      leftover.is_empty(),
+      "no payload followed the headers, so nothing should be replayed"
+    );
+    server.abort();
+  }
+
+  #[tokio::test]
+  async fn read_upstream_connect_response_waits_for_terminator_across_segments() {
+    // The terminating CRLFCRLF straddles two segments. Without a scan that
+    // spans the boundary the reader would miss it and relay header bytes into
+    // the tunnel as if they were payload.
+    let (mut client, server) = serve_connect_reply(vec![
+      b"HTTP/1.1 200 OK\r\nProxy-Agent: x\r",
+      b"\n\r\nPAYLOAD",
+    ])
+    .await;
+
+    let (headers, leftover) = read_upstream_connect_response(&mut client).await.unwrap();
+    assert!(headers.ends_with("\r\n\r\n"));
+    assert_eq!(leftover, b"PAYLOAD");
+    server.abort();
+  }
+
+  #[tokio::test]
+  async fn read_upstream_connect_response_errors_on_early_close() {
+    let (mut client, server) = serve_connect_reply(vec![]).await;
+    // serve_connect_reply holds the socket open with no data; a closed upstream
+    // is simulated by dropping the server task and shutting the peer down.
+    server.abort();
+    let _ = client.shutdown().await;
+    let result = read_upstream_connect_response(&mut client).await;
+    assert!(result.is_err(), "a CONNECT with no reply must not succeed");
+  }
+
+  #[tokio::test]
+  async fn read_http_response_buffer_caps_endless_header_stream() {
+    let (mut writer, mut reader) = tokio::io::duplex(16 * 1024);
+    let feeder = tokio::spawn(async move {
+      // Stream bytes that never contain CRLFCRLF.
+      let chunk = [b'a'; 4096];
+      loop {
+        if writer.write_all(&chunk).await.is_err() {
+          break;
+        }
+      }
+    });
+
+    let buf = read_http_response_buffer(&mut reader).await;
+    assert!(
+      buf.bytes.len() <= MAX_HTTP_HEADER_BUFFER + 4096,
+      "pre-header buffering must stop at the cap, got {} bytes",
+      buf.bytes.len()
+    );
+    assert!(
+      buf.truncated,
+      "a header stream that never terminates must be reported as truncated"
+    );
+    feeder.abort();
+  }
+
+  #[tokio::test]
+  async fn read_http_response_buffer_reads_content_length_body() {
+    let (mut writer, mut reader) = tokio::io::duplex(1024);
+    let resp: &[u8] = b"HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello";
+    writer.write_all(resp).await.unwrap();
+    drop(writer);
+
+    let buf = read_http_response_buffer(&mut reader).await;
+    assert_eq!(buf.bytes, resp);
+    assert!(!buf.truncated);
+  }
+
+  #[tokio::test]
+  async fn read_http_response_buffer_caps_oversized_content_length_body() {
+    let (mut writer, mut reader) = tokio::io::duplex(64 * 1024);
+    let feeder = tokio::spawn(async move {
+      let header = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
+        MAX_HTTP_RESPONSE_BUFFER * 2
+      );
+      if writer.write_all(header.as_bytes()).await.is_err() {
+        return;
+      }
+      let chunk = [b'b'; 8192];
+      loop {
+        if writer.write_all(&chunk).await.is_err() {
+          break;
+        }
+      }
+    });
+
+    let buf = read_http_response_buffer(&mut reader).await;
+    assert!(
+      buf.bytes.len() <= MAX_HTTP_RESPONSE_BUFFER + 8192,
+      "body buffering must stop at the cap, got {} bytes",
+      buf.bytes.len()
+    );
+    assert!(
+      buf.truncated,
+      "a body cut short by the cap must be reported as truncated so the caller \
+       fails the request instead of forwarding a short response"
+    );
+    feeder.abort();
+  }
+
+  #[tokio::test]
+  #[serial_test::serial]
+  async fn tunnel_traffic_counts_chunked_duplex_bytes_once_per_direction() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let _cache_guard = crate::app_dirs::set_test_cache_dir(temp_dir.path().to_path_buf());
+    let profile_id = "traffic-counting-profile";
+    let domain = "counting.example";
+    init_traffic_tracker("traffic-counting-proxy".into(), Some(profile_id.into()));
+    let tracker = get_traffic_tracker().unwrap();
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (browser_result, accepted_result) =
+      tokio::join!(TcpStream::connect(addr), listener.accept());
+    let browser_stream = browser_result.unwrap();
+    let (proxy_client_stream, _) = accepted_result.unwrap();
+
+    // Keep the duplex buffer deliberately small so client-to-target writes
+    // must make partial progress while both directions remain active.
+    let (proxy_target_stream, target_stream) = tokio::io::duplex(11);
+    let tunnel = tokio::spawn(tunnel_streams(
+      proxy_client_stream,
+      Box::new(proxy_target_stream),
+      domain.into(),
+    ));
+
+    let upload_chunks = vec![vec![0x11; 3], vec![0x22; 31], vec![0x33; 8_193]];
+    let download_chunks = vec![vec![0x44; 5], vec![0x55; 47], vec![0x66; 5_003]];
+    let expected_upload = upload_chunks.concat();
+    let expected_download = download_chunks.concat();
+    let upload_len = expected_upload.len();
+    let download_len = expected_download.len();
+
+    let (browser_reader, mut browser_writer) = browser_stream.into_split();
+    let (target_reader, mut target_writer) = tokio::io::split(target_stream);
+    let transfer = async move {
+      let send_upload = async move {
+        for chunk in upload_chunks {
+          browser_writer.write_all(&chunk).await.unwrap();
+          tokio::task::yield_now().await;
+        }
+        browser_writer.flush().await.unwrap();
+        browser_writer
+      };
+      let send_download = async move {
+        for chunk in download_chunks {
+          target_writer.write_all(&chunk).await.unwrap();
+          tokio::task::yield_now().await;
+        }
+        target_writer.flush().await.unwrap();
+        target_writer
+      };
+      let receive_upload = async move {
+        let mut target_reader = target_reader;
+        let mut bytes = vec![0; upload_len];
+        target_reader.read_exact(&mut bytes).await.unwrap();
+        (target_reader, bytes)
+      };
+      let receive_download = async move {
+        let mut browser_reader = browser_reader;
+        let mut bytes = vec![0; download_len];
+        browser_reader.read_exact(&mut bytes).await.unwrap();
+        (browser_reader, bytes)
+      };
+
+      tokio::join!(send_upload, send_download, receive_upload, receive_download)
+    };
+
+    let (
+      mut browser_writer,
+      mut target_writer,
+      (target_reader, actual_upload),
+      (browser_reader, actual_download),
+    ) = tokio::time::timeout(std::time::Duration::from_secs(5), transfer)
+      .await
+      .expect("duplex transfer timed out");
+
+    assert_eq!(actual_upload, expected_upload);
+    assert_eq!(actual_download, expected_download);
+    assert!(
+      !tunnel.is_finished(),
+      "the tunnel should remain live until its peers close"
+    );
+    assert_eq!(
+      tracker.get_snapshot(),
+      (upload_len as u64, download_len as u64, 0),
+      "global counters must update in real time without double-counting"
+    );
+
+    let (browser_shutdown, target_shutdown) =
+      tokio::join!(browser_writer.shutdown(), target_writer.shutdown());
+    browser_shutdown.unwrap();
+    target_shutdown.unwrap();
+    drop((browser_writer, target_writer, browser_reader, target_reader));
+    tokio::time::timeout(std::time::Duration::from_secs(5), tunnel)
+      .await
+      .expect("tunnel did not close")
+      .expect("tunnel task panicked");
+
+    assert_eq!(
+      tracker.get_snapshot(),
+      (upload_len as u64, download_len as u64, 0),
+      "closing the tunnel must not add another copy of its traffic"
+    );
+    assert_eq!(
+      tracker.flush_to_disk().unwrap(),
+      Some((upload_len as u64, download_len as u64))
+    );
+
+    let stats = crate::traffic_stats::load_traffic_stats(profile_id).unwrap();
+    assert_eq!(stats.total_bytes_sent, upload_len as u64);
+    assert_eq!(stats.total_bytes_received, download_len as u64);
+    let domain_stats = stats.domains.get(domain).unwrap();
+    assert_eq!(domain_stats.bytes_sent, upload_len as u64);
+    assert_eq!(domain_stats.bytes_received, download_len as u64);
+  }
+
+>>>>>>> v0.29.6
   #[test]
   fn test_blocklist_comments_skipped() {
     let mut tmpfile = tempfile::NamedTempFile::new().unwrap();

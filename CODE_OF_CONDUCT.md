@@ -1,6 +1,10 @@
 # Code of Conduct
 
+<<<<<<< HEAD
 All participants of the NeoDonut Browser project (referred to as "the project") are expected to abide by this Code of Conduct, both online and during in-person events that are hosted and/or associated with the project.
+=======
+All participants of the Donut Browser project (referred to as "the project") are expected to abide by this Code of Conduct, both online and during in-person events that are hosted and/or associated with the project.
+>>>>>>> v0.29.6
 
 ## The Pledge
 
@@ -23,6 +27,10 @@ Examples of unacceptable behavior by participants include:
 
 ## Enforcement
 
+<<<<<<< HEAD
 Violations of the Code of Conduct may be reported privately through the repository Security tab or to the repository owner. All reports will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. Further details of specific enforcement policies may be posted separately.
+=======
+Violations of the Code of Conduct may be reported to [contact@donutbrowser.com](mailto:contact@donutbrowser.com). All reports will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. Further details of specific enforcement policies may be posted separately.
+>>>>>>> v0.29.6
 
 The maintainers hold the right and responsibility to remove comments or other contributions that are not aligned to this Code of Conduct, or to ban temporarily or permanently any members for other behaviors that are deemed inappropriate, threatening, offensive, or harmful.

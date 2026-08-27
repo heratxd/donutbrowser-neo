@@ -141,6 +141,7 @@ impl GeoIPDownloader {
       },
     );
 
+<<<<<<< HEAD
     // Fetch latest release from GitHub
     let releases = self.fetch_geoip_releases().await?;
     let latest_release = releases.first().ok_or("No GeoIP database releases found")?;
@@ -148,6 +149,24 @@ impl GeoIPDownloader {
     let download_url = self
       .find_city_mmdb_asset(latest_release)
       .ok_or("No compatible GeoIP database asset found")?;
+=======
+    #[cfg(feature = "e2e")]
+    let fixture_url = std::env::var("DONUT_E2E_GEOIP_DOWNLOAD_URL")
+      .ok()
+      .filter(|url| !url.is_empty());
+    #[cfg(not(feature = "e2e"))]
+    let fixture_url: Option<String> = None;
+
+    let download_url = if let Some(url) = fixture_url {
+      url
+    } else {
+      let releases = self.fetch_geoip_releases().await?;
+      let latest_release = releases.first().ok_or("No GeoIP database releases found")?;
+      self
+        .find_city_mmdb_asset(latest_release)
+        .ok_or("No compatible GeoIP database asset found")?
+    };
+>>>>>>> v0.29.6
 
     // Create cache directory
     let cache_dir = Self::get_cache_dir();
@@ -265,7 +284,11 @@ impl GeoIPDownloader {
     let response = self
       .client
       .get(&url)
+<<<<<<< HEAD
       .header("User-Agent", "Mozilla/5.0 (compatible; neodonutbrowser)")
+=======
+      .header("User-Agent", "Mozilla/5.0 (compatible; donutbrowser)")
+>>>>>>> v0.29.6
       .send()
       .await?;
 
@@ -352,7 +375,11 @@ mod tests {
     let response = downloader
       .client
       .get(&url)
+<<<<<<< HEAD
       .header("User-Agent", "Mozilla/5.0 (compatible; neodonutbrowser)")
+=======
+      .header("User-Agent", "Mozilla/5.0 (compatible; donutbrowser)")
+>>>>>>> v0.29.6
       .send()
       .await
       .expect("Request should succeed");

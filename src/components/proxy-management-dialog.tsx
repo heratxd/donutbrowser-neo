@@ -1111,13 +1111,21 @@ export function ProxyManagementDialog({
                 <AnimatedTabsList>
                   <AnimatedTabsTrigger value="proxies">
                     <span>{t("proxies.management.tabProxies")}</span>
+<<<<<<< HEAD
                     <span className="text-xs text-muted-foreground tabular-nums">
+=======
+                    <span className="text-xs tabular-nums">
+>>>>>>> v0.29.6
                       {storedProxies.length}
                     </span>
                   </AnimatedTabsTrigger>
                   <AnimatedTabsTrigger value="vpns">
                     <span>{t("proxies.management.tabVpns")}</span>
+<<<<<<< HEAD
                     <span className="text-xs text-muted-foreground tabular-nums">
+=======
+                    <span className="text-xs tabular-nums">
+>>>>>>> v0.29.6
                       {vpnConfigs.length}
                     </span>
                   </AnimatedTabsTrigger>
@@ -1531,7 +1539,11 @@ export function ProxyManagementDialog({
             }}
             size="icon"
             variant="destructive"
+<<<<<<< HEAD
             className="border-destructive bg-destructive/50 hover:bg-destructive/70"
+=======
+            className="border-destructive bg-destructive hover:bg-destructive"
+>>>>>>> v0.29.6
           >
             <LuTrash2 />
           </DataTableActionBarAction>
@@ -1554,7 +1566,11 @@ export function ProxyManagementDialog({
             }}
             size="icon"
             variant="destructive"
+<<<<<<< HEAD
             className="border-destructive bg-destructive/50 hover:bg-destructive/70"
+=======
+            className="border-destructive bg-destructive hover:bg-destructive"
+>>>>>>> v0.29.6
           >
             <LuTrash2 />
           </DataTableActionBarAction>

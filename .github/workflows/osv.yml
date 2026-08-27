@@ -9,7 +9,11 @@
 # For more examples and options, including how to ignore specific vulnerabilities,
 # see https://google.github.io/osv-scanner/github-action/
 
+<<<<<<< HEAD
 # Security vulnerability scanning for NeoDonut Browser
+=======
+# Security vulnerability scanning for Donut Browser
+>>>>>>> v0.29.6
 # Scans dependencies in package managers (npm/pnpm, Cargo) for known vulnerabilities
 # Runs on schedule and when dependencies change
 
@@ -46,7 +50,11 @@ jobs:
   scan-scheduled:
     name: Scheduled Security Scan
     if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+<<<<<<< HEAD
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@9a498708959aeaef5ef730655706c5a1df1edbc2" # v2.3.8
+=======
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@8deb546fdb875b9996d27d4950be7312dac076a1" # v2.5.0
+>>>>>>> v0.29.6
     with:
       scan-args: |-
         -r
@@ -58,7 +66,11 @@ jobs:
   scan-pr:
     name: PR Security Scan
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+<<<<<<< HEAD
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@9a498708959aeaef5ef730655706c5a1df1edbc2" # v2.3.8
+=======
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@8deb546fdb875b9996d27d4950be7312dac076a1" # v2.5.0
+>>>>>>> v0.29.6
     with:
       scan-args: |-
         -r
